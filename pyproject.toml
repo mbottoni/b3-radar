@@ -1,0 +1,25 @@
+[project]
+name = "b3-radar"
+version = "0.1.0"
+description = "Daily B3 stock screener from official open data (B3, CVM, Banco Central), with a weekly emailed shortlist and a public track record."
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+authors = [{ name = "Maruan Ottoni" }]
+dependencies = ["numpy>=1.26", "pandas>=2.1"]
+
+[project.urls]
+Homepage = "https://github.com/mbottoni/b3-radar"
+
+[project.scripts]
+b3radar = "b3radar.__main__:main"
+
+[dependency-groups]
+dev = ["pytest>=8"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["b3radar"]

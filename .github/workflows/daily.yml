@@ -1,0 +1,48 @@
+name: daily
+
+# B3 publishes each session's quote file the same evening and CVM refreshes
+# its filings during the week. 10:00 UTC (07:00 in Brasília), Tuesday to
+# Saturday, picks up the previous session.
+on:
+  schedule:
+    - cron: "0 10 * * 2-6"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: data          # shared with weekly.yml: never two writers at once
+  cancel-in-progress: false
+
+jobs:
+  daily:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - name: Install
+        run: uv sync --frozen
+
+      - name: Test
+        run: uv run pytest -q
+
+      - name: Fetch quotes, filings and corporate events; rebuild the screen
+        run: uv run python -m b3radar daily
+
+      - name: Commit if the data changed
+        run: |
+          git add data
+          if git diff --staged --quiet; then
+            echo "No data changes."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "data: session of $(jq -r .asof data/status.json)"
+          git push || { git pull --rebase && git push; }

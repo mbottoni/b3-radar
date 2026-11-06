@@ -1,0 +1,59 @@
+name: weekly
+
+# Monday 10:30 UTC (07:30 in Brasília), before the market opens at 10:00
+# local: the shortlist uses Friday's close, prepared by Saturday's daily run.
+on:
+  schedule:
+    - cron: "30 10 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: data
+  cancel-in-progress: false
+
+jobs:
+  weekly:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - name: Install
+        run: uv sync --frozen
+
+      - name: Test
+        run: uv run pytest -q
+
+      # Without these three secrets the email is a dry run (see the artifact).
+      - name: Shortlist, track record and email
+        env:
+          SMTP_USER: ${{ secrets.SMTP_USER }}
+          SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
+          EMAIL_TO: ${{ secrets.EMAIL_TO }}
+        run: uv run python -m b3radar weekly
+
+      - name: Keep the rendered email
+        uses: actions/upload-artifact@v4
+        with:
+          name: email
+          path: out/
+          retention-days: 30
+
+      - name: Commit the list and the track record
+        run: |
+          git add data
+          if git diff --staged --quiet; then
+            echo "No changes."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "picks: list of $(jq -r .asof data/status.json)"
+          git push || { git pull --rebase && git push; }

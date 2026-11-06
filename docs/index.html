@@ -1,0 +1,285 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>B3 Radar</title>
+<meta name="description" content="A daily screen of Brazilian stocks from official open data, a weekly shortlist, and the shortlist's public track record.">
+<style>
+  :root {
+    color-scheme: light;
+    --page: #f9f9f7; --surface: #fcfcfb; --ink: #0b0b0b; --ink2: #52514e; --muted: #898781;
+    --grid: #e1e0d9; --axis: #c3c2b7; --border: rgba(11, 11, 11, 0.10);
+    --s1: #2a78d6; --s2: #eb6834; --good: #006300; --bad: #d03b3b; --chip: #eef3fb;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      color-scheme: dark;
+      --page: #0d0d0d; --surface: #1a1a19; --ink: #f0efec; --ink2: #c3c2b7; --muted: #898781;
+      --grid: #2c2c2a; --axis: #383835; --border: rgba(255, 255, 255, 0.10);
+      --s1: #3987e5; --s2: #d95926; --good: #0ca30c; --bad: #e66767; --chip: #1f2a3a;
+    }
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --page: #0d0d0d; --surface: #1a1a19; --ink: #f0efec; --ink2: #c3c2b7; --muted: #898781;
+    --grid: #2c2c2a; --axis: #383835; --border: rgba(255, 255, 255, 0.10);
+    --s1: #3987e5; --s2: #d95926; --good: #0ca30c; --bad: #e66767; --chip: #1f2a3a;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--page); color: var(--ink); font: 14px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  main { max-width: 1240px; margin: 0 auto; padding: 24px 16px 48px; }
+  h1 { font-size: 22px; margin: 0 0 4px; }
+  h2 { font-size: 16px; margin: 0 0 4px; }
+  .lede { color: var(--ink2); margin: 0; max-width: 860px; }
+  .status { color: var(--muted); font-size: 12px; margin: 6px 0 18px; }
+  a { color: var(--s1); }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 16px; margin-bottom: 14px; }
+  .note { color: var(--muted); font-size: 12px; margin: 0 0 10px; }
+  .scroll { overflow-x: auto; }
+  table { border-collapse: collapse; width: 100%; font-size: 13px; font-variant-numeric: tabular-nums; }
+  th, td { padding: 6px 8px; border-bottom: 1px solid var(--grid); text-align: right; white-space: nowrap; }
+  th { color: var(--ink2); font-weight: 600; font-size: 12px; position: sticky; top: 0; background: var(--surface); }
+  th.l, td.l { text-align: left; }
+  th.sortable { cursor: pointer; user-select: none; }
+  th.sortable:hover, th.sortable:focus-visible { color: var(--ink); outline: none; }
+  td.company { max-width: 240px; overflow: hidden; text-overflow: ellipsis; }
+  .tk { font-weight: 650; }
+  .new { color: var(--s1); font-size: 10px; font-weight: 700; margin-left: 4px; }
+  .pos { color: var(--good); } .neg { color: var(--bad); }
+  .muted { color: var(--muted); }
+  .chips { display: flex; gap: 6px; flex-wrap: wrap; }
+  .chip { background: var(--chip); border-radius: 999px; padding: 2px 9px; font-size: 12px; font-weight: 600; }
+  .controls { display: flex; gap: 12px; flex-wrap: wrap; align-items: end; margin-bottom: 10px; }
+  .controls label { display: flex; flex-direction: column; gap: 4px; font-size: 12px; color: var(--ink2); }
+  .controls input[type=search], .controls select { font: inherit; color: var(--ink); background: var(--surface);
+    border: 1px solid var(--border); border-radius: 6px; padding: 6px 8px; min-height: 34px; }
+  .controls .check { flex-direction: row; align-items: center; gap: 6px; padding-bottom: 8px; }
+  .two { display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); gap: 14px; }
+  #chart svg { display: block; width: 100%; }
+  #tip { position: fixed; pointer-events: none; z-index: 10; display: none; background: var(--surface); color: var(--ink);
+    border: 1px solid var(--border); border-radius: 8px; padding: 8px 10px; font-size: 12px; box-shadow: 0 4px 16px rgba(0,0,0,.12); }
+  #tip b { display: block; font-size: 13px; }
+  #tip .row { display: flex; gap: 6px; align-items: center; color: var(--ink2); }
+  #tip .row strong { color: var(--ink); font-variant-numeric: tabular-nums; }
+  #tip .key { width: 12px; height: 2px; display: inline-block; }
+  .legend { display: flex; gap: 14px; font-size: 12px; color: var(--ink2); margin-top: 6px; }
+  .legend i { display: inline-block; width: 14px; height: 2px; vertical-align: middle; margin-right: 6px; }
+  footer { color: var(--muted); font-size: 12px; margin-top: 18px; }
+  @media (max-width: 900px) { .two { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<main>
+  <h1>B3 Radar</h1>
+  <p class="lede">Every Brazilian stock with a year of quotes, scored daily on value, quality, momentum and income from official open data (B3, CVM, Banco Central). Each Monday's top 10 is logged and tracked against BOVA11, losers included.</p>
+  <p class="status" id="status">Loading…</p>
+
+  <section class="card">
+    <h2>This week's shortlist</h2>
+    <p class="note" id="listNote"></p>
+    <div class="scroll"><table id="list"></table></div>
+    <p class="note" style="margin:10px 0 4px">Magic Formula baseline (Greenblatt: earnings yield + return on capital):</p>
+    <div class="chips" id="magic"></div>
+  </section>
+
+  <section class="two">
+    <div class="card">
+      <h2>Track record</h2>
+      <p class="note">Each list held as an equal-weight portfolio until the next one, on dividend- and split-adjusted prices. Start = 100.</p>
+      <div id="chart"></div>
+    </div>
+    <div class="card">
+      <h2>Every list so far</h2>
+      <p class="note">Return to date of each list (composite), vs BOVA11 over the same days.</p>
+      <div class="scroll"><table id="cohorts"></table></div>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>Screener</h2>
+    <p class="note">Scores are percentiles within the eligible universe (0–100). Click a column to sort.</p>
+    <div class="controls">
+      <label>Search <input type="search" id="q" placeholder="Ticker or company"></label>
+      <label>Sector <select id="sector"><option value="">All sectors</option></select></label>
+      <label class="check"><input type="checkbox" id="showExcluded"> Show excluded companies (with the reason)</label>
+    </div>
+    <div class="scroll" style="max-height:640px;overflow-y:auto"><table id="screen"></table></div>
+  </section>
+
+  <footer>
+    A rules-based screen of public data, not investment advice: the scores know nothing about news, governance or your situation.
+    How every number is made: <a href="https://github.com/mbottoni/b3-radar/blob/main/METHODOLOGY.md">METHODOLOGY.md</a> ·
+    Code and data: <a href="https://github.com/mbottoni/b3-radar">github.com/mbottoni/b3-radar</a>
+  </footer>
+</main>
+<div id="tip" role="tooltip"></div>
+
+<script>
+const LOCAL = ["localhost", "127.0.0.1"].includes(location.hostname);
+const DATA = LOCAL ? "../data/" : "https://raw.githubusercontent.com/mbottoni/b3-radar/main/data/";
+const $ = (s) => document.querySelector(s);
+const css = (v) => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+const el = (tag, props = {}, ...kids) => { const e = document.createElement(tag); Object.assign(e, props); e.append(...kids); return e; };
+const svg = (tag, attrs = {}) => { const e = document.createElementNS("http://www.w3.org/2000/svg", tag); for (const [k, v] of Object.entries(attrs)) e.setAttribute(k, v); return e; };
+const num = (x) => (x === "" || x == null ? NaN : +x);
+const f1 = (x, d = 1) => (Number.isFinite(x) ? x.toFixed(d) : "–");
+const pct = (x, d = 0, sign = false) => (Number.isFinite(x) ? `${sign && x > 0 ? "+" : ""}${(x * 100).toFixed(d)}%` : "–");
+const brl = (x) => !Number.isFinite(x) ? "–" : x >= 1e9 ? `R$ ${(x / 1e9).toFixed(1)}bn` : `R$ ${(x / 1e6).toFixed(0)}m`;
+
+function parseCSV(text) {
+  const rows = []; let row = [], field = "", q = false;
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i];
+    if (q) { if (c === '"') { if (text[i + 1] === '"') { field += '"'; i++; } else q = false; } else field += c; }
+    else if (c === '"') q = true;
+    else if (c === ",") { row.push(field); field = ""; }
+    else if (c === "\n") { row.push(field); rows.push(row); row = []; field = ""; }
+    else if (c !== "\r") field += c;
+  }
+  if (field !== "" || row.length) { row.push(field); rows.push(row); }
+  const [h, ...b] = rows;
+  return h ? b.map((r) => Object.fromEntries(h.map((k, j) => [k, r[j] ?? ""]))) : [];
+}
+async function get(path, parse = parseCSV) {
+  const r = await fetch(DATA + path);
+  if (!r.ok) return null;
+  return parse(await r.text());
+}
+
+function showTip(ev, kids) {
+  const t = $("#tip"); t.replaceChildren(...kids); t.style.display = "block";
+  const r = t.getBoundingClientRect();
+  let x = ev.clientX + 14, y = ev.clientY + 14;
+  if (x + r.width > innerWidth - 8) x = ev.clientX - r.width - 14;
+  if (y + r.height > innerHeight - 8) y = ev.clientY - r.height - 14;
+  t.style.left = `${x}px`; t.style.top = `${y}px`;
+}
+const hideTip = () => ($("#tip").style.display = "none");
+const tipRow = (color, value, label) => el("div", { className: "row" }, el("span", { className: "key", style: `background:${color}` }), el("strong", { textContent: value }), label);
+const signed = (x, d = 1) => el("span", { className: x > 0 ? "pos" : x < 0 ? "neg" : "", textContent: pct(x, d, true) });
+
+// ------------------------------------------------------------ shortlist
+function renderList(picks, screen) {
+  const by = new Map(screen.map((r) => [r.ticker, r]));
+  const dates = [...new Set(picks.map((p) => p.date))].sort();
+  const cur = dates.at(-1), prev = dates.at(-2);
+  const now = picks.filter((p) => p.date === cur && p.strategy === "composite").sort((a, b) => a.rank - b.rank);
+  const before = new Set(picks.filter((p) => p.date === prev && p.strategy === "composite").map((p) => p.ticker));
+  $("#listNote").textContent = cur ? `List of ${cur} (closing prices). Why = Value · Quality · Momentum · Income scores.` : "No list yet: the first one is made on Monday.";
+  const head = ["#", "Ticker", "Company", "Score", "Why (V · Q · M · I)", "P/E", "EV/EBIT", "ROE", "12–1m", "Div. yield", "Price"];
+  const t = $("#list"); t.replaceChildren(el("tr", {}, ...head.map((h, i) => el("th", { className: i >= 1 && i <= 2 || i === 4 ? "l" : "", textContent: h }))));
+  for (const p of now) {
+    const s = by.get(p.ticker) || {};
+    const why = ["value_score", "quality_score", "momentum_score", "income_score"].map((k) => f1(num(s[k]), 0)).join(" · ");
+    t.append(el("tr", {},
+      el("td", { textContent: p.rank }),
+      el("td", { className: "l" }, el("span", { className: "tk", textContent: p.ticker }), ...(prev && !before.has(p.ticker) ? [el("span", { className: "new", textContent: "NEW" })] : [])),
+      el("td", { className: "l company", textContent: p.company, title: p.company }),
+      el("td", { textContent: f1(num(p.score), 0) }),
+      el("td", { className: "l muted", textContent: why }),
+      el("td", { textContent: f1(num(s.pe)) }), el("td", { textContent: f1(num(s.ev_ebit)) }),
+      el("td", { textContent: pct(num(s.roe)) }), el("td", {}, signed(num(s.momentum), 0)),
+      el("td", { textContent: pct(num(s.dividend_yield), 1) }), el("td", { textContent: `R$ ${f1(num(p.price), 2)}` })));
+  }
+  $("#magic").replaceChildren(...picks.filter((p) => p.date === cur && p.strategy === "magic").sort((a, b) => a.rank - b.rank)
+    .map((p) => el("span", { className: "chip", textContent: p.ticker, title: p.company })));
+}
+
+// ----------------------------------------------------------- track record
+function renderChart(curve) {
+  const box = $("#chart"); box.replaceChildren();
+  const c = (curve || []).filter((r) => r.strategy === "composite").map((r) => ({ date: r.date, p: +r.portfolio, b: +r.benchmark }));
+  if (c.length < 2) { box.append(el("p", { className: "muted", textContent: "The track record starts once a list has been held for a few sessions; check back after the next Monday." })); return; }
+  const w = box.clientWidth || 600, h = 240, ml = 40, mr = 10, mt = 10, mb = 24;
+  const lo = Math.min(...c.flatMap((r) => [r.p, r.b])), hi = Math.max(...c.flatMap((r) => [r.p, r.b]));
+  const pad = (hi - lo) * 0.1 || 2, y0 = lo - pad, y1 = hi + pad;
+  const x = (i) => ml + (i / (c.length - 1)) * (w - ml - mr), y = (v) => mt + (1 - (v - y0) / (y1 - y0)) * (h - mt - mb);
+  const s = svg("svg", { width: w, height: h, role: "img", "aria-label": "Shortlist portfolio vs BOVA11" });
+  for (const f of [0, 0.5, 1]) {
+    const v = y0 + f * (y1 - y0);
+    s.append(svg("line", { x1: ml, x2: w - mr, y1: y(v), y2: y(v), stroke: css("--grid") }));
+    const t = svg("text", { x: ml - 6, y: y(v) + 4, "text-anchor": "end", "font-size": 10, fill: css("--muted") }); t.textContent = v.toFixed(0); s.append(t);
+  }
+  for (const [k, color] of [["b", css("--axis")], ["p", css("--s1")]]) {
+    s.append(svg("path", { d: c.map((r, i) => `${i ? "L" : "M"}${x(i)},${y(r[k])}`).join(""), fill: "none", stroke: color, "stroke-width": 2, "stroke-linejoin": "round" }));
+  }
+  [0, c.length - 1].forEach((i) => { const t = svg("text", { x: x(i), y: h - 6, "text-anchor": i ? "end" : "start", "font-size": 10, fill: css("--muted") }); t.textContent = c[i].date; s.append(t); });
+  const hair = svg("line", { y1: mt, y2: h - mb, stroke: css("--ink2"), opacity: 0 }); s.append(hair);
+  const hit = svg("rect", { x: ml, y: 0, width: w - ml - mr, height: h, fill: "transparent" });
+  hit.addEventListener("pointermove", (ev) => {
+    const r = s.getBoundingClientRect(), i = Math.max(0, Math.min(c.length - 1, Math.round(((ev.clientX - r.left - ml) / (w - ml - mr)) * (c.length - 1))));
+    hair.setAttribute("x1", x(i)); hair.setAttribute("x2", x(i)); hair.setAttribute("opacity", 1);
+    showTip(ev, [el("b", { textContent: c[i].date }), tipRow(css("--s1"), c[i].p.toFixed(1), "shortlist"), tipRow(css("--axis"), c[i].b.toFixed(1), "BOVA11")]);
+  });
+  hit.addEventListener("pointerleave", () => { hair.setAttribute("opacity", 0); hideTip(); });
+  s.append(hit); box.append(s);
+  box.append(el("div", { className: "legend" }, el("span", {}, el("i", { style: `background:${css("--s1")}` }), "Shortlist (composite)"), el("span", {}, el("i", { style: `background:${css("--axis")}` }), "BOVA11")));
+}
+
+function renderCohorts(cohorts) {
+  const t = $("#cohorts");
+  const rows = (cohorts || []).filter((r) => r.strategy === "composite").sort((a, b) => b.date.localeCompare(a.date));
+  t.replaceChildren(el("tr", {}, ...["List", "Return", "BOVA11", "Difference", "Picks up"].map((h, i) => el("th", { className: i ? "" : "l", textContent: h }))));
+  if (!rows.length) { t.append(el("tr", {}, el("td", { className: "l muted", colSpan: 5, textContent: "No lists yet." }))); return; }
+  for (const r of rows) {
+    const ret = num(r.return), b = num(r.benchmark);
+    t.append(el("tr", {}, el("td", { className: "l", textContent: r.date }), el("td", {}, signed(ret)), el("td", {}, signed(b)), el("td", {}, signed(ret - b)), el("td", { textContent: pct(num(r.hit_rate)) })));
+  }
+}
+
+// --------------------------------------------------------------- screener
+const COLS = [
+  ["rank", "#", "n"], ["ticker", "Ticker", "s"], ["company", "Company", "s"], ["sector", "Sector", "s"], ["score", "Score", "n"],
+  ["value_score", "V", "n"], ["quality_score", "Q", "n"], ["momentum_score", "M", "n"], ["income_score", "I", "n"],
+  ["pe", "P/E", "n"], ["ev_ebit", "EV/EBIT", "n"], ["roe", "ROE", "n"], ["roic", "ROIC", "n"], ["net_debt_ebit", "ND/EBIT", "n"],
+  ["momentum", "12–1m", "n"], ["dividend_yield", "Div. yield", "n"], ["market_cap", "Mkt cap", "n"], ["liquidity", "Daily vol.", "n"], ["excluded", "Excluded because", "s"],
+];
+const FMT = { score: (x) => f1(x, 0), value_score: (x) => f1(x, 0), quality_score: (x) => f1(x, 0), momentum_score: (x) => f1(x, 0), income_score: (x) => f1(x, 0),
+  pe: f1, ev_ebit: f1, net_debt_ebit: f1, roe: (x) => pct(x), roic: (x) => pct(x), momentum: (x) => pct(x, 0, true), dividend_yield: (x) => pct(x, 1), market_cap: brl, liquidity: brl };
+let SCREEN = [], sortKey = "rank", sortAsc = true;
+function renderScreen() {
+  const q = $("#q").value.trim().toLowerCase(), sec = $("#sector").value, all = $("#showExcluded").checked;
+  const cols = COLS.filter(([k]) => all || k !== "excluded");
+  const rows = SCREEN.filter((r) => (all || !r.excluded) && (!sec || r.sector === sec) && (!q || r.ticker.toLowerCase().includes(q) || r.company.toLowerCase().includes(q) || r.tickers.toLowerCase().includes(q)));
+  const type = Object.fromEntries(COLS.map(([k, , t]) => [k, t]));
+  rows.sort((a, b) => {
+    const [x, y] = [a[sortKey], b[sortKey]];
+    if (type[sortKey] === "n") { const [u, v] = [num(x), num(y)]; if (!Number.isFinite(u)) return 1; if (!Number.isFinite(v)) return -1; return sortAsc ? u - v : v - u; }
+    return sortAsc ? String(x).localeCompare(String(y)) : String(y).localeCompare(String(x));
+  });
+  const t = $("#screen");
+  t.replaceChildren(el("tr", {}, ...cols.map(([k, label, ty]) => {
+    const th = el("th", { className: `sortable ${ty === "s" ? "l" : ""}`, textContent: label + (k === sortKey ? (sortAsc ? " ▲" : " ▼") : ""), tabIndex: 0 });
+    const go = () => { if (sortKey === k) sortAsc = !sortAsc; else { sortKey = k; sortAsc = ty === "s" || k === "rank"; } renderScreen(); };
+    th.addEventListener("click", go); th.addEventListener("keydown", (e) => (e.key === "Enter" || e.key === " ") && (e.preventDefault(), go()));
+    return th;
+  })));
+  for (const r of rows) {
+    t.append(el("tr", {}, ...cols.map(([k, , ty]) => {
+      const v = r[k];
+      if (k === "ticker") return el("td", { className: "l" }, el("span", { className: "tk", textContent: v, title: r.tickers }));
+      if (k === "momentum") return el("td", {}, signed(num(v), 0));
+      if (ty === "s") return el("td", { className: `l ${k === "company" ? "company" : ""} ${k === "excluded" ? "muted" : ""}`, textContent: v, title: v });
+      return el("td", { textContent: (FMT[k] || ((x) => (Number.isFinite(x) ? x : "–")))(num(v)) });
+    })));
+  }
+}
+
+(async () => {
+  const [status, screen, picks, curve, cohorts] = await Promise.all([
+    get("status.json", JSON.parse), get("screen/latest.csv"), get("picks/picks.csv"), get("picks/performance.csv"), get("picks/cohorts.csv")]);
+  if (!screen) { $("#status").textContent = "Could not load the data."; return; }
+  SCREEN = screen;
+  $("#status").textContent = status ? `Data as of the ${status.asof} session · ${status.eligible} of ${status.companies} listed companies pass the filters · updated every weekday` : "";
+  const sectors = [...new Set(screen.filter((r) => !r.excluded).map((r) => r.sector))].filter(Boolean).sort();
+  $("#sector").append(...sectors.map((s) => el("option", { value: s, textContent: s })));
+  for (const id of ["#q", "#sector", "#showExcluded"]) $(id).addEventListener("input", renderScreen);
+  renderList(picks || [], screen); renderChart(curve); renderCohorts(cohorts); renderScreen();
+  let lastW = 0;
+  new ResizeObserver(([e]) => { const w = Math.round(e.contentRect.width); if (w !== lastW) { lastW = w; renderChart(curve); } }).observe($("#chart"));
+  matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => renderChart(curve));
+})();
+</script>
+</body>
+</html>
