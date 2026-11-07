@@ -100,6 +100,13 @@ def build(data_dir: Path, log=print) -> int:
         h = hist[hist.cnpj == cnpj].sort_values("date")
         adj = prices.series(t)
         first = adj.index[0] if len(adj) else None
+        if len(adj):
+            # Over 180 days without a trade is a different listing (TEND3: the
+            # 2010 company left the exchange, a new Tenda listed in 2017):
+            # start after the last such gap, or the chart would bridge them.
+            gaps = np.flatnonzero(pd.to_datetime(pd.Series(adj.index)).diff().dt.days.to_numpy() > 180)
+            if len(gaps):
+                first = adj.index[gaps[-1]]
         months = [d for d in month_ends if first and d >= first]
         f = inp.filings[inp.filings.cnpj == cnpj]
         fund = ttm_series(f) if len(f) else pd.DataFrame()
