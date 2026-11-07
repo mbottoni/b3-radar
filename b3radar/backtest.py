@@ -38,7 +38,8 @@ STRATEGIES = {             # column, ascending
 }
 BENCHMARKS = ("eligible", "bova11", "cdi")
 QUINTILE_FACTORS = {"score": "score", "value": "value_score", "quality": "quality_score",
-                    "momentum": "momentum_score", "income": "income_score"}
+                    "momentum": "momentum_score", "income": "income_score", "growth": "growth_score"}
+QUINTILE_MIN = 25          # scored names needed to split a date into fifths (growth: none in 2012)
 
 
 def rebalance_dates(sessions: np.ndarray, first_year: int = FIRST_YEAR) -> list[str]:
@@ -110,6 +111,8 @@ def run(data_dir: Path, first_year: int = FIRST_YEAR, log=print) -> dict[str, pd
         # Fifths of the eligible universe by each factor (Q1 = best).
         for f, col in QUINTILE_FACTORS.items():
             e = eligible[eligible[col].notna()]
+            if len(e) < QUINTILE_MIN:
+                continue
             q = pd.qcut(e[col].rank(method="first", ascending=False), 5, labels=[1, 2, 3, 4, 5])
             for k in range(1, 6):
                 buckets[(d, f, k)] = list(e.ticker[q == k])
@@ -168,24 +171,27 @@ def run(data_dir: Path, first_year: int = FIRST_YEAR, log=print) -> dict[str, pd
             cohorts.append(row)
     cohorts = pd.DataFrame(cohorts)
     summary = _summary(curve, periods, dates[0], end)
-    years = (pd.Timestamp(end) - pd.Timestamp(dates[0])).days / 365.25
-    qrows, qper = [], []
+    qrows, qper, qdates = [], [], {}
     for f in QUINTILE_FACTORS:
+        # Only the years a factor could be measured (growth needs 3 years of statements: from 2013).
+        qdates[f] = [d for d in dates if (d, f, 1) in buckets]
+        years = (pd.Timestamp(end) - pd.Timestamp(qdates[f][0])).days / 365.25
         for k in range(1, 6):
             v = 1.0
-            for d0 in dates:
+            for d0 in qdates[f]:
                 r = prices.ret(buckets[(d0, f, k)], d0, nxt[d0])
                 qper.append({"start": d0, "factor": f, "quintile": k, "return": r,
                              "names": len(buckets[(d0, f, k)])})
                 v *= 1 + (r if np.isfinite(r) else 0.0)
-            qrows.append({"factor": f, "quintile": k, "total_return": v - 1, "cagr": v ** (1 / years) - 1})
+            qrows.append({"factor": f, "quintile": k, "first": qdates[f][0], "total_return": v - 1,
+                          "cagr": v ** (1 / years) - 1})
     quintiles = pd.DataFrame(qrows)
     qper = pd.DataFrame(qper)
     # How often the top fifth beat the bottom fifth, period by period.
     wins = {f: int(sum(qper[(qper.factor == f) & (qper.quintile == 1) & (qper.start == d)]["return"].iloc[0]
                        > qper[(qper.factor == f) & (qper.quintile == 5) & (qper.start == d)]["return"].iloc[0]
-                       for d in dates)) for f in QUINTILE_FACTORS}
-    quintiles["top_beat_bottom"] = quintiles.factor.map(lambda f: f"{wins[f]}/{len(dates)}")
+                       for d in qdates[f])) for f in QUINTILE_FACTORS}
+    quintiles["top_beat_bottom"] = quintiles.factor.map(lambda f: f"{wins[f]}/{len(qdates[f])}")
     meta = {"first": dates[0], "last": end, "rebalances": len(dates), "top_n": TOP_N, "rules": screen.rules_hash(),
             "rebalance": f"first session of month {REBALANCE_MONTH}", "costs": "none"}
     return {"curve": curve, "periods": periods, "holdings": hold, "cohorts": cohorts, "summary": summary, "meta": meta,

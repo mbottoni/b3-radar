@@ -143,3 +143,43 @@ def test_ttm_refuses_a_quarter_not_following_the_annual():
     f = pd.DataFrame([filing("DFP", "2024-12-31", "2025-03-01", ebit=100.0),
                       filing("ITR", "2026-06-30", "2026-08-06", ebit=70.0, ebit_prev=40.0)])
     assert np.isnan(screen.ttm(f, "2026-09-01").iloc[0].ebit)
+
+
+# ------------------------------------------------------------------ growth
+
+def test_growth_is_point_in_time_and_uses_the_prior_year_of_the_first_report():
+    rows = [filing("DFP", "2010-12-31", "2011-03-30", revenue=110.0, net_income=11.0,
+                   revenue_prev=100.0, net_income_prev=10.0)]          # also states 2009
+    for y, rev, ni in ((2011, 121.0, 12.0), (2012, 133.1, -5.0)):
+        rows.append(filing("DFP", f"{y}-12-31", f"{y + 1}-03-30", revenue=rev, net_income=ni,
+                           revenue_prev=np.nan, net_income_prev=np.nan))
+    rows.append(filing("ITR", "2013-03-31", "2013-05-10", revenue=40.0, net_income=1.0,
+                       revenue_prev=30.0, net_income_prev=2.0))          # TTM 143.1, published after May 2
+    h = screen.ttm_history(pd.DataFrame(rows))
+    assert list(h.t.dt.year) == [2009, 2010, 2011, 2012, 2013]
+    g = screen.growth(h, "2013-05-02").loc["C"]                          # 2012 vs 2009, the ITR not public yet
+    assert g.revenue_growth == pytest.approx(1.331 ** (365.25 / 1096) - 1) and g.growth_base == "2009-12-31"   # ~10%/yr
+    assert np.isnan(g.earnings_growth)                                   # a loss now has no CAGR...
+    assert g.growth_consistency == 1.0                                   # 2010, 2011, 2012 each above the year before
+    assert screen.growth(h, "2012-05-02").loc["C"].growth_base == ""     # under 3 years of history: not measured
+    later = screen.growth(h, "2013-05-10").loc["C"]                      # Q1 2013 vs 2009: 3.25 years, exact span
+    assert later.revenue_growth == pytest.approx((143.1 / 100) ** (1 / (1186 / 365.25)) - 1)
+
+
+def test_a_loss_ranks_last_on_earnings_growth_and_growth_does_not_move_the_score():
+    n = 6
+    df = pd.DataFrame({"ticker": [f"T{i}" for i in range(n)], "cnpj": list("ABCDEF"), "isin": "", "price": 10.0,
+                       "sector": "", "bdi": "02", "liquidity": 1e8, "sessions": 500, "market_cap": 1000.0,
+                       "ebit": 100.0, "net_income": [50.0] * (n - 1) + [-10.0], "revenue": 1000.0,
+                       "equity": 500.0, "net_debt": 100.0, "revenue_growth": np.linspace(0.0, 0.5, n),
+                       "earnings_growth": [0.1, 0.2, 0.3, np.nan, 0.4, np.nan], "growth_consistency": 1.0,
+                       "growth_base": ["2023-06-30"] * (n - 2) + ["", "2023-06-30"]})
+    empty = pd.DataFrame(columns=["date", "ticker", "close"])
+    cash = pd.DataFrame(columns=["isin", "rate", "last_date_prior", "label"])
+    stock = pd.DataFrame(columns=["isin", "mult", "last_date_prior", "label"])
+    out = screen._metrics(df.copy(), empty, cash, stock, "2026-11-06", pit=True).set_index("cnpj")
+    assert out.p_earnings_growth.idxmin() == "F"           # losing money now: last
+    assert np.isnan(out.loc["D", "p_earnings_growth"])     # no measurable start: not scored
+    flat = df.assign(revenue_growth=0.0, earnings_growth=0.0, growth_consistency=0.0)
+    again = screen._metrics(flat, empty, cash, stock, "2026-11-06", pit=True).set_index("cnpj")
+    assert (out.score == again.score).all()                 # weight 0: shown, not scored

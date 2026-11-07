@@ -140,3 +140,13 @@ def test_rules_fingerprint_separates_track_records(tmp_path, monkeypatch):
     assert old.iloc[-1] == pytest.approx(120.0)
     assert list(new.index) == ["2026-11-09", "2026-11-16"]        # the new one starts fresh at 100
     assert new.iloc[-1] == pytest.approx(50.0)
+
+
+def test_an_unweighted_pillar_leaves_the_fingerprint_alone(monkeypatch):
+    from b3radar import screen
+    before = screen.rules_hash()
+    assert screen.WEIGHTS["growth"] == 0
+    monkeypatch.setattr(screen, "GROWTH_YEARS", 5)          # growth rules don't rank anything at weight 0
+    assert screen.rules_hash() == before
+    monkeypatch.setitem(screen.WEIGHTS, "growth", 0.2)
+    assert screen.rules_hash() != before

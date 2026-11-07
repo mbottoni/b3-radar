@@ -112,6 +112,21 @@ Each excluded company is still listed on the page with its reason.
 - **Dividend yield**: dividends, JCP and other income paid in the last 365
   days (per share as the stock trades today) / price. Capital returns are
   excluded: they are cash, but not a recurring dividend.
+- **Growth** (shown, not scored: see below), from the TTM revenue and net
+  income at every statement (`screen.ttm_history`), each public from the
+  later of the two filings it uses:
+  - **Revenue growth** and **net income growth**: compound annual growth
+    from the statement three years before the latest one to the latest
+    (the start may be up to a quarter older; the rate uses the exact span).
+    Both ends must be positive. A company losing money now, against a
+    measurable start, ranks last on net income growth; one that went from
+    a loss to a profit has no rate and is not scored on it.
+  - **Consistency**: of the statements in those three years (up to 12
+    quarters), the share whose TTM revenue was above the one a year
+    earlier; at least 3 readings.
+  - CVM's open data starts with the 2010 annual reports (which also state
+    2009), so three-year growth exists from 2013. Totals, not per share:
+    share counts before 2020 are too approximate to measure dilution.
 
 ## Scores
 
@@ -124,8 +139,9 @@ higher is better; for net debt / EBIT lower is better):
 | Quality | ROIC, ROE, low net debt / EBIT | 25% |
 | Momentum | 12–1 return | 25% |
 | Income | dividend yield | 25% |
+| Growth | revenue growth, net income growth, consistency | 0% (shown) |
 
-The **score** is the weighted mean of the four category means. Percentiles
+The **score** is the weighted mean of the four scored category means. Percentiles
 make the score robust to outliers: a company with a one-off 33% yield gets
 the top income percentile, not 33 points more.
 
@@ -133,14 +149,28 @@ Each company's row on the page expands into **why it scores what it
 does**: every metric's raw value and its percentile, the statements used
 (period and the date CVM received them) and where its share count came from.
 
+**Why growth is not in the score.** It was added to answer a blind spot:
+WEG turned R$100 into about R$2,460 from 2010 while never being cheap, and
+the score never picked it. Before testing, the rule was fixed: growth
+joins the score at an equal one-fifth weight only if, on its own, its top
+fifth beats its bottom fifth over the backtest and in at least half the
+years. It did neither. From 2013 the fastest-growing fifth returned 2.8% a
+year and the slowest 6.3%; the top beat the bottom in 5 of 14 years. Fast
+growers were already priced for it (median P/E around 20–30 against
+13–17 for the slowest), and the slowest included the beaten-down companies
+that rebounded hardest, as in 2016. Added anyway at one fifth, the score's
+backtest would have fallen from 8.4% to 3.7% a year. Growth stays on the
+page and on the company pages, for reading a company, with no weight.
+
 **Rules fingerprint.** Everything above that decides eligibility and
-ranking (thresholds, sector exclusions, pillars, weights, metric
+ranking (thresholds, sector exclusions, weighted pillars, weights, metric
 definitions) is hashed (`screen.rules()`, shown on the page as "scoring
 rules xxxxxxxx"). Every weekly list and every backtest is stamped with it.
 Lists made under different rules are tracked as separate records, never
 pooled, and a list is held until the strategy's next list whatever its
 rules, so changing the rules ends one record and starts another instead of
-rewriting the past.
+rewriting the past. A pillar with no weight is left out of the
+fingerprint: it cannot change a rank.
 
 **Magic Formula** (Greenblatt), the baseline: rank by earnings yield plus
 rank by ROIC, among eligible companies with positive EBIT.
@@ -181,7 +211,8 @@ eligible universe is cut into fifths by the composite and by each pillar
 works steps down from Q1 to Q5. Through 2026 the clearest effects were the
 bottom fifth of the score and of value doing much worse than the rest, and
 momentum's top fifth doing best; the top fifth of quality did not beat the
-middle. Fifteen yearly periods are a small sample: these results describe
+middle, and growth's top fifth did worst of all (from 2013, when growth
+can first be measured). Fifteen yearly periods are a small sample: these results describe
 the past, and re-weighting the score to fit them would overfit it.
 
 History behind it:

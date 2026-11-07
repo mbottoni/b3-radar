@@ -31,20 +31,22 @@
   tr.clickable:hover td, tr.clickable:focus-visible td { background: var(--page); }
   tr.clickable:focus-visible { outline: 2px solid var(--s1); outline-offset: -2px; }
   tr.detail > td { background: var(--page); padding: 14px 16px; white-space: normal; text-align: left; }
-  .bd { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 18px; }
+  .bd { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 18px; }
   .bd h4 { margin: 0 0 8px; font-size: 13px; }
   .bd .m { display: grid; grid-template-columns: 1fr auto; gap: 3px 8px; font-size: 12px; margin-bottom: 10px; }
   .bd .m strong { font-variant-numeric: tabular-nums; }
   .bar { grid-column: 1 / -1; height: 6px; border-radius: 3px; background: var(--grid); overflow: hidden; }
   .bar i { display: block; height: 100%; background: var(--s1); border-radius: 3px; }
   .bd .pctl { grid-column: 1 / -1; color: var(--muted); }
+  .bd .off { color: var(--muted); font-size: 12px; margin: -6px 0 8px; }
   .bd .meta { grid-column: 1 / -1; color: var(--muted); font-size: 12px; border-top: 1px solid var(--grid); padding-top: 8px; }
   @media (max-width: 900px) { .bd { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-  .quint { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; }
+  .quint { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 12px; }
   .quint h4 { margin: 0; font-size: 13px; }
   .quint .sub { font-size: 12px; color: var(--muted); margin-bottom: 4px; }
   .quint svg { display: block; width: 100%; }
   @media (max-width: 900px) { .quint { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  @media (max-width: 520px) { .bd { grid-template-columns: 1fr; } }
   .caveats { margin: 0; padding-left: 18px; color: var(--ink2); }
   .caveats li { margin: 4px 0; }
   * { box-sizing: border-box; }
@@ -95,7 +97,7 @@
 <body>
 <main>
   <h1>B3 Radar</h1>
-  <p class="lede">Every Brazilian stock with a year of quotes, scored daily on value, quality, momentum and income from official open data (B3, CVM, Banco Central). Each Monday's top 10 is logged and tracked against BOVA11, losers included.</p>
+  <p class="lede">Every Brazilian stock with a year of quotes, scored daily on value, quality, momentum and income from official open data, with growth shown alongside (B3, CVM, Banco Central). Each Monday's top 10 is logged and tracked against BOVA11, losers included.</p>
   <p class="status" id="status">Loading…</p>
 
   <section class="card">
@@ -115,7 +117,7 @@
 
   <section class="card">
     <h2>Does the score separate winners from losers?</h2>
-    <p class="note">Each May, every eligible company split into fifths by each score (Q1 = best), each fifth held as an equal-weight portfolio for the year. Bars: return per year, 2012–today. A working factor steps down from Q1 to Q5; the gray line is all eligible stocks.</p>
+    <p class="note">Each May, every eligible company split into fifths by each score (Q1 = best), each fifth held as an equal-weight portfolio for the year. Bars: return per year, 2012–today (growth: 2013–today, it needs three years of statements). A working factor steps down from Q1 to Q5; the gray line is all eligible stocks. Growth failed this test, so it is shown but not counted in the score.</p>
     <div id="quintiles" class="quint"></div>
   </section>
 
@@ -233,23 +235,30 @@ const METRICS = {
             ["net_debt_ebit", "Net debt / EBIT (lower is better)", (x) => f1(x)]],
   momentum: [["momentum", "12-month return, last month left out", (x) => pct(x, 0, true)]],
   income: [["dividend_yield", "Dividends of the last 12 months / price", (x) => pct(x, 1)]],
+  growth: [["revenue_growth", "Revenue growth per year, 3 years", (x) => pct(x, 1, true)],
+           ["earnings_growth", "Net income growth per year, 3 years", (x, p) => (Number.isFinite(x) ? pct(x, 1, true) : Number.isFinite(p) ? "loss now" : "–")],
+           ["growth_consistency", "Quarters with revenue above a year before", (x) => pct(x, 0)]],
 };
-const PILLAR = { value: "Value", quality: "Quality", momentum: "Momentum", income: "Income" };
+const PILLAR = { value: "Value", quality: "Quality", momentum: "Momentum", income: "Income", growth: "Growth" };
+// Shown for information: a pillar with no weight in the score (METHODOLOGY.md: why growth is out).
+const UNSCORED = { growth: "Not in the score: in the backtest the fastest growers did worst." };
 function breakdown(r) {
   const box = el("div", { className: "bd" });
   for (const [k, ms] of Object.entries(METRICS)) {
     const col = el("div", {}, el("h4", { textContent: `${PILLAR[k]}: ${f1(num(r[k + "_score"]), 0)} / 100` }));
+    if (UNSCORED[k]) col.append(el("div", { className: "off", textContent: UNSCORED[k] }));
     for (const [m, label, fmt] of ms) {
       const p = num(r["p_" + m]);
       col.append(el("div", { className: "m" },
-        el("span", { textContent: label }), el("strong", { textContent: fmt(num(r[m])) }),
+        el("span", { textContent: label }), el("strong", { textContent: fmt(num(r[m]), p) }),
         el("div", { className: "bar", role: "img", ariaLabel: `percentile ${f1(p, 0)}` }, el("i", { style: `width:${Number.isFinite(p) ? p : 0}%` })),
         el("span", { className: "pctl", textContent: Number.isFinite(p) ? `percentile ${f1(p, 0)} among eligible companies` : "not scored" })));
     }
     box.append(col);
   }
   box.append(el("div", { className: "meta", textContent:
-    `Statements up to ${r.fundamentals_date || "–"}, filed with CVM on ${r.filed || "–"} · share count from ${(r.shares_source || "–").toUpperCase()} · tickers: ${r.tickers || r.ticker}` +
+    `Statements up to ${r.fundamentals_date || "–"}, filed with CVM on ${r.filed || "–"}` +
+    (r.growth_base ? ` · growth measured from ${r.growth_base}` : "") + ` · share count from ${(r.shares_source || "–").toUpperCase()} · tickers: ${r.tickers || r.ticker}` +
     (r.excluded ? ` · not ranked: ${r.excluded}` : "") }));
   return box;
 }
@@ -347,11 +356,11 @@ function renderCohorts(cohorts) {
 // --------------------------------------------------------------- screener
 const COLS = [
   ["rank", "#", "n"], ["ticker", "Ticker", "s"], ["company", "Company", "s"], ["sector", "Sector", "s"], ["score", "Score", "n"],
-  ["value_score", "V", "n"], ["quality_score", "Q", "n"], ["momentum_score", "M", "n"], ["income_score", "I", "n"],
+  ["value_score", "V", "n"], ["quality_score", "Q", "n"], ["momentum_score", "M", "n"], ["income_score", "I", "n"], ["growth_score", "G", "n"],
   ["pe", "P/E", "n"], ["ev_ebit", "EV/EBIT", "n"], ["roe", "ROE", "n"], ["roic", "ROIC", "n"], ["net_debt_ebit", "ND/EBIT", "n"],
   ["momentum", "12–1m", "n"], ["dividend_yield", "Div. yield", "n"], ["market_cap", "Mkt cap", "n"], ["liquidity", "Daily vol.", "n"], ["excluded", "Excluded because", "s"],
 ];
-const FMT = { score: (x) => f1(x, 0), value_score: (x) => f1(x, 0), quality_score: (x) => f1(x, 0), momentum_score: (x) => f1(x, 0), income_score: (x) => f1(x, 0),
+const FMT = { score: (x) => f1(x, 0), value_score: (x) => f1(x, 0), quality_score: (x) => f1(x, 0), momentum_score: (x) => f1(x, 0), income_score: (x) => f1(x, 0), growth_score: (x) => f1(x, 0),
   pe: f1, ev_ebit: f1, net_debt_ebit: f1, roe: (x) => pct(x), roic: (x) => pct(x), momentum: (x) => pct(x, 0, true), dividend_yield: (x) => pct(x, 1), market_cap: brl, liquidity: brl };
 let SCREEN = [], sortKey = "rank", sortAsc = true;
 function renderScreen() {
@@ -500,7 +509,8 @@ function renderQuintiles(q, summary) {
   const box = $("#quintiles"); box.replaceChildren();
   if (!q || !q.length) return;
   const elig = num((summary.find((r) => r.series === "eligible") || {}).cagr);
-  const names = { score: "Score", value: "Value", quality: "Quality", momentum: "Momentum", income: "Income" };
+  const names = { score: "Score", value: "Value", quality: "Quality", momentum: "Momentum", income: "Income", growth: "Growth (not scored)" };
+  const start = q.map((r) => r.first).filter(Boolean).sort()[0];
   const all = q.map((r) => num(r.cagr));
   const lo = Math.min(0, ...all, elig) - 0.02, hi = Math.max(...all, elig) + 0.03;
   for (const f of Object.keys(names)) {
@@ -522,7 +532,8 @@ function renderQuintiles(q, summary) {
     if (Number.isFinite(elig)) s.append(svg("line", { x1: ml, x2: w - mr, y1: y(elig), y2: y(elig), stroke: css("--other"), "stroke-width": 1.5 }));
     const spread = num(rows[0].cagr) - num(rows[4].cagr);
     box.append(el("div", {}, el("h4", { textContent: names[f] }),
-      el("div", { className: "sub", textContent: `Q1 − Q5: ${spread >= 0 ? "+" : ""}${(spread * 100).toFixed(1)} pts/yr · Q1 beat Q5 in ${rows[0].top_beat_bottom} years` }), s));
+      el("div", { className: "sub", textContent: `Q1 − Q5: ${spread >= 0 ? "+" : ""}${(spread * 100).toFixed(1)} pts/yr · Q1 beat Q5 in ${rows[0].top_beat_bottom} years` +
+        (rows[0].first && rows[0].first !== start ? ` · from ${rows[0].first.slice(0, 4)}` : "") }), s));
   }
 }
 

@@ -26,26 +26,39 @@ FINANCIAL = ("Bancos", "Intermediação Financeira", "Seguradoras", "Arrendament
 OPERATING = "FASE OPERACIONAL"
 CAPITAL_RETURNS = ("REST CAP DIN",)   # cash, but not a dividend: kept out of dividend yield
 PN_KINDS = ("PN", "PNA", "PNB", "PNC", "PND", "PNE", "PNF", "PNG")
-WEIGHTS = {"value": 0.25, "quality": 0.25, "momentum": 0.25, "income": 0.25}
+GROWTH_YEARS = 3             # growth measured over 3 years (CVM's open data starts in 2010)
+GROWTH_SLACK_DAYS = 92       # the starting statement may be up to a quarter older; CAGR uses the exact span
+GROWTH_MIN_READINGS = 3      # year-on-year readings needed to score consistency
+WEIGHTS = {"value": 0.25, "quality": 0.25, "momentum": 0.25, "income": 0.25, "growth": 0.0}
 PILLARS = {               # metric percentiles averaged into each pillar
     "value": ("earnings_yield", "book_to_market"),
     "quality": ("roic", "roe", "net_debt_ebit"),   # net debt / EBIT: lower is better
     "momentum": ("momentum",),
     "income": ("dividend_yield",),
+    "growth": ("revenue_growth", "earnings_growth", "growth_consistency"),
 }
 
 
 def rules() -> dict:
     """Everything that decides who is eligible and how they rank. Its hash
     stamps every published list and backtest, so results made under
-    different rules are never pooled (and cannot be rewritten later)."""
-    return {"liquidity_min": LIQUIDITY_MIN, "liquidity_window": LIQUIDITY_WINDOW,
-            "momentum": [MOMENTUM_LONG, MOMENTUM_SKIP], "history_min": HISTORY_MIN, "stale": STALE_SESSIONS,
-            "financial": list(FINANCIAL), "operating": OPERATING, "capital_returns": list(CAPITAL_RETURNS),
-            "weights": WEIGHTS, "pillars": {k: list(v) for k, v in PILLARS.items()},
-            "metrics": "ey=ebit/ev; bm=equity/mcap; roe=ni/equity; roic=ebit/(equity+net_debt); "
-                       "lev=net_debt/ebit (ebit<=0 worst); mom=adj(t-21)/adj(t-252)-1; dy=cash 365d ex capital returns",
-            "formula_version": 1}
+    different rules are never pooled (and cannot be rewritten later).
+
+    Only weighted pillars count: one shown for information (growth, weight
+    0) cannot change a rank, so adding it leaves the fingerprint as it was."""
+    scored = {k: w for k, w in WEIGHTS.items() if w}
+    r = {"liquidity_min": LIQUIDITY_MIN, "liquidity_window": LIQUIDITY_WINDOW,
+         "momentum": [MOMENTUM_LONG, MOMENTUM_SKIP], "history_min": HISTORY_MIN, "stale": STALE_SESSIONS,
+         "financial": list(FINANCIAL), "operating": OPERATING, "capital_returns": list(CAPITAL_RETURNS),
+         "weights": scored, "pillars": {k: list(PILLARS[k]) for k in scored},
+         "metrics": "ey=ebit/ev; bm=equity/mcap; roe=ni/equity; roic=ebit/(equity+net_debt); "
+                    "lev=net_debt/ebit (ebit<=0 worst); mom=adj(t-21)/adj(t-252)-1; dy=cash 365d ex capital returns",
+         "formula_version": 1}
+    if "growth" in scored:
+        r["growth"] = [GROWTH_YEARS, GROWTH_SLACK_DAYS, GROWTH_MIN_READINGS]
+        r["metrics"] += ("; rev_g/ni_g=CAGR of ttm revenue/net income over 3y (ni<=0 now worst); "
+                         "consistency=share of quarters in 3y with ttm revenue above a year earlier")
+    return r
 
 
 def rules_hash() -> str:
@@ -86,6 +99,66 @@ def ttm(filings: pd.DataFrame, asof: str) -> pd.DataFrame:
             out.update({c: np.nan for c in income})
         rows.append(out)
     return pd.DataFrame(rows)
+
+
+def ttm_history(filings: pd.DataFrame) -> pd.DataFrame:
+    """TTM revenue and net income at every statement of every company, with
+    the day it became public (``avail``: the later of the two filings it
+    uses). Same rule as ``ttm``: annual, or annual + this year's YTD - last
+    year's YTD for a quarter in the fiscal year right after it. Each annual
+    report also states the year before; that figure extends the history one
+    year back (2009), where no earlier report exists."""
+    f = filings[filings.dt_receb != ""]
+    cols = ["cnpj", "dt_receb", "revenue", "net_income", "revenue_prev", "net_income_prev"]
+    dfp = f[f.kind == "DFP"][cols].assign(t=pd.to_datetime(f.dt_refer[f.kind == "DFP"]))
+    prior = dfp.assign(t=dfp.t - pd.DateOffset(years=1), revenue=dfp.revenue_prev, net_income=dfp.net_income_prev)
+    itr = f[f.kind == "ITR"][cols].assign(t=pd.to_datetime(f.dt_refer[f.kind == "ITR"]))
+    ann = dfp[["cnpj", "t", "dt_receb", "revenue", "net_income"]].rename(
+        columns={"dt_receb": "avail_a", "revenue": "revenue_a", "net_income": "net_income_a"})
+    m = pd.merge_asof(itr.sort_values("t", kind="stable"), ann.assign(t_a=ann.t).sort_values("t", kind="stable"),
+                      on="t", by="cnpj", allow_exact_matches=False)
+    m = m[(m.t - m.t_a).dt.days < 366]
+    for c in ("revenue", "net_income"):
+        m[c] = m[f"{c}_a"] + m[c] - m[f"{c}_prev"]
+    m["dt_receb"] = np.maximum(m.dt_receb, m.avail_a)
+    out = pd.concat([dfp.assign(src=0), prior.assign(src=1), m.assign(src=2)])
+    out = out[["cnpj", "t", "dt_receb", "revenue", "net_income", "src"]].rename(columns={"dt_receb": "avail"})
+    out["mi"] = out.t.dt.year * 12 + out.t.dt.month          # month index: matches quarters a year apart
+    out = out.sort_values(["cnpj", "mi", "src"], kind="stable").drop_duplicates(["cnpj", "mi"])
+    return out.drop(columns="src").reset_index(drop=True)
+
+
+GROWTH_COLUMNS = ["revenue_growth", "earnings_growth", "growth_consistency", "growth_base"]
+
+
+def growth(hist: pd.DataFrame, asof: str) -> pd.DataFrame:
+    """Per company, from statements public by ``asof``: compound annual
+    growth of TTM revenue and net income from about ``GROWTH_YEARS`` before
+    the latest statement to it, and the share of year-on-year readings in
+    that span in which TTM revenue was higher than a year earlier."""
+    h = hist[hist.avail <= asof]
+    if h.empty:
+        return pd.DataFrame(columns=GROWTH_COLUMNS, index=pd.Index([], name="cnpj"))
+    last = h.sort_values(["cnpj", "t"], kind="stable").groupby("cnpj").tail(1)
+    last = last.assign(target=last.t - pd.DateOffset(years=GROWTH_YEARS))
+    base = h[["cnpj", "t", "revenue", "net_income"]].rename(
+        columns={"t": "t_base", "revenue": "revenue_base", "net_income": "net_income_base"})
+    g = pd.merge_asof(last.sort_values("target", kind="stable"), base.sort_values("t_base", kind="stable"),
+                      left_on="target", right_on="t_base", by="cnpj", direction="backward",
+                      tolerance=pd.Timedelta(days=GROWTH_SLACK_DAYS)).set_index("cnpj").sort_index()
+    span = (g.t - g.t_base).dt.days / 365.25
+    with np.errstate(invalid="ignore", divide="ignore"):
+        for c, name in (("revenue", "revenue_growth"), ("net_income", "earnings_growth")):
+            a, b = g[c], g[f"{c}_base"]
+            g[name] = ((a / b) ** (1 / span) - 1).where((a > 0) & (b > 0))
+    g["growth_base"] = g.t_base.dt.strftime("%Y-%m-%d").where(g.t_base.notna(), "")
+    # Consistency: each statement in the span against the one a year before.
+    w = h.merge(last[["cnpj", "mi"]].rename(columns={"mi": "mi_last"}), on="cnpj")
+    w = w[(w.mi > w.mi_last - 12 * GROWTH_YEARS) & (w.mi <= w.mi_last)]
+    w = w.merge(h[["cnpj", "mi", "revenue"]].assign(mi=h.mi + 12), on=["cnpj", "mi"], suffixes=("", "_year_before"))
+    up = (w.revenue > w.revenue_year_before).groupby(w.cnpj).agg(["mean", "size"])
+    g["growth_consistency"] = up["mean"].where(up["size"] >= GROWTH_MIN_READINGS).reindex(g.index)
+    return g[GROWTH_COLUMNS]
 
 
 def outstanding(total: float, treasury: float, b3_total: float | None = None,
@@ -167,6 +240,7 @@ class Inputs:
     stock: pd.DataFrame
     b3_shares: dict
     isins: dict          # ticker -> every ISIN it has traded under
+    ttm_hist: pd.DataFrame | None = None   # ttm_history(filings), for growth
 
 
 def load_inputs(data_dir: Path, since: str | None = None) -> Inputs:
@@ -183,7 +257,7 @@ def load_inputs(data_dir: Path, since: str | None = None) -> Inputs:
                  for r in issuers.itertuples()} if len(issuers) else {}
     isins = {t: set(g) for t, g in px.groupby("ticker")["isin"]}
     return Inputs(px, filings, capital, companies, ticker_map(px, _load(data_dir, "tickers.csv"), companies, issuers),
-                  cash, stock, b3_shares, isins)
+                  cash, stock, b3_shares, isins, ttm_history(filings))
 
 
 def _shares_filed(f, capital: pd.DataFrame, cnpj: str, asof: str):
@@ -272,6 +346,8 @@ def compute(inp: Inputs, asof: str, pit: bool = False) -> pd.DataFrame:
         rows.append(r)
     df = pd.DataFrame(rows)
     df["asof"] = asof
+    hist = inp.ttm_hist if inp.ttm_hist is not None else ttm_history(inp.filings)
+    df = df.join(growth(hist, asof), on="cnpj")
     return _metrics(df, px, inp.cash, stock, asof, pit, isins)
 
 
@@ -304,9 +380,11 @@ def _momentum_and_yield(df, px, cash, stock, asof, isins):
 
 
 def _metrics(df: pd.DataFrame, px, cash, stock, asof, pit: bool = False, isins: dict | None = None) -> pd.DataFrame:
-    for c in ("market_cap", "ebit", "net_income", "revenue", "equity", "net_debt"):
+    for c in ("market_cap", "ebit", "net_income", "revenue", "equity", "net_debt", *GROWTH_COLUMNS[:3]):
         if c not in df:
             df[c] = np.nan
+    if "growth_base" not in df:
+        df["growth_base"] = ""
     df["ev"] = df.market_cap + df.net_debt
     pos = lambda s: s.where(s > 0)  # noqa: E731
     df["earnings_yield"] = df.ebit / pos(df.ev)
@@ -337,12 +415,17 @@ def _metrics(df: pd.DataFrame, px, cash, stock, asof, pit: bool = False, isins: 
     ok = reason == ""
     pct = lambda s, asc=True: s[ok].rank(pct=True, ascending=asc)  # noqa: E731
     lev = df.net_debt_ebit.where(df.ebit > 0, np.inf)
+    # Losing money now, against a measurable start: last on earnings growth
+    # (a fall into losses has no CAGR, but it is the worst outcome).
+    earn = df.earnings_growth.where(~((df.net_income <= 0) & (df.growth_base.fillna("") != "")), -np.inf)
     # Each metric's percentile is kept ("p_*" columns) so the page can show
     # why a company scores what it does, not only the pillar averages.
     metric_pct = {
         "earnings_yield": pct(df.earnings_yield), "book_to_market": pct(df.book_to_market),
         "roic": pct(df.roic), "roe": pct(df.roe), "net_debt_ebit": pct(lev, asc=False),
         "momentum": pct(df.momentum), "dividend_yield": pct(df.dividend_yield.fillna(0)),
+        "revenue_growth": pct(df.revenue_growth), "earnings_growth": pct(earn),
+        "growth_consistency": pct(df.growth_consistency),
     }
     for m, v in metric_pct.items():
         df[f"p_{m}"] = (v * 100).reindex(df.index)
@@ -357,11 +440,12 @@ def _metrics(df: pd.DataFrame, px, cash, stock, asof, pit: bool = False, isins: 
 
 
 COLUMNS = ["asof", "rank", "ticker", "company", "sector", "score", "value_score", "quality_score", "momentum_score",
-           "income_score", "magic_rank", "price", "market_cap", "ev", "liquidity", "pe", "ev_ebit", "earnings_yield",
-           "book_to_market", "roe", "roic", "net_debt_ebit", "net_margin", "momentum", "dividend_yield",
+           "income_score", "growth_score", "magic_rank", "price", "market_cap", "ev", "liquidity", "pe", "ev_ebit",
+           "earnings_yield", "book_to_market", "roe", "roic", "net_debt_ebit", "net_margin", "momentum", "dividend_yield",
+           "revenue_growth", "earnings_growth", "growth_consistency", "growth_base",
            "fundamentals_date", "filed", "shares_source", "tickers", "cnpj", "excluded",
            "p_earnings_yield", "p_book_to_market", "p_roic", "p_roe", "p_net_debt_ebit", "p_momentum",
-           "p_dividend_yield"]
+           "p_dividend_yield", "p_revenue_growth", "p_earnings_growth", "p_growth_consistency"]
 
 
 def save(df: pd.DataFrame, data_dir: Path) -> Path:

@@ -42,6 +42,7 @@
   .note { color: var(--muted); font-size: 12px; margin: 0 0 10px; }
   .grid3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
   .grid4 { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
+  .grid5 { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 16px; }
   .mini .val { font-size: 12px; color: var(--muted); margin-bottom: 2px; }
   svg { display: block; width: 100%; }
   table { border-collapse: collapse; width: 100%; font-size: 13px; font-variant-numeric: tabular-nums; }
@@ -49,7 +50,8 @@
   th { color: var(--ink2); font-weight: 600; font-size: 12px; }
   th.l, td.l { text-align: left; }
   .pos { color: var(--good); } .neg { color: var(--bad); } .muted { color: var(--muted); }
-  .bd { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 18px; }
+  .bd { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 18px; }
+  .bd .off { color: var(--muted); font-size: 12px; margin: -6px 0 8px; }
   .bd h4 { margin: 0 0 8px; }
   .bd .m { display: grid; grid-template-columns: 1fr auto; gap: 3px 8px; font-size: 12px; margin-bottom: 10px; }
   .bar { grid-column: 1 / -1; height: 6px; border-radius: 3px; background: var(--grid); overflow: hidden; }
@@ -64,8 +66,8 @@
   #tip .row strong { color: var(--ink); font-variant-numeric: tabular-nums; }
   #tip .key { width: 12px; height: 2px; display: inline-block; }
   footer { color: var(--muted); font-size: 12px; margin-top: 18px; }
-  @media (max-width: 900px) { .grid3, .grid4, .bd { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-  @media (max-width: 520px) { .grid3, .grid4, .bd { grid-template-columns: 1fr; } }
+  @media (max-width: 900px) { .grid3, .grid4, .grid5, .bd { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  @media (max-width: 520px) { .grid3, .grid4, .grid5, .bd { grid-template-columns: 1fr; } }
 </style>
 </head>
 <body>
@@ -91,7 +93,7 @@
     <h2>The score over time</h2>
     <p class="note">The screen as it stood each quarter (point in time: only what was public then). Gaps: the company was not eligible (illiquid, too new, or failing a filter).</p>
     <div id="score"></div>
-    <div class="grid4" id="pillars" style="margin-top:12px"></div>
+    <div class="grid5" id="pillars" style="margin-top:12px"></div>
   </section>
 
   <section class="card">
@@ -227,8 +229,12 @@ const METRICS = {
   quality: [["roic", "Return on invested capital", (x) => pct(x)], ["roe", "Return on equity", (x) => pct(x)], ["net_debt_ebit", "Net debt / EBIT (lower is better)", (x) => f1(x)]],
   momentum: [["momentum", "12-month return, last month left out", (x) => pct(x, 0, true)]],
   income: [["dividend_yield", "Dividends of the last 12 months / price", (x) => pct(x, 1)]],
+  growth: [["revenue_growth", "Revenue growth per year, 3 years", (x) => pct(x, 1, true)],
+           ["earnings_growth", "Net income growth per year, 3 years", (x, p) => (Number.isFinite(x) ? pct(x, 1, true) : Number.isFinite(p) ? "loss now" : "–")],
+           ["growth_consistency", "Quarters with revenue above a year before", (x) => pct(x, 0)]],
 };
-const PILLAR = { value: "Value", quality: "Quality", momentum: "Momentum", income: "Income" };
+const PILLAR = { value: "Value", quality: "Quality", momentum: "Momentum", income: "Income", growth: "Growth" };
+const UNSCORED = { growth: "Not in the score: in the backtest the fastest growers did worst." };
 
 function parseCSV(text) {
   const rows = []; let row = [], field = "", q = false;
@@ -260,13 +266,14 @@ function render(d) {
 
   // Why this score
   const why = $("#why"); why.replaceChildren();
-  $("#whyNote").textContent = `Percentiles among today's eligible companies (0–100). Statements up to ${n.fundamentals_date || "–"}, filed with CVM ${n.filed || "–"}.`;
+  $("#whyNote").textContent = `Percentiles among today's eligible companies (0–100). Statements up to ${n.fundamentals_date || "–"}, filed with CVM ${n.filed || "–"}` + (n.growth_base ? `; growth measured from ${n.growth_base}.` : ".");
   const bd = el("div", { className: "bd" });
   for (const [k, ms] of Object.entries(METRICS)) {
     const col = el("div", {}, el("h4", { textContent: `${PILLAR[k]}: ${f1(num(n[k + "_score"]), 0)} / 100` }));
+    if (UNSCORED[k]) col.append(el("div", { className: "off", textContent: UNSCORED[k] }));
     for (const [m, label, fmt] of ms) {
       const p = num(n["p_" + m]);
-      col.append(el("div", { className: "m" }, el("span", { textContent: label }), el("strong", { textContent: fmt(num(n[m])) }),
+      col.append(el("div", { className: "m" }, el("span", { textContent: label }), el("strong", { textContent: fmt(num(n[m]), p) }),
         el("div", { className: "bar" }, el("i", { style: `width:${Number.isFinite(p) ? p : 0}%` })),
         el("span", { className: "pctl", textContent: Number.isFinite(p) ? `percentile ${f1(p, 0)}` : "not scored" })));
     }
@@ -287,10 +294,10 @@ function render(d) {
     const H = d.history, fmtS = (v) => (Number.isFinite(v) ? v.toFixed(0) : "–");
     lineChart($("#score"), H.dates, [{ values: H.score.map(num), color: "--s1", label: "score", width: 2.5 }], { h: 200, fmt: fmtS, yMin: 0, yMax: 100, fixed: true });
     const pill = $("#pillars"); pill.replaceChildren();
-    for (const [k, key] of [["Value", "value_score"], ["Quality", "quality_score"], ["Momentum", "momentum_score"], ["Income", "income_score"]]) {
+    for (const [k, key] of [["Value", "value_score"], ["Quality", "quality_score"], ["Momentum", "momentum_score"], ["Income", "income_score"], ["Growth (not scored)", "growth_score"]]) {
       const cell = el("div", { className: "mini" }, el("h4", { textContent: k }), el("div", { className: "val", textContent: `now ${fmtS(num(n[key]))}` }), el("div"));
       pill.append(cell);
-      lineChart(cell.lastChild, H.dates, [{ values: H[key].map(num), color: "--s1", label: k }], { h: 110, fmt: fmtS, yMin: 0, yMax: 100, fixed: true });
+      lineChart(cell.lastChild, H.dates, [{ values: (H[key] || []).map(num), color: "--s1", label: k }], { h: 110, fmt: fmtS, yMin: 0, yMax: 100, fixed: true });
     }
 
     const val = $("#valuation"); val.replaceChildren();

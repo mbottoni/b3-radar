@@ -3,7 +3,7 @@ reads before owning a stock for years.
 
 - total-return price (dividends reinvested) since 2010, monthly, with BOVA11;
 - the screen as it stood each quarter since 2011 (point in time): score,
-  pillars, rank, valuation (P/E, EV/EBIT, dividend yield), ROE, ROIC;
+  pillars (growth too, shown but not scored), rank, valuation (P/E, EV/EBIT, dividend yield), ROE, ROIC;
 - trailing-twelve-month revenue, EBIT and net income at every filing;
 - dividends per share by year (per share as the stock trades today);
 - the years it made the backtest's top 10, and how that year went.
@@ -27,7 +27,7 @@ from . import backtest, cotahist, events, screen
 
 SNAPSHOT_MONTHS = (4, 6, 9, 12)
 FIRST_YEAR = 2011
-HISTORY_FIELDS = ("score", "value_score", "quality_score", "momentum_score", "income_score", "rank", "pe", "ev_ebit",
+HISTORY_FIELDS = ("score", "value_score", "quality_score", "momentum_score", "income_score", "growth_score", "rank", "pe", "ev_ebit",
                   "dividend_yield", "roe", "roic", "net_margin", "market_cap")
 
 
