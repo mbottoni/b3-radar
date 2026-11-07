@@ -27,6 +27,24 @@
     --s1: #3987e5; --s2: #d95926; --s3: #199e70; --other: #5c5b57; --good: #0ca30c; --bad: #e66767; --chip: #1f2a3a;
   }
   details summary { cursor: pointer; padding: 6px 0; font-weight: 600; }
+  tr.clickable { cursor: pointer; }
+  tr.clickable:hover td, tr.clickable:focus-visible td { background: var(--page); }
+  tr.clickable:focus-visible { outline: 2px solid var(--s1); outline-offset: -2px; }
+  tr.detail > td { background: var(--page); padding: 14px 16px; white-space: normal; text-align: left; }
+  .bd { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 18px; }
+  .bd h4 { margin: 0 0 8px; font-size: 13px; }
+  .bd .m { display: grid; grid-template-columns: 1fr auto; gap: 3px 8px; font-size: 12px; margin-bottom: 10px; }
+  .bd .m strong { font-variant-numeric: tabular-nums; }
+  .bar { grid-column: 1 / -1; height: 6px; border-radius: 3px; background: var(--grid); overflow: hidden; }
+  .bar i { display: block; height: 100%; background: var(--s1); border-radius: 3px; }
+  .bd .pctl { grid-column: 1 / -1; color: var(--muted); }
+  .bd .meta { grid-column: 1 / -1; color: var(--muted); font-size: 12px; border-top: 1px solid var(--grid); padding-top: 8px; }
+  @media (max-width: 900px) { .bd { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  .quint { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; }
+  .quint h4 { margin: 0; font-size: 13px; }
+  .quint .sub { font-size: 12px; color: var(--muted); margin-bottom: 4px; }
+  .quint svg { display: block; width: 100%; }
+  @media (max-width: 900px) { .quint { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
   .caveats { margin: 0; padding-left: 18px; color: var(--ink2); }
   .caveats li { margin: 4px 0; }
   * { box-sizing: border-box; }
@@ -93,6 +111,12 @@
     <div class="scroll" style="margin-top:12px"><table id="btSummary"></table></div>
   </section>
 
+  <section class="card">
+    <h2>Does the score separate winners from losers?</h2>
+    <p class="note">Each May, every eligible company split into fifths by each score (Q1 = best), each fifth held as an equal-weight portfolio for the year. Bars: return per year, 2012–today. A working factor steps down from Q1 to Q5; the gray line is all eligible stocks.</p>
+    <div id="quintiles" class="quint"></div>
+  </section>
+
   <section class="two">
     <div class="card">
       <h2>Year by year</h2>
@@ -138,7 +162,7 @@
 
   <section class="card">
     <h2>Screener</h2>
-    <p class="note">Scores are percentiles within the eligible universe (0–100). Click a column to sort.</p>
+    <p class="note">Scores are percentiles within the eligible universe (0–100). Click a column to sort, a row for why it scores what it does.</p>
     <div class="controls">
       <label>Search <input type="search" id="q" placeholder="Ticker or company"></label>
       <label>Sector <select id="sector"><option value="">All sectors</option></select></label>
@@ -157,6 +181,7 @@
 
 <script>
 const LOCAL = ["localhost", "127.0.0.1"].includes(location.hostname);
+let RULES = "";
 const DATA = LOCAL ? "../data/" : "https://raw.githubusercontent.com/mbottoni/b3-radar/main/data/";
 const $ = (s) => document.querySelector(s);
 const css = (v) => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
@@ -199,6 +224,47 @@ const hideTip = () => ($("#tip").style.display = "none");
 const tipRow = (color, value, label) => el("div", { className: "row" }, el("span", { className: "key", style: `background:${color}` }), el("strong", { textContent: value }), label);
 const signed = (x, d = 1) => el("span", { className: x > 0 ? "pos" : x < 0 ? "neg" : "", textContent: pct(x, d, true) });
 
+// ------------------------------------------------------- why this score
+const METRICS = {
+  value: [["earnings_yield", "Earnings yield (EBIT / EV)", (x) => pct(x, 1)], ["book_to_market", "Book / market value", (x) => f1(x, 2)]],
+  quality: [["roic", "Return on invested capital", (x) => pct(x)], ["roe", "Return on equity", (x) => pct(x)],
+            ["net_debt_ebit", "Net debt / EBIT (lower is better)", (x) => f1(x)]],
+  momentum: [["momentum", "12-month return, last month left out", (x) => pct(x, 0, true)]],
+  income: [["dividend_yield", "Dividends of the last 12 months / price", (x) => pct(x, 1)]],
+};
+const PILLAR = { value: "Value", quality: "Quality", momentum: "Momentum", income: "Income" };
+function breakdown(r) {
+  const box = el("div", { className: "bd" });
+  for (const [k, ms] of Object.entries(METRICS)) {
+    const col = el("div", {}, el("h4", { textContent: `${PILLAR[k]}: ${f1(num(r[k + "_score"]), 0)} / 100` }));
+    for (const [m, label, fmt] of ms) {
+      const p = num(r["p_" + m]);
+      col.append(el("div", { className: "m" },
+        el("span", { textContent: label }), el("strong", { textContent: fmt(num(r[m])) }),
+        el("div", { className: "bar", role: "img", ariaLabel: `percentile ${f1(p, 0)}` }, el("i", { style: `width:${Number.isFinite(p) ? p : 0}%` })),
+        el("span", { className: "pctl", textContent: Number.isFinite(p) ? `percentile ${f1(p, 0)} among eligible companies` : "not scored" })));
+    }
+    box.append(col);
+  }
+  box.append(el("div", { className: "meta", textContent:
+    `Statements up to ${r.fundamentals_date || "–"}, filed with CVM on ${r.filed || "–"} · share count from ${(r.shares_source || "–").toUpperCase()} · tickers: ${r.tickers || r.ticker}` +
+    (r.excluded ? ` · not ranked: ${r.excluded}` : "") }));
+  return box;
+}
+// A row that expands into the breakdown on click or Enter; ``open`` keeps
+// the expanded tickers across re-renders.
+function expandable(table, open, key, cells, row, span) {
+  const tr = el("tr", { className: "clickable", tabIndex: 0 }, ...cells);
+  tr.setAttribute("aria-expanded", String(open.has(key)));
+  const toggle = () => { open.has(key) ? open.delete(key) : open.add(key); rerender(); };
+  tr.addEventListener("click", toggle);
+  tr.addEventListener("keydown", (e) => (e.key === "Enter" || e.key === " ") && (e.preventDefault(), toggle()));
+  table.append(tr);
+  if (open.has(key)) table.append(el("tr", { className: "detail" }, el("td", { colSpan: span }, breakdown(row))));
+}
+const OPEN_LIST = new Set(), OPEN_SCREEN = new Set();
+let rerender = () => {};
+
 // ------------------------------------------------------------ shortlist
 function renderList(picks, screen) {
   const by = new Map(screen.map((r) => [r.ticker, r]));
@@ -206,13 +272,13 @@ function renderList(picks, screen) {
   const cur = dates.at(-1), prev = dates.at(-2);
   const now = picks.filter((p) => p.date === cur && p.strategy === "composite").sort((a, b) => a.rank - b.rank);
   const before = new Set(picks.filter((p) => p.date === prev && p.strategy === "composite").map((p) => p.ticker));
-  $("#listNote").textContent = cur ? `List of ${cur} (closing prices). Why = Value · Quality · Momentum · Income scores.` : "No list yet: the first one is made on Monday.";
+  $("#listNote").textContent = cur ? `List of ${cur} (closing prices). Why = Value · Quality · Momentum · Income scores. Click a row for the full breakdown.` : "No list yet: the first one is made on Monday.";
   const head = ["#", "Ticker", "Company", "Score", "Why (V · Q · M · I)", "P/E", "EV/EBIT", "ROE", "12–1m", "Div. yield", "Price"];
   const t = $("#list"); t.replaceChildren(el("tr", {}, ...head.map((h, i) => el("th", { className: i >= 1 && i <= 2 || i === 4 ? "l" : "", textContent: h }))));
   for (const p of now) {
     const s = by.get(p.ticker) || {};
     const why = ["value_score", "quality_score", "momentum_score", "income_score"].map((k) => f1(num(s[k]), 0)).join(" · ");
-    t.append(el("tr", {},
+    expandable(t, OPEN_LIST, p.ticker, [
       el("td", { textContent: p.rank }),
       el("td", { className: "l" }, el("span", { className: "tk", textContent: p.ticker }), ...(prev && !before.has(p.ticker) ? [el("span", { className: "new", textContent: "NEW" })] : [])),
       el("td", { className: "l company", textContent: p.company, title: p.company }),
@@ -220,7 +286,8 @@ function renderList(picks, screen) {
       el("td", { className: "l muted", textContent: why }),
       el("td", { textContent: f1(num(s.pe)) }), el("td", { textContent: f1(num(s.ev_ebit)) }),
       el("td", { textContent: pct(num(s.roe)) }), el("td", {}, signed(num(s.momentum), 0)),
-      el("td", { textContent: pct(num(s.dividend_yield), 1) }), el("td", { textContent: `R$ ${f1(num(p.price), 2)}` })));
+      el("td", { textContent: pct(num(s.dividend_yield), 1) }), el("td", { textContent: `R$ ${f1(num(p.price), 2)}` })],
+      s, head.length);
   }
   $("#magic").replaceChildren(...picks.filter((p) => p.date === cur && p.strategy === "magic").sort((a, b) => a.rank - b.rank)
     .map((p) => el("span", { className: "chip", textContent: p.ticker, title: p.company })));
@@ -229,7 +296,7 @@ function renderList(picks, screen) {
 // ----------------------------------------------------------- track record
 function renderChart(curve) {
   const box = $("#chart"); box.replaceChildren();
-  const c = (curve || []).filter((r) => r.strategy === "composite").map((r) => ({ date: r.date, p: +r.portfolio, b: +r.benchmark }));
+  const c = (curve || []).filter((r) => r.strategy === "composite" && (!RULES || !r.rules || r.rules === RULES)).map((r) => ({ date: r.date, p: +r.portfolio, b: +r.benchmark }));
   if (c.length < 2) { box.append(el("p", { className: "muted", textContent: "The track record starts once a list has been held for a few sessions; check back after the next Monday." })); return; }
   const w = box.clientWidth || 600, h = 240, ml = 40, mr = 10, mt = 10, mb = 24;
   const lo = Math.min(...c.flatMap((r) => [r.p, r.b])), hi = Math.max(...c.flatMap((r) => [r.p, r.b]));
@@ -259,7 +326,7 @@ function renderChart(curve) {
 
 function renderCohorts(cohorts) {
   const t = $("#cohorts");
-  const rows = (cohorts || []).filter((r) => r.strategy === "composite").sort((a, b) => b.date.localeCompare(a.date));
+  const rows = (cohorts || []).filter((r) => r.strategy === "composite" && (!RULES || !r.rules || r.rules === RULES)).sort((a, b) => b.date.localeCompare(a.date));
   t.replaceChildren(el("tr", {}, ...["List", "Return", "BOVA11", "Difference", "Picks up"].map((h, i) => el("th", { className: i ? "" : "l", textContent: h }))));
   if (!rows.length) { t.append(el("tr", {}, el("td", { className: "l muted", colSpan: 5, textContent: "No lists yet." }))); return; }
   for (const r of rows) {
@@ -296,13 +363,13 @@ function renderScreen() {
     return th;
   })));
   for (const r of rows) {
-    t.append(el("tr", {}, ...cols.map(([k, , ty]) => {
+    expandable(t, OPEN_SCREEN, r.ticker, cols.map(([k, , ty]) => {
       const v = r[k];
       if (k === "ticker") return el("td", { className: "l" }, el("span", { className: "tk", textContent: v, title: r.tickers }));
       if (k === "momentum") return el("td", {}, signed(num(v), 0));
       if (ty === "s") return el("td", { className: `l ${k === "company" ? "company" : ""} ${k === "excluded" ? "muted" : ""}`, textContent: v, title: v });
       return el("td", { textContent: (FMT[k] || ((x) => (Number.isFinite(x) ? x : "–")))(num(v)) });
-    })));
+    }), r, cols.length);
   }
 }
 
@@ -420,14 +487,45 @@ function renderBtHoldings(holdings) {
   });
 }
 
+function renderQuintiles(q, summary) {
+  const box = $("#quintiles"); box.replaceChildren();
+  if (!q || !q.length) return;
+  const elig = num((summary.find((r) => r.series === "eligible") || {}).cagr);
+  const names = { score: "Score", value: "Value", quality: "Quality", momentum: "Momentum", income: "Income" };
+  const all = q.map((r) => num(r.cagr));
+  const lo = Math.min(0, ...all, elig) - 0.02, hi = Math.max(...all, elig) + 0.03;
+  for (const f of Object.keys(names)) {
+    const rows = q.filter((r) => r.factor === f).sort((a, b) => a.quintile - b.quintile);
+    if (!rows.length) continue;
+    const w = 220, h = 170, ml = 4, mr = 4, mt = 14, mb = 18;
+    const y = (v) => mt + (1 - (v - lo) / (hi - lo)) * (h - mt - mb);
+    const bw = (w - ml - mr) / 5;
+    const s = svg("svg", { viewBox: `0 0 ${w} ${h}`, role: "img", "aria-label": `${names[f]}: return per year by fifth` });
+    s.append(svg("line", { x1: ml, x2: w - mr, y1: y(0), y2: y(0), stroke: css("--axis") }));
+    rows.forEach((r, i) => {
+      const v = num(r.cagr), x = ml + i * bw + 4, top = Math.min(y(v), y(0)), hgt = Math.abs(y(v) - y(0));
+      s.append(svg("rect", { x, y: top, width: bw - 8, height: Math.max(hgt, 1), rx: 3, fill: css("--s1") }));
+      const t = svg("text", { x: x + (bw - 8) / 2, y: v >= 0 ? top - 4 : top + hgt + 11, "text-anchor": "middle", "font-size": 10, fill: css("--ink") });
+      t.textContent = `${(v * 100).toFixed(1)}%`; s.append(t);
+      const lab = svg("text", { x: x + (bw - 8) / 2, y: h - 4, "text-anchor": "middle", "font-size": 10, fill: css("--muted") });
+      lab.textContent = `Q${r.quintile}`; s.append(lab);
+    });
+    if (Number.isFinite(elig)) s.append(svg("line", { x1: ml, x2: w - mr, y1: y(elig), y2: y(elig), stroke: css("--other"), "stroke-width": 1.5 }));
+    const spread = num(rows[0].cagr) - num(rows[4].cagr);
+    box.append(el("div", {}, el("h4", { textContent: names[f] }),
+      el("div", { className: "sub", textContent: `Q1 − Q5: ${spread >= 0 ? "+" : ""}${(spread * 100).toFixed(1)} pts/yr · Q1 beat Q5 in ${rows[0].top_beat_bottom} years` }), s));
+  }
+}
+
 async function loadBacktest() {
-  const [meta, summary, curve, periods, cohorts, holdings] = await Promise.all([get("backtest/meta.json", JSON.parse),
-    get("backtest/summary.csv"), get("backtest/curve.csv"), get("backtest/periods.csv"), get("backtest/cohorts.csv"), get("backtest/holdings.csv")]);
+  const [meta, summary, curve, periods, cohorts, holdings, quintiles] = await Promise.all([get("backtest/meta.json", JSON.parse),
+    get("backtest/summary.csv"), get("backtest/curve.csv"), get("backtest/periods.csv"), get("backtest/cohorts.csv"), get("backtest/holdings.csv"),
+    get("backtest/quintiles.csv")]);
   if (!summary) { $("#btNote").textContent = "The backtest has not been run yet."; return; }
   const c = summary.find((r) => r.series === "composite"), b = summary.find((r) => r.series === "bova11"), d = summary.find((r) => r.series === "cdi");
   $("#btNote").textContent = `${meta.first} to ${meta.last}: every May, the top ${meta.top_n} by score as the screen stood that day, equal weights, held a year, dividends reinvested, no costs or taxes. ` +
     `R$100 became R$${(100 * (1 + num(c.total_return))).toFixed(0)} (${pct(num(c.cagr), 1)} a year), vs R$${(100 * (1 + num(b.total_return))).toFixed(0)} in BOVA11 and R$${(100 * (1 + num(d.total_return))).toFixed(0)} in the CDI.`;
-  renderBtChart(curve); renderBtSummary(summary); renderBtYears(periods); renderBtCohorts(cohorts); renderBtHoldings(holdings);
+  renderBtChart(curve); renderBtSummary(summary); renderQuintiles(quintiles, summary); renderBtYears(periods); renderBtCohorts(cohorts); renderBtHoldings(holdings);
   let lastW = 0;
   new ResizeObserver(([e]) => { const w = Math.round(e.contentRect.width); if (w !== lastW) { lastW = w; renderBtChart(curve); } }).observe($("#btChart"));
   matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => renderBtChart(curve));
@@ -438,10 +536,14 @@ async function loadBacktest() {
     get("status.json", JSON.parse), get("screen/latest.csv"), get("picks/picks.csv"), get("picks/performance.csv"), get("picks/cohorts.csv")]);
   if (!screen) { $("#status").textContent = "Could not load the data."; return; }
   SCREEN = screen;
-  $("#status").textContent = status ? `Data as of the ${status.asof} session · ${status.eligible} of ${status.companies} listed companies pass the filters · updated every weekday` : "";
+  RULES = status?.rules || "";
+  $("#status").replaceChildren(status ? `Data as of the ${status.asof} session · ${status.eligible} of ${status.companies} listed companies pass the filters · updated every weekday · ` : "",
+    ...(RULES ? [el("a", { href: "https://github.com/mbottoni/b3-radar/blob/main/METHODOLOGY.md#scores", textContent: `scoring rules ${RULES}`,
+      title: "Fingerprint of every rule that decides eligibility and ranking. A change starts a new track record." })] : []));
   const sectors = [...new Set(screen.filter((r) => !r.excluded).map((r) => r.sector))].filter(Boolean).sort();
   $("#sector").append(...sectors.map((s) => el("option", { value: s, textContent: s })));
   for (const id of ["#q", "#sector", "#showExcluded"]) $(id).addEventListener("input", renderScreen);
+  rerender = () => { renderList(picks || [], screen); renderScreen(); };
   renderList(picks || [], screen); renderChart(curve); renderCohorts(cohorts); renderScreen();
   loadBacktest();
   let lastW = 0;

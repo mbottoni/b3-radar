@@ -27,6 +27,31 @@ OPERATING = "FASE OPERACIONAL"
 CAPITAL_RETURNS = ("REST CAP DIN",)   # cash, but not a dividend: kept out of dividend yield
 PN_KINDS = ("PN", "PNA", "PNB", "PNC", "PND", "PNE", "PNF", "PNG")
 WEIGHTS = {"value": 0.25, "quality": 0.25, "momentum": 0.25, "income": 0.25}
+PILLARS = {               # metric percentiles averaged into each pillar
+    "value": ("earnings_yield", "book_to_market"),
+    "quality": ("roic", "roe", "net_debt_ebit"),   # net debt / EBIT: lower is better
+    "momentum": ("momentum",),
+    "income": ("dividend_yield",),
+}
+
+
+def rules() -> dict:
+    """Everything that decides who is eligible and how they rank. Its hash
+    stamps every published list and backtest, so results made under
+    different rules are never pooled (and cannot be rewritten later)."""
+    return {"liquidity_min": LIQUIDITY_MIN, "liquidity_window": LIQUIDITY_WINDOW,
+            "momentum": [MOMENTUM_LONG, MOMENTUM_SKIP], "history_min": HISTORY_MIN, "stale": STALE_SESSIONS,
+            "financial": list(FINANCIAL), "operating": OPERATING, "capital_returns": list(CAPITAL_RETURNS),
+            "weights": WEIGHTS, "pillars": {k: list(v) for k, v in PILLARS.items()},
+            "metrics": "ey=ebit/ev; bm=equity/mcap; roe=ni/equity; roic=ebit/(equity+net_debt); "
+                       "lev=net_debt/ebit (ebit<=0 worst); mom=adj(t-21)/adj(t-252)-1; dy=cash 365d ex capital returns",
+            "formula_version": 1}
+
+
+def rules_hash() -> str:
+    import hashlib
+    import json
+    return hashlib.sha1(json.dumps(rules(), sort_keys=True).encode()).hexdigest()[:8]
 
 S = {"dtype": {"cnpj": str, "cd_cvm": str, "ticker": str, "dt_refer": str, "dt_receb": str, "kind": str}}
 
@@ -312,14 +337,17 @@ def _metrics(df: pd.DataFrame, px, cash, stock, asof, pit: bool = False, isins: 
     ok = reason == ""
     pct = lambda s, asc=True: s[ok].rank(pct=True, ascending=asc)  # noqa: E731
     lev = df.net_debt_ebit.where(df.ebit > 0, np.inf)
-    parts = {
-        "value": pd.concat([pct(df.earnings_yield), pct(df.book_to_market)], axis=1),
-        "quality": pd.concat([pct(df.roic), pct(df.roe), pct(lev, asc=False)], axis=1),
-        "momentum": pct(df.momentum).to_frame(),
-        "income": pct(df.dividend_yield.fillna(0)).to_frame(),
+    # Each metric's percentile is kept ("p_*" columns) so the page can show
+    # why a company scores what it does, not only the pillar averages.
+    metric_pct = {
+        "earnings_yield": pct(df.earnings_yield), "book_to_market": pct(df.book_to_market),
+        "roic": pct(df.roic), "roe": pct(df.roe), "net_debt_ebit": pct(lev, asc=False),
+        "momentum": pct(df.momentum), "dividend_yield": pct(df.dividend_yield.fillna(0)),
     }
-    for k, p in parts.items():
-        df[f"{k}_score"] = (p.mean(axis=1, skipna=True) * 100).reindex(df.index)
+    for m, v in metric_pct.items():
+        df[f"p_{m}"] = (v * 100).reindex(df.index)
+    for k, metrics in PILLARS.items():
+        df[f"{k}_score"] = df[[f"p_{m}" for m in metrics]].mean(axis=1, skipna=True).where(ok)
     df["score"] = sum(df[f"{k}_score"].fillna(50) * w for k, w in WEIGHTS.items()).where(ok)
     df["rank"] = df.score.rank(ascending=False, method="first").astype("Int64")
     mf = ok & (df.ebit > 0)
@@ -331,7 +359,9 @@ def _metrics(df: pd.DataFrame, px, cash, stock, asof, pit: bool = False, isins: 
 COLUMNS = ["asof", "rank", "ticker", "company", "sector", "score", "value_score", "quality_score", "momentum_score",
            "income_score", "magic_rank", "price", "market_cap", "ev", "liquidity", "pe", "ev_ebit", "earnings_yield",
            "book_to_market", "roe", "roic", "net_debt_ebit", "net_margin", "momentum", "dividend_yield",
-           "fundamentals_date", "filed", "shares_source", "tickers", "cnpj", "excluded"]
+           "fundamentals_date", "filed", "shares_source", "tickers", "cnpj", "excluded",
+           "p_earnings_yield", "p_book_to_market", "p_roic", "p_roe", "p_net_debt_ebit", "p_momentum",
+           "p_dividend_yield"]
 
 
 def save(df: pd.DataFrame, data_dir: Path) -> Path:

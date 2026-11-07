@@ -14,12 +14,12 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-from . import cotahist, events
+from . import cotahist, events, screen
 
 TOP_N = 10
 STRATEGIES = {"composite": "rank", "magic": "magic_rank"}
 BENCHMARK = cotahist.BENCHMARK
-PICK_COLUMNS = ["date", "strategy", "rank", "ticker", "company", "sector", "score", "price"]
+PICK_COLUMNS = ["date", "strategy", "rank", "ticker", "company", "sector", "score", "price", "rules"]
 
 
 def select(screen: pd.DataFrame, n: int = TOP_N) -> pd.DataFrame:
@@ -29,6 +29,7 @@ def select(screen: pd.DataFrame, n: int = TOP_N) -> pd.DataFrame:
         out.append(pd.DataFrame({
             "date": top["asof"], "strategy": strategy, "rank": top[col].astype(int), "ticker": top.ticker,
             "company": top.company, "sector": top.sector, "score": top.score.round(2), "price": top.price,
+            "rules": screen.rules_hash(),
         }))
     return pd.concat(out, ignore_index=True)[PICK_COLUMNS]
 
@@ -39,13 +40,26 @@ def _path(data_dir: Path, name: str) -> Path:
 
 def load(data_dir: Path) -> pd.DataFrame:
     p = _path(data_dir, "picks.csv")
-    return pd.read_csv(p, dtype={"date": str, "ticker": str}) if p.exists() else pd.DataFrame(columns=PICK_COLUMNS)
+    if not p.exists():
+        return pd.DataFrame(columns=PICK_COLUMNS)
+    log = pd.read_csv(p, dtype={"date": str, "ticker": str, "rules": str})
+    return _stamp(log)
+
+
+def _stamp(df: pd.DataFrame) -> pd.DataFrame:
+    """Lists made before the fingerprint existed were made under formula
+    version 1, i.e. the current rules: stamp them with its hash."""
+    df = df.copy()
+    if "rules" not in df:
+        df["rules"] = None
+    df["rules"] = df["rules"].replace("", None).fillna(screen.rules_hash())
+    return df
 
 
 def record(new: pd.DataFrame, data_dir: Path) -> pd.DataFrame:
     """Append a list; re-running on the same date replaces that date's list."""
     log = load(data_dir)
-    log = pd.concat([log[~log.date.isin(new.date)], new], ignore_index=True)
+    log = pd.concat([log[~log.date.isin(new.date)], _stamp(new)], ignore_index=True)
     log = log.sort_values(["date", "strategy", "rank"])
     p = _path(data_dir, "picks.csv")
     p.parent.mkdir(parents=True, exist_ok=True)
@@ -93,15 +107,19 @@ def performance(data_dir: Path, asof: str | None = None) -> tuple[pd.DataFrame, 
     adj = _adjusted(px[px.ticker.isin(set(log.ticker) | {BENCHMARK})], cash, stock)
 
     curve, cohorts = [], []
-    for strategy in STRATEGIES:
-        lg = log[log.strategy == strategy]
+    for strategy, rules in log[["strategy", "rules"]].drop_duplicates().itertuples(index=False):
+        lg = log[(log.strategy == strategy) & (log.rules == rules)]
         dates = sorted(lg.date.unique())
         if not dates:
             continue
         value = bench = 100.0
-        curve.append({"date": dates[0], "strategy": strategy, "portfolio": value, "benchmark": bench})
-        for i, d0 in enumerate(dates):
-            d1 = dates[i + 1] if i + 1 < len(dates) else asof
+        curve.append({"date": dates[0], "strategy": strategy, "rules": rules, "portfolio": value, "benchmark": bench})
+        # A list is held until the strategy's next list, whatever its rules:
+        # when the rules change, the old record ends where the new one starts.
+        every = sorted(log[log.strategy == strategy].date.unique())
+        for d0 in dates:
+            later = [d for d in every if d > d0]
+            d1 = later[0] if later else asof
             names = lg[lg.date == d0].ticker
             rets = [r for r in (_ret(adj, t, d0, d1) for t in names) if np.isfinite(r)]
             period = float(np.mean(rets)) if rets else 0.0
@@ -109,13 +127,13 @@ def performance(data_dir: Path, asof: str | None = None) -> tuple[pd.DataFrame, 
             value *= 1 + period
             bench *= 1 + (b if np.isfinite(b) else 0.0)
             if d1 != d0:
-                curve.append({"date": d1, "strategy": strategy, "portfolio": value, "benchmark": bench})
+                curve.append({"date": d1, "strategy": strategy, "rules": rules, "portfolio": value, "benchmark": bench})
             to_date = [r for r in (_ret(adj, t, d0, asof) for t in names) if np.isfinite(r)]
-            cohorts.append({"date": d0, "strategy": strategy, "names": len(names),
+            cohorts.append({"date": d0, "strategy": strategy, "rules": rules, "names": len(names),
                             "return": float(np.mean(to_date)) if to_date else np.nan,
                             "benchmark": _ret(adj, BENCHMARK, d0, asof),
                             "hit_rate": float(np.mean([r > 0 for r in to_date])) if to_date else np.nan})
-    curve = pd.DataFrame(curve).drop_duplicates(["date", "strategy"], keep="last")
+    curve = pd.DataFrame(curve).drop_duplicates(["date", "strategy", "rules"], keep="last")
     return curve, pd.DataFrame(cohorts)
 
 

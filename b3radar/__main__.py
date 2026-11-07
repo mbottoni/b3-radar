@@ -77,7 +77,7 @@ def refresh_inferred(data_dir: Path) -> None:
 
 
 def write_status(data_dir: Path, df: pd.DataFrame) -> None:
-    status = {"asof": df["asof"].iloc[0], "companies": int(len(df)),
+    status = {"asof": df["asof"].iloc[0], "rules": screen.rules_hash(), "companies": int(len(df)),
               "eligible": int((df.excluded.fillna("") == "").sum()),
               "first_quote": sorted((data_dir / "prices").glob("*.csv"))[0].stem}
     (data_dir / "status.json").write_text(json.dumps(status, indent=2) + "\n")

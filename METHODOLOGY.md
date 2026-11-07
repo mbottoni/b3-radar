@@ -129,6 +129,19 @@ The **score** is the weighted mean of the four category means. Percentiles
 make the score robust to outliers: a company with a one-off 33% yield gets
 the top income percentile, not 33 points more.
 
+Each company's row on the page expands into **why it scores what it
+does**: every metric's raw value and its percentile, the statements used
+(period and the date CVM received them) and where its share count came from.
+
+**Rules fingerprint.** Everything above that decides eligibility and
+ranking (thresholds, sector exclusions, pillars, weights, metric
+definitions) is hashed (`screen.rules()`, shown on the page as "scoring
+rules xxxxxxxx"). Every weekly list and every backtest is stamped with it.
+Lists made under different rules are tracked as separate records, never
+pooled, and a list is held until the strategy's next list whatever its
+rules, so changing the rules ends one record and starts another instead of
+rewriting the past.
+
 **Magic Formula** (Greenblatt), the baseline: rank by earnings yield plus
 rank by ROIC, among eligible companies with positive EBIT.
 
@@ -161,6 +174,15 @@ replays the screen as a long-term investor would use it:
   (Banco Central series 12, compounded daily: what cash earns) and **every
   eligible stock in equal weights**, which isolates what the picking adds
   over simply owning the universe.
+
+**Does each score separate winners from losers?** At every yearly date the
+eligible universe is cut into fifths by the composite and by each pillar
+(Q1 = best), each fifth held for the year in equal weights. A factor that
+works steps down from Q1 to Q5. Through 2026 the clearest effects were the
+bottom fifth of the score and of value doing much worse than the rest, and
+momentum's top fifth doing best; the top fifth of quality did not beat the
+middle. Fifteen yearly periods are a small sample: these results describe
+the past, and re-weighting the score to fit them would overfit it.
 
 History behind it:
 

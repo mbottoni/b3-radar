@@ -117,3 +117,26 @@ def test_transient_404_on_an_existing_file_is_retried(server, tmp_path):
     assert fetch.download(server, tmp_path / "f.zip", retry_404=2, wait_404=0, backoff=0) is not None
     Server.bodies, Server.misses = [zip_bytes()], 5
     assert fetch.download(server, tmp_path / "g.zip", retry_404=1, wait_404=0, backoff=0) is None
+
+
+def test_rules_fingerprint_separates_track_records(tmp_path, monkeypatch):
+    from b3radar import screen
+    before = screen.rules_hash()
+    monkeypatch.setitem(screen.WEIGHTS, "income", 0.0)
+    assert screen.rules_hash() != before                      # any rule change -> new fingerprint
+    monkeypatch.setitem(screen.WEIGHTS, "income", 0.25)
+    assert screen.rules_hash() == before
+
+    write_prices(tmp_path, [("2026-11-02", "AAA3", 10), ("2026-11-02", "BOVA11", 100),
+                            ("2026-11-09", "AAA3", 12), ("2026-11-09", "BOVA11", 100),
+                            ("2026-11-16", "AAA3", 6), ("2026-11-16", "BOVA11", 100)])
+    for d, rules in (("2026-11-02", "old00000"), ("2026-11-09", "new11111")):
+        picks.record(pd.DataFrame({"date": [d], "strategy": "composite", "rank": [1], "ticker": ["AAA3"], "company": "",
+                                   "sector": "", "score": 1.0, "price": 0.0, "rules": rules}), tmp_path)
+    curve, _ = picks.performance(tmp_path, "2026-11-16")
+    old = curve[curve.rules == "old00000"].set_index("date").portfolio
+    new = curve[curve.rules == "new11111"].set_index("date").portfolio
+    assert list(old.index) == ["2026-11-02", "2026-11-09"]        # the old record ends when the new rules start
+    assert old.iloc[-1] == pytest.approx(120.0)
+    assert list(new.index) == ["2026-11-09", "2026-11-16"]        # the new one starts fresh at 100
+    assert new.iloc[-1] == pytest.approx(50.0)
