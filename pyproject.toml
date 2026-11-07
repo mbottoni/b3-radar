@@ -6,7 +6,11 @@ readme = "README.md"
 requires-python = ">=3.11"
 license = { text = "MIT" }
 authors = [{ name = "Maruan Ottoni" }]
-dependencies = ["numpy>=1.26", "pandas>=2.1"]
+dependencies = [
+    "matplotlib>=3.8",
+    "numpy>=1.26",
+    "pandas>=2.1",
+]
 
 [project.urls]
 Homepage = "https://github.com/mbottoni/b3-radar"

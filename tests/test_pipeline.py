@@ -53,8 +53,8 @@ def test_email_dry_run_without_secrets(tmp_path, monkeypatch):
     new = pd.DataFrame({"date": "2026-11-06", "strategy": ["composite", "magic"], "rank": [1, 1],
                         "ticker": ["AAA3", "AAA3"], "company": ["A <&> Co"] * 2, "sector": "", "score": [65.0, 65.0],
                         "price": [10.0, 10.0]})
-    subject, body, text = report.build(screen, new, ["AAA3"], [], pd.DataFrame(), pd.DataFrame(columns=["strategy"]))
-    assert "2026-11-06" in subject and "A &lt;&amp;&gt; Co" in body and "NEW" in body
+    subject, body, text, images = report.build(screen, new, ["AAA3"], [], pd.DataFrame(), pd.DataFrame(columns=["strategy"]))
+    assert "2026-11-06" in subject and "A &lt;&amp;&gt; Co" in body and "NEW" in body and images == {}
     assert report.send(subject, body, text, tmp_path) is False
     assert (tmp_path / "email.html").exists() and "AAA3" in (tmp_path / "email.txt").read_text()
     m = {"earnings_yield": 0.129, "cheaper_than": 0.8, "history_from": "2011-05-31", "history_median": 0.105,
@@ -156,3 +156,42 @@ def test_an_unweighted_pillar_leaves_the_fingerprint_alone(monkeypatch):
     assert screen.rules_hash() == before
     monkeypatch.setitem(screen.WEIGHTS, "growth", 0.2)
     assert screen.rules_hash() != before
+
+
+def test_a_recorded_list_is_never_rewritten(tmp_path):
+    def one(ticker):
+        return pd.DataFrame({"date": ["2026-11-06"], "strategy": "composite", "rank": [1], "ticker": [ticker], "company": "",
+                             "sector": "", "score": 1.0, "price": 0.0})
+    picks.record(one("AAA3"), tmp_path)
+    log = picks.record(one("BBB3"), tmp_path)      # a manual re-run before the next session
+    assert list(log.ticker) == ["AAA3"] and list(picks.load(tmp_path).ticker) == ["AAA3"]
+
+
+def test_email_embeds_its_charts_as_inline_images(tmp_path):
+    from email import message_from_bytes
+    from b3radar import charts
+    png = charts.spark([1, 2, 3, 2.5, 4])
+    assert png[:8] == b"\x89PNG\r\n\x1a\n"
+    sent = {}
+
+    class FakeSMTP:
+        def __init__(self, *a, **k): pass
+        def __enter__(self): return self
+        def __exit__(self, *a): return False
+        def starttls(self, **k): pass
+        def login(self, *a): pass
+        def send_message(self, msg): sent["msg"] = msg.as_bytes()
+    import smtplib
+    real = smtplib.SMTP
+    smtplib.SMTP = FakeSMTP
+    try:
+        os.environ.update({"SMTP_USER": "a@example.com", "SMTP_PASSWORD": "x", "EMAIL_TO": "b@example.com"})
+        assert report.send("s", '<img src="cid:spark@b3radar">', "t", tmp_path, {"spark@b3radar": png})
+    finally:
+        smtplib.SMTP = real
+        for k in ("SMTP_USER", "SMTP_PASSWORD", "EMAIL_TO"):
+            os.environ.pop(k, None)
+    msg = message_from_bytes(sent["msg"])
+    parts = {p.get_content_type(): p for p in msg.walk()}
+    assert "multipart/related" in parts and parts["image/png"]["Content-ID"] == "<spark@b3radar>"
+    assert (tmp_path / "spark.png").exists() and 'src="spark.png"' in (tmp_path / "email.html").read_text()

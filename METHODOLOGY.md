@@ -232,7 +232,9 @@ the weekly email carries them in one line.
 
 Every Monday (closing prices of the previous session) the top 10 by score,
 and the top 10 by the Magic Formula, are appended to `data/picks/picks.csv`
-with their prices. Nothing is ever removed.
+with their prices. Nothing is ever removed, and a session's list, once
+recorded, is never replaced: a re-run of the weekly job on the same session
+keeps (and emails) the first one.
 
 The track record holds each list as an **equal-weight portfolio until the
 next list**, on adjusted prices (dividends reinvested), and compares it with

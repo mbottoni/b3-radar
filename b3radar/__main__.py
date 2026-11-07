@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import datetime as dt
 import json
+import os
 import sys
 from pathlib import Path
 
@@ -118,15 +119,38 @@ def cmd_weekly(a) -> int:
     asof = df["asof"].iloc[0]
     hist = a.data / "screen" / "history" / f"{asof}.csv"
     hist.parent.mkdir(parents=True, exist_ok=True)
-    df[df.excluded == ""][screen.COLUMNS].to_csv(hist, index=False, lineterminator="\n", float_format="%.6g")
+    if not hist.exists():     # like the list, a session's snapshot is written once
+        df[df.excluded == ""][screen.COLUMNS].to_csv(hist, index=False, lineterminator="\n", float_format="%.6g")
 
-    new = picks.select(df)
-    log = picks.record(new, a.data)
+    log = picks.record(picks.select(df), a.data)
     entered, left = picks.changes(log)
     curve, cohorts = picks.performance(a.data, asof)
     picks.save_performance(curve, cohorts, a.data)
-    subject, html_body, text = report.build(df, new, entered, left, cohorts, curve, mk)
-    report.send(subject, html_body, text, a.out)
+    # The list as recorded: a re-run on the same session keeps (and emails) the first one.
+    subject, html_body, text, images = report.build(df, log[log.date == asof], entered, left, cohorts, curve, mk, a.data)
+    report.send(subject, html_body, text, a.out, images)
+    return 0
+
+
+def cmd_email(a) -> int:
+    """The weekly email from the committed data, recording nothing: a preview
+    in out/ (or, with --send and the SMTP variables set, a real send)."""
+    df = pd.read_csv(a.data / "screen" / "latest.csv", dtype={"ticker": str, "cnpj": str}, keep_default_na=False)
+    for c in df.columns:
+        if c not in ("asof", "ticker", "company", "sector", "tickers", "cnpj", "excluded", "fundamentals_date", "filed",
+                     "shares_source", "growth_base"):
+            df[c] = pd.to_numeric(df[c], errors="coerce")
+    log = picks.load(a.data)
+    curve, cohorts = picks.performance(a.data, df["asof"].iloc[0])
+    mpath = a.data / "market" / "today.json"
+    mk = json.loads(mpath.read_text()) if mpath.exists() else None
+    subject, html_body, text, images = report.build(df, log[log.date == log.date.max()], *picks.changes(log), cohorts, curve,
+                                                    mk, a.data)
+    if not a.send:
+        for k in ("SMTP_USER", "SMTP_PASSWORD", "EMAIL_TO"):
+            os.environ.pop(k, None)
+    report.send(subject, html_body, text, a.out, images)
+    print(f"[email] {subject} · {len(images)} images", file=sys.stderr)
     return 0
 
 
@@ -202,6 +226,11 @@ def main(argv: list[str] | None = None) -> int:
 
     c = sub.add_parser("companies", help="one JSON per company with its long history, for the company pages")
     c.set_defaults(fn=cmd_companies)
+
+    e = sub.add_parser("email", help="build the weekly email from data/ without recording anything (preview in out/)")
+    e.add_argument("--out", type=Path, default=REPO / "out")
+    e.add_argument("--send", action="store_true", help="send it (needs SMTP_USER, SMTP_PASSWORD, EMAIL_TO)")
+    e.set_defaults(fn=cmd_email)
 
     m = sub.add_parser("market", help="monthly history of the market's valuation against the CDI, point in time")
     m.set_defaults(fn=cmd_market)

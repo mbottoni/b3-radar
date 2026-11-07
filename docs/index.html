@@ -139,7 +139,7 @@
     <section class="card">
       <p class="eyebrow">How it is kept</p>
       <ul class="caveats">
-        <li>Every Monday the top 10 by score (and by the Magic Formula) is appended to <code>data/picks/picks.csv</code> with its prices. Nothing is ever removed.</li>
+        <li>Every Monday the top 10 by score (and by the Magic Formula) is appended to <code>data/picks/picks.csv</code> with its prices. Nothing is ever removed, and a recorded list is never replaced (a re-run on the same session keeps the first).</li>
         <li>Each list is held as an equal-weight portfolio until the next one, on dividend- and split-adjusted prices, against BOVA11 over the same days.</li>
         <li>Lists are stamped with the scoring rules' fingerprint: a rule change ends one record and starts another, it never rewrites the past.</li>
       </ul>

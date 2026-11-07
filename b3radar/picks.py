@@ -57,9 +57,13 @@ def _stamp(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def record(new: pd.DataFrame, data_dir: Path) -> pd.DataFrame:
-    """Append a list; re-running on the same date replaces that date's list."""
+    """Append a list. Append-only: a date that already has a list keeps it
+    (a re-run on the same session, or a manual run of the weekly job before
+    a new session, cannot rewrite a recorded list)."""
     log = load(data_dir)
-    log = pd.concat([log[~log.date.isin(new.date)], _stamp(new)], ignore_index=True)
+    new = _stamp(new)
+    new = new[~new.date.isin(set(log.date))]
+    log = pd.concat([log, new], ignore_index=True) if len(new) else log
     log = log.sort_values(["date", "strategy", "rank"])
     p = _path(data_dir, "picks.csv")
     p.parent.mkdir(parents=True, exist_ok=True)
