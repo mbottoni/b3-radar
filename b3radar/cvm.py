@@ -56,7 +56,7 @@ def companies(cad_path: Path) -> pd.DataFrame:
     # A CNPJ can appear more than once (old cancelled registrations): keep
     # the active one, else the most recent.
     df["_active"] = df.SIT == "ATIVO"
-    df = df.sort_values(["CNPJ_CIA", "_active", "DT_INI_SIT"]).drop_duplicates("CNPJ_CIA", keep="last")
+    df = df.sort_values(["CNPJ_CIA", "_active", "DT_INI_SIT", "CD_CVM"], kind="stable").drop_duplicates("CNPJ_CIA", keep="last")
     out = pd.DataFrame({
         "cnpj": df.CNPJ_CIA, "cd_cvm": df.CD_CVM.str.lstrip("0"),
         "name": df.DENOM_COMERC.where(df.DENOM_COMERC != "", df.DENOM_SOCIAL),
@@ -147,7 +147,7 @@ def filings(kind: str, zip_path: Path) -> pd.DataFrame:
     })
     df = st.merge(cap, on=key, how="left").merge(idx.drop(columns="CD_CVM"), on=key, how="left")
     df["VERSAO"] = df.VERSAO.astype(int)
-    df = df.sort_values("VERSAO").drop_duplicates(["CNPJ_CIA", "DT_REFER"], keep="last")
+    df = df.sort_values(["VERSAO", "DT_RECEB"], kind="stable").drop_duplicates(["CNPJ_CIA", "DT_REFER"], keep="last")
     out = df.rename(columns={"CNPJ_CIA": "cnpj", "DT_REFER": "dt_refer", "VERSAO": "versao",
                              "CD_CVM": "cd_cvm", "DT_RECEB": "dt_receb"})
     out["cd_cvm"] = out.cd_cvm.str.lstrip("0")

@@ -232,7 +232,7 @@ def compute(inp: Inputs, asof: str, pit: bool = False) -> pd.DataFrame:
 
     rows = []
     for cnpj, g in tk.groupby("cnpj"):
-        g = g.sort_values("liquidity", ascending=False)
+        g = g.sort_values(["liquidity", "kind"], ascending=[False, True], kind="stable")   # ties: ON before PN
         main = g.index[0]
         on = g[g.kind == "ON"]
         pn = g[g.kind.isin(PN_KINDS)]

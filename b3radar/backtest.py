@@ -52,7 +52,10 @@ def rebalance_dates(sessions: np.ndarray, first_year: int = FIRST_YEAR) -> list[
 
 def pick(snap: pd.DataFrame, col: str, ascending: bool, n: int = TOP_N) -> pd.DataFrame:
     ok = snap[(snap.excluded.fillna("") == "") & snap[col].notna()]
-    return ok.sort_values(col, ascending=ascending).head(n)
+    # Pillar scores are means of percentiles, so exact ties are common. An
+    # unstable sort orders them differently on x86 and ARM (numpy uses
+    # different SIMD sorts): break ties explicitly, with a stable sort.
+    return ok.sort_values([col, "score", "ticker"], ascending=[ascending, False, True], kind="stable").head(n)
 
 
 class Prices:
