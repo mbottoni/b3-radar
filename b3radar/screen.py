@@ -8,6 +8,7 @@ METHODOLOGY.md documents every rule; the constants below are its numbers.
 from __future__ import annotations
 
 import datetime as dt
+from dataclasses import dataclass
 from pathlib import Path
 
 import numpy as np
@@ -62,7 +63,8 @@ def ttm(filings: pd.DataFrame, asof: str) -> pd.DataFrame:
     return pd.DataFrame(rows)
 
 
-def outstanding(total: float, treasury: float, b3_total: float | None = None) -> tuple[float, str]:
+def outstanding(total: float, treasury: float, b3_total: float | None = None,
+                tol: tuple[float, float] = (0.8, 1.25)) -> tuple[float, str]:
     """Shares outstanding for one class, and where the number came from.
 
     ``total``/``treasury`` are CVM's raw capital-composition counts, already
@@ -71,8 +73,8 @@ def outstanding(total: float, treasury: float, b3_total: float | None = None) ->
     mix the two (Tenda 2026-06-30: total in thousands, treasury in units).
     B3's current count per class settles it:
 
-    - CVM within 0.8-1.25x of B3: CVM, in units;
-    - B3 within 800-1250x of CVM: CVM, in thousands;
+    - CVM within ``tol`` (0.8-1.25x) of B3: CVM, in units;
+    - B3 within 1000 x ``tol`` of CVM: CVM, in thousands;
     - anything else (LAVV filed an extra digit; OPCT issued shares since its
       filing): B3's count.
 
@@ -85,9 +87,9 @@ def outstanding(total: float, treasury: float, b3_total: float | None = None) ->
     source = "cvm"
     if b3_total:
         r = b3_total / total
-        if 0.8 <= r <= 1.25:
+        if tol[0] <= r <= tol[1]:
             scale = 1.0
-        elif 800 <= r <= 1250:
+        elif 1000 * tol[0] <= r <= 1000 * tol[1]:
             scale = 1000.0
         else:
             return b3_total, "b3"
@@ -127,11 +129,58 @@ def _load(data_dir: Path, name: str) -> pd.DataFrame:
     return pd.read_csv(p, keep_default_na=False, **S) if p.exists() else pd.DataFrame()
 
 
-def build(data_dir: Path, asof: str | None = None) -> pd.DataFrame:
-    asof = asof or cotahist.last_date(data_dir)
-    since = (dt.date.fromisoformat(asof) - dt.timedelta(days=420)).isoformat()
+@dataclass
+class Inputs:
+    """Everything the screen reads, loaded once (the backtest reuses it for
+    every rebalance date)."""
+    px: pd.DataFrame
+    filings: pd.DataFrame
+    capital: pd.DataFrame
+    companies: pd.DataFrame
+    tmap: dict
+    cash: pd.DataFrame
+    stock: pd.DataFrame
+    b3_shares: dict
+    isins: dict          # ticker -> every ISIN it has traded under
+
+
+def load_inputs(data_dir: Path, since: str | None = None) -> Inputs:
     px = cotahist.load(data_dir, since=since)
-    px = px[px.date <= asof]
+    companies = _load(data_dir, "companies.csv")
+    filings = pd.read_csv(data_dir / "cvm" / "filings.csv", **S).fillna({"dt_receb": ""})
+    cap_path = data_dir / "cvm" / "capital.csv"
+    capital = pd.read_csv(cap_path, dtype={"cnpj": str, "date": str, "form": str}) if cap_path.exists() \
+        else pd.DataFrame(columns=["cnpj", "date", "shares_on", "shares_pn"])
+    issuers_path = data_dir / "events" / "issuers.csv"
+    issuers = pd.read_csv(issuers_path, dtype=str, keep_default_na=False) if issuers_path.exists() else pd.DataFrame()
+    cash, stock = events.load(data_dir)
+    b3_shares = {r.issuer: (float(r.shares_on or "nan"), float(r.shares_pn or "nan"))
+                 for r in issuers.itertuples()} if len(issuers) else {}
+    isins = {t: set(g) for t, g in px.groupby("ticker")["isin"]}
+    return Inputs(px, filings, capital, companies, ticker_map(px, _load(data_dir, "tickers.csv"), companies, issuers),
+                  cash, stock, b3_shares, isins)
+
+
+def _shares_filed(f, capital: pd.DataFrame, cnpj: str, asof: str):
+    """(on, pn, treasury_on, treasury_pn, as-of date) of the latest share
+    count public by ``asof``: the filing's own (DFP/ITR, 2020 on), else the
+    FRE capital timeline (2010-2019)."""
+    if np.isfinite(f.shares_on) or np.isfinite(f.shares_pn):
+        return f.shares_on, f.shares_pn, f.treasury_on, f.treasury_pn, f.dt_refer
+    c = capital[(capital.cnpj == cnpj) & (capital.date <= asof)]
+    if c.empty:
+        return np.nan, np.nan, np.nan, np.nan, ""
+    last = c.sort_values("date").iloc[-1]
+    return last.shares_on, last.shares_pn, np.nan, np.nan, last.date
+
+
+def compute(inp: Inputs, asof: str, pit: bool = False) -> pd.DataFrame:
+    """The screen as of a session. ``pit`` (the backtest): skip filters only
+    known today (registration and issuer status) and resolve historical share
+    counts against B3's current count carried back through later splits,
+    with a wider band since issuance and buybacks since then are unknown."""
+    since = (dt.date.fromisoformat(asof) - dt.timedelta(days=420)).isoformat()
+    px = inp.px[(inp.px.date >= since) & (inp.px.date <= asof)]
     sessions = np.sort(px.date.unique())
     recent = set(sessions[-STALE_SESSIONS:])
     window = set(sessions[-LIQUIDITY_WINDOW:])
@@ -141,22 +190,20 @@ def build(data_dir: Path, asof: str | None = None) -> pd.DataFrame:
     liq = stocks[stocks.date.isin(window)].groupby("ticker").volume.sum() / LIQUIDITY_WINDOW
     hist = stocks.groupby("ticker").date.nunique()
     tk = pd.DataFrame({"close": last.close, "date": last.date, "isin": last["isin"], "kind": last.kind,
-                       "liquidity": liq, "sessions": hist}).fillna({"liquidity": 0.0})
+                       "bdi": last.bdi.fillna("02"), "liquidity": liq, "sessions": hist}).fillna({"liquidity": 0.0})
     tk = tk[tk.date.isin(recent)]
-
-    companies = _load(data_dir, "companies.csv")
-    filings = pd.read_csv(data_dir / "cvm" / "filings.csv", **S).fillna({"dt_receb": ""})
-    issuers_path = data_dir / "events" / "issuers.csv"
-    issuers = pd.read_csv(issuers_path, dtype=str, keep_default_na=False) if issuers_path.exists() else pd.DataFrame()
-    tmap = ticker_map(px, _load(data_dir, "tickers.csv"), companies, issuers)
-    tk["cnpj"] = tk.index.map(tmap)
+    tk["cnpj"] = tk.index.map(inp.tmap)
     tk = tk[tk.cnpj.notna()]
 
-    cash, stock = events.load(data_dir)
-    fund = ttm(filings, asof).set_index("cnpj")
-    b3_shares = {r.issuer: (float(r.shares_on or "nan"), float(r.shares_pn or "nan"))
-                 for r in issuers.itertuples()} if len(issuers) else {}
-    comp = companies.set_index("cnpj")
+    stock = inp.stock
+    isins = inp.isins
+    fund = ttm(inp.filings, asof).set_index("cnpj")
+    comp = inp.companies.set_index("cnpj")
+    tol = (0.6, 1.6) if pit else (0.8, 1.25)
+
+    def mult(isins, after: str, before: str) -> float:
+        m = stock[stock["isin"].isin(isins) & (stock.last_date_prior >= after) & (stock.last_date_prior < before)]
+        return float(np.prod(m.drop_duplicates(["label", "last_date_prior"]).mult))
 
     rows = []
     for cnpj, g in tk.groupby("cnpj"):
@@ -173,21 +220,23 @@ def build(data_dir: Path, asof: str | None = None) -> pd.DataFrame:
              "situation": info["situation"] if info is not None else "",
              "issuer_status": info["issuer_status"] if info is not None else "",
              "price": g.close.iloc[0], "liquidity": g.liquidity.iloc[0], "sessions": g.sessions.iloc[0],
-             "isin": g["isin"].iloc[0]}
+             "isin": g["isin"].iloc[0], "bdi": g.bdi.iloc[0]}
         if cnpj in fund.index:
             f = fund.loc[cnpj]
-            # Carry the filed counts through any split / reverse split / bonus
-            # since the balance-sheet date first, so they are comparable with
-            # B3's current count when resolving the unit (ORVR: 1:4 split
-            # after its June filing made a thousands-vs-units ratio of 4000).
-            def mult(isins):
-                m = stock[stock["isin"].isin(isins) & (stock.last_date_prior >= f.dt_refer) & (stock.last_date_prior < asof)]
-                return float(np.prod(m.drop_duplicates(["label", "last_date_prior"]).mult))
-            m_on = mult(set(on["isin"])) if len(on) else 1.0
-            m_pn = mult(set(pn["isin"])) if len(pn) else 1.0
-            b3_on, b3_pn = b3_shares.get(main[:4], (np.nan, np.nan))
-            sh_on, src_on = outstanding(f.shares_on * m_on, f.treasury_on * m_on, b3_on if b3_on > 0 else None)
-            sh_pn, src_pn = outstanding(f.shares_pn * m_pn, f.treasury_pn * m_pn, b3_pn if b3_pn > 0 else None)
+            s_on, s_pn, t_on, t_pn, when = _shares_filed(f, inp.capital, cnpj, asof)
+            # Filed counts carried through any split / reverse split / bonus
+            # since they were filed; B3's current count carried back through
+            # any since ``asof``: both are then counts at ``asof`` (ORVR: a
+            # 1:4 split after its June filing; history: decades of splits).
+            on_isins = set().union(*(isins.get(t, set()) for t in on.index)) if len(on) else set()
+            pn_isins = set().union(*(isins.get(t, set()) for t in pn.index)) if len(pn) else set()
+            m_on = mult(on_isins, when, asof) if len(on) and when else 1.0
+            m_pn = mult(pn_isins, when, asof) if len(pn) and when else 1.0
+            b3_on, b3_pn = inp.b3_shares.get(main[:4], (np.nan, np.nan))
+            ref_on = b3_on / mult(on_isins, asof, "9999") if b3_on > 0 and len(on) else (b3_on if b3_on > 0 else None)
+            ref_pn = b3_pn / mult(pn_isins, asof, "9999") if b3_pn > 0 and len(pn) else (b3_pn if b3_pn > 0 else None)
+            sh_on, src_on = outstanding(s_on * m_on, t_on * m_on, ref_on, tol)
+            sh_pn, src_pn = outstanding(s_pn * m_pn, t_pn * m_pn, ref_pn, tol)
             r["shares_source"] = "/".join(x for x in (src_on, src_pn) if x)
             mcap = np.nansum([sh_on * on_px if sh_on > 0 else np.nan, sh_pn * pn_px if sh_pn > 0 else np.nan])
             debt = np.nansum([f.st_debt, f.lt_debt])
@@ -198,21 +247,28 @@ def build(data_dir: Path, asof: str | None = None) -> pd.DataFrame:
         rows.append(r)
     df = pd.DataFrame(rows)
     df["asof"] = asof
-    return _metrics(df, px, cash, stock, asof)
+    return _metrics(df, px, inp.cash, stock, asof, pit, isins)
 
 
-def _momentum_and_yield(df, px, cash, stock, asof):
+def build(data_dir: Path, asof: str | None = None) -> pd.DataFrame:
+    asof = asof or cotahist.last_date(data_dir)
+    since = (dt.date.fromisoformat(asof) - dt.timedelta(days=430)).isoformat()
+    return compute(load_inputs(data_dir, since=since), asof)
+
+
+def _momentum_and_yield(df, px, cash, stock, asof, isins):
     mom, dy = [], []
     by = {t: g for t, g in px.groupby("ticker")}
     for t, isin, price in zip(df.ticker, df["isin"], df.price):
         g = by.get(t)
-        adj = events.adjusted_close(g[["date", "close"]], isin, cash, stock) if g is not None else pd.Series(dtype=float)
+        all_isins = isins.get(t) or {isin}
+        adj = events.adjusted_close(g[["date", "close"]], all_isins, cash, stock) if g is not None else pd.Series(dtype=float)
         mom.append(adj.iloc[-1 - MOMENTUM_SKIP] / adj.iloc[-1 - MOMENTUM_LONG] - 1
                    if len(adj) > MOMENTUM_LONG and adj.iloc[-1 - MOMENTUM_LONG] > 0 else np.nan)
         start = (dt.date.fromisoformat(asof) - dt.timedelta(days=365)).isoformat()
-        c = cash[(cash["isin"] == isin) & (cash.last_date_prior >= start) & (cash.last_date_prior < asof)
-                 & ~cash.label.isin(CAPITAL_RETURNS)]
-        s = stock[stock["isin"] == isin]
+        c = cash[(cash["isin"].isin(all_isins)) & (cash.last_date_prior >= start) & (cash.last_date_prior < asof)
+                 & ~cash.label.isin(CAPITAL_RETURNS)].drop_duplicates(["label", "last_date_prior", "rate"])
+        s = stock[stock["isin"].isin(all_isins)].drop_duplicates(["label", "last_date_prior"])
         total = 0.0
         for e in c.itertuples():
             later = s[(s.last_date_prior >= e.last_date_prior) & (s.last_date_prior < asof)].drop_duplicates(
@@ -222,7 +278,7 @@ def _momentum_and_yield(df, px, cash, stock, asof):
     return mom, dy
 
 
-def _metrics(df: pd.DataFrame, px, cash, stock, asof) -> pd.DataFrame:
+def _metrics(df: pd.DataFrame, px, cash, stock, asof, pit: bool = False, isins: dict | None = None) -> pd.DataFrame:
     for c in ("market_cap", "ebit", "net_income", "revenue", "equity", "net_debt"):
         if c not in df:
             df[c] = np.nan
@@ -236,14 +292,16 @@ def _metrics(df: pd.DataFrame, px, cash, stock, asof) -> pd.DataFrame:
     df["roic"] = df.ebit / pos(df.equity + df.net_debt)
     df["net_debt_ebit"] = df.net_debt / pos(df.ebit)
     df["net_margin"] = df.net_income / pos(df.revenue)
-    df["momentum"], df["dividend_yield"] = _momentum_and_yield(df, px, cash, stock, asof)
+    df["momentum"], df["dividend_yield"] = _momentum_and_yield(df, px, cash, stock, asof, isins or {})
 
     reason = pd.Series("", index=df.index)
     def flag(mask, why):
         reason[mask & (reason == "")] = why
     flag(df.sector.fillna("").str.contains("|".join(FINANCIAL)), "financial sector")
-    flag(df.situation.fillna("") != "ATIVO", "registration not active")
-    flag(df.issuer_status.fillna("") != OPERATING, "not operating normally")
+    flag(df.bdi.fillna("02") != "02", "special trading segment (sanctioned or in recovery)")
+    if not pit:   # today's status; unknown for past dates
+        flag(df.situation.fillna("") != "ATIVO", "registration not active")
+        flag(df.issuer_status.fillna("") != OPERATING, "not operating normally")
     flag(df.liquidity < LIQUIDITY_MIN, "illiquid")
     flag(df.sessions < HISTORY_MIN, "under a year of quotes")
     flag(df.ebit.isna() | df.market_cap.isna(), "no fundamentals")

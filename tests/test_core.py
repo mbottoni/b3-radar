@@ -77,6 +77,32 @@ def test_adjusted_close_removes_dividend_and_split_gaps():
     assert adj.iloc[-1] == 4.5                                   # latest price unchanged
 
 
+def test_events_filed_under_an_old_isin_still_apply():
+    # HAPV-style: 15:1 reverse split filed under the old ISIN, quotes continue under a new one
+    px = pd.DataFrame({"date": ["2025-06-04", "2025-06-05", "2025-06-06"], "close": [2.70, 2.70, 40.5]})
+    stock = pd.DataFrame({"isin": ["OLD"], "mult": [1 / 15], "last_date_prior": ["2025-06-05"], "label": ["GRUPAMENTO"]})
+    cash = pd.DataFrame({"isin": ["OLD", "NEW"], "rate": [0.27, 0.27], "last_date_prior": ["2025-06-04"] * 2,
+                         "label": ["DIVIDENDO"] * 2})            # the same payment on file twice
+    adj = events.adjusted_close(px, {"OLD", "NEW"}, cash, stock)
+    assert adj.pct_change().iloc[-1] == pytest.approx(0.0)       # the reverse split is no jump
+    assert adj.iloc[0] / adj.iloc[1] == pytest.approx(0.9)       # one 10% dividend, not two
+
+
+def test_missing_splits_are_inferred_from_b3_ex_markers():
+    # MGLU3 2017: 8:1 bonus split, marked EB by B3, absent from B3's events service
+    px = pd.DataFrame({"date": ["2017-09-01", "2017-09-04", "2017-09-05", "2017-09-08"], "ticker": "MGLU3",
+                       "isin": "BRMGLUACNOR2", "kind": "ON", "open": [579.0, 566.0, 79.76, 86.26],
+                       "close": [564.14, 621.79, 82.0, 78.92], "ex": ["", "", "EB", "EB"]})
+    crash = px.assign(ticker="XXXX3", isin="X", close=[10.0, 10.0, 3.1, 3.0], open=[10.0, 10.0, 3.5, 3.0],
+                      ex=["", "", "", ""])                      # a 70% fall with no marker: left alone
+    none = pd.DataFrame(columns=["isin", "last_date_prior", "label"])
+    inf = events.infer_stock_events(pd.concat([px, crash]), none)
+    assert list(inf.issuer) == ["MGLU"] and inf.last_date_prior.iloc[0] == "2017-09-04"
+    assert events.share_multiplier("DESDOBRAMENTO", inf.factor.iloc[0]) == 8
+    known = pd.DataFrame({"isin": ["BRMGLUACNOR2"], "last_date_prior": ["2017-09-04"], "label": ["BONIFICACAO"]})
+    assert events.infer_stock_events(px, known).empty           # already on file: nothing inferred
+
+
 # ------------------------------------------------------------------ shares
 
 @pytest.mark.parametrize("total,treasury,b3,expected,source", [

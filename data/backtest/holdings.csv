@@ -1,0 +1,901 @@
+date,strategy,rank,ticker,company,sector,metric,period_return
+2012-05-02,composite,1,ELPL4,AES ELETROPAULO,Energia Elétrica,83.9689,-0.720277
+2012-05-02,composite,2,GETI4,AES TIETE SA,Energia Elétrica,77.0009,-0.138122
+2012-05-02,composite,3,CRUZ3,SOUZA CRUZ,Bebidas e Fumo,75.3567,0.0534735
+2012-05-02,composite,4,EZTC3,EZ TEC EMPREEND. E PARTICIPAÇÕES S/A,"Emp. Adm. Part. - Const. Civil, Mat. Const. e Decoração",75.3468,0.337782
+2012-05-02,composite,5,CSAN3,COSAN SA INDUSTRIA E COMERCIO,"Agricultura (Açúcar, Álcool e Cana)",73.8172,0.461009
+2012-05-02,composite,6,BRPR3,BR PROPERTIES S.A.,Emp. Adm. Part. - Sem Setor Principal,73.4922,-0.0640428
+2012-05-02,composite,7,SBSP3,SABESP,"Saneamento, Serv. Água e Gás",73.3729,0.185874
+2012-05-02,composite,8,MPLU3,MULTIPLUS SA,Comércio (Atacado e Varejo),73.0696,-0.170034
+2012-05-02,composite,9,CMIG4,CEMIG,Energia Elétrica,72.2791,-0.299469
+2012-05-02,composite,10,MYPK3,IOCHPE-MAXION,"Máquinas, Equipamentos, Veículos e Peças",71.846,-0.237657
+2012-05-02,magic,1,ELPL4,AES ELETROPAULO,Energia Elétrica,1,-0.720277
+2012-05-02,magic,2,BRPR3,BR PROPERTIES S.A.,Emp. Adm. Part. - Sem Setor Principal,2,-0.0640428
+2012-05-02,magic,3,GETI4,AES TIETE SA,Energia Elétrica,3,-0.138122
+2012-05-02,magic,4,CSAN3,COSAN SA INDUSTRIA E COMERCIO,"Agricultura (Açúcar, Álcool e Cana)",4,0.461009
+2012-05-02,magic,5,CSNA3,CSN,Metalurgia e Siderurgia,5,-0.493296
+2012-05-02,magic,6,BRAP4,BRADESPAR S/A,Emp. Adm. Part. - Extração Mineral,6,-0.273337
+2012-05-02,magic,7,TRPL4,CTEEP,Energia Elétrica,7,-0.43882
+2012-05-02,magic,8,BBRK3,NEXPE PARTICIPAÃiES S.A.,"Emp. Adm. Part. - Const. Civil, Mat. Const. e Decoração",8,0.101587
+2012-05-02,magic,9,NATU3,NATURA COSMETICOS SA,Farmacêutico e Higiene,9,0.189754
+2012-05-02,magic,10,EZTC3,EZ TEC EMPREEND. E PARTICIPAÇÕES S/A,"Emp. Adm. Part. - Const. Civil, Mat. Const. e Decoração",10,0.337782
+2012-05-02,value,1,BRPR3,BR PROPERTIES S.A.,Emp. Adm. Part. - Sem Setor Principal,99.375,-0.0640428
+2012-05-02,value,2,TRPL4,CTEEP,Energia Elétrica,95,-0.43882
+2012-05-02,value,3,PETR4,PETROBRAS,Petróleo e Gás,91.25,-0.0332056
+2012-05-02,value,4,CPLE6,COPEL,Energia Elétrica,90.625,-0.220526
+2012-05-02,value,5,ELET6,AXIA ENERGIA S.A.,Emp. Adm. Part. - Energia Elétrica,88.125,-0.623805
+2012-05-02,value,6,EVEN3,EVEN,"Construção Civil, Mat. Constr. e Decoração",86.875,0.285776
+2012-05-02,value,7,BRAP4,BRADESPAR S/A,Emp. Adm. Part. - Extração Mineral,85.625,-0.273337
+2012-05-02,value,8,GOAU4,METALÚRGICA GERDAU,Emp. Adm. Part. - Metalurgia e Siderurgia,85,-0.159607
+2012-05-02,value,9,BTOW3,AMERICANAS S.A. - EM RECUPERAÇÃO JUDICIAL,Comércio (Atacado e Varejo),83.125,0.443758
+2012-05-02,value,10,ENBR3,EDP ENERGIAS DO BRASIL S/A,Energia Elétrica,82.5,-0.0676996
+2012-05-02,quality,1,MPLU3,MULTIPLUS SA,Comércio (Atacado e Varejo),99.375,-0.170034
+2012-05-02,quality,2,CRUZ3,SOUZA CRUZ,Bebidas e Fumo,94.5833,0.0534735
+2012-05-02,quality,3,HGTX3,CIA HERING,Têxtil e Vestuário,92.9061,-0.121952
+2012-05-02,quality,4,NATU3,NATURA COSMETICOS SA,Farmacêutico e Higiene,90.4114,0.189754
+2012-05-02,quality,5,LPSB3,LOPES,"Emp. Adm. Part. - Const. Civil, Mat. Const. e Decoração",90.3586,0.295497
+2012-05-02,quality,6,AMBV4,AMBEV,Bebidas e Fumo,89.9789,0.0474518
+2012-05-02,quality,7,GETI4,AES TIETE SA,Energia Elétrica,89.1508,-0.138122
+2012-05-02,quality,8,ARZZ3,AZZAS 2154 S.A.,Têxtil e Vestuário,86.635,0.430532
+2012-05-02,quality,9,ELPL4,AES ELETROPAULO,Energia Elétrica,86.2236,-0.720277
+2012-05-02,quality,10,ALPA4,ALPARGATAS,Têxtil e Vestuário,83.27,-0.124744
+2012-05-02,momentum,1,LLIS3,LE LIS BLANC DEUX,Emp. Adm. Part. - Comércio (Atacado e Varejo),100,-0.290107
+2012-05-02,momentum,2,MYPK3,IOCHPE-MAXION,"Máquinas, Equipamentos, Veículos e Peças",98.7342,-0.237657
+2012-05-02,momentum,3,CRUZ3,SOUZA CRUZ,Bebidas e Fumo,97.4684,0.0534735
+2012-05-02,momentum,4,SBSP3,SABESP,"Saneamento, Serv. Água e Gás",96.2025,0.185874
+2012-05-02,momentum,5,AMBV4,AMBEV,Bebidas e Fumo,94.9367,0.0474518
+2012-05-02,momentum,6,CSMG3,COPASA MG,"Saneamento, Serv. Água e Gás",93.6709,0.0790973
+2012-05-02,momentum,7,CMIG4,CEMIG,Energia Elétrica,92.4051,-0.299469
+2012-05-02,momentum,8,CSAN3,COSAN SA INDUSTRIA E COMERCIO,"Agricultura (Açúcar, Álcool e Cana)",91.1392,0.461009
+2012-05-02,momentum,9,TAMM4,TAM,Serviços Transporte e Logística,89.8734,0.146304
+2012-05-02,momentum,10,ALPA4,ALPARGATAS,Têxtil e Vestuário,88.6076,-0.124744
+2012-05-02,income,1,ELPL4,AES ELETROPAULO,Energia Elétrica,100,-0.720277
+2012-05-02,income,2,GETI4,AES TIETE SA,Energia Elétrica,98.75,-0.138122
+2012-05-02,income,3,CPFE3,CPFL ENERGIA S.A.,Emp. Adm. Part. - Energia Elétrica,97.5,-0.152963
+2012-05-02,income,4,ENBR3,EDP ENERGIAS DO BRASIL S/A,Energia Elétrica,96.25,-0.0676996
+2012-05-02,income,5,BRAP4,BRADESPAR S/A,Emp. Adm. Part. - Extração Mineral,95,-0.273337
+2012-05-02,income,6,CSNA3,CSN,Metalurgia e Siderurgia,93.75,-0.493296
+2012-05-02,income,7,CMIG4,CEMIG,Energia Elétrica,92.5,-0.299469
+2012-05-02,income,8,BRKM5,BRASKEM,Petroquímicos e Borracha,91.25,0.276501
+2012-05-02,income,9,NATU3,NATURA COSMETICOS SA,Farmacêutico e Higiene,90,0.189754
+2012-05-02,income,10,PETR4,PETROBRAS,Petróleo e Gás,88.75,-0.0332056
+2013-05-02,composite,1,LEVE3,MAHLE METAL LEVE,"Máquinas, Equipamentos, Veículos e Peças",76.6529,-0.111363
+2013-05-02,composite,2,VLID3,AMERICAN BANKNOTE COMPANY,Comunicação e Informática,73.7427,-0.0162834
+2013-05-02,composite,3,DIRR3,DIRECIONAL ENGENHARIA SA,"Construção Civil, Mat. Constr. e Decoração",72.8314,-0.296888
+2013-05-02,composite,4,SBSP3,SABESP,"Saneamento, Serv. Água e Gás",72.0854,-0.205246
+2013-05-02,composite,5,GETI4,AES TIETE SA,Energia Elétrica,71.584,-0.0275819
+2013-05-02,composite,6,BRML3,BR MALLS PARTICIPAÇOES S.A.,Emp. Adm. Part. - Comércio (Atacado e Varejo),70.9115,-0.141095
+2013-05-02,composite,7,EZTC3,EZ TEC EMPREEND. E PARTICIPAÇÕES S/A,"Emp. Adm. Part. - Const. Civil, Mat. Const. e Decoração",70.3681,-0.0274465
+2013-05-02,composite,8,EVEN3,EVEN,"Construção Civil, Mat. Constr. e Decoração",70.0793,-0.193514
+2013-05-02,composite,9,BRPR3,BR PROPERTIES S.A.,Emp. Adm. Part. - Sem Setor Principal,69.5221,-0.148606
+2013-05-02,composite,10,MDIA3,M DIAS BRANCO SA IND E COM DE ALIMENTOS,Alimentos,67.935,0.11101
+2013-05-02,magic,1,GETI4,AES TIETE SA,Energia Elétrica,1,-0.0275819
+2013-05-02,magic,2,BRML3,BR MALLS PARTICIPAÇOES S.A.,Emp. Adm. Part. - Comércio (Atacado e Varejo),2,-0.141095
+2013-05-02,magic,3,BRPR3,BR PROPERTIES S.A.,Emp. Adm. Part. - Sem Setor Principal,3,-0.148606
+2013-05-02,magic,4,TRPL4,CTEEP,Energia Elétrica,4,-0.274059
+2013-05-02,magic,5,ECOR3,ECORODOVIAS INFRAESTRUTURA E LOGÍSTICA S.A.,Serviços Transporte e Logística,5,-0.123434
+2013-05-02,magic,6,TGMA3,TEGMA GESTÃO LOGÍSTICA SA,Serviços Transporte e Logística,6,-0.296228
+2013-05-02,magic,7,NATU3,NATURA COSMETICOS SA,Farmacêutico e Higiene,7,-0.178592
+2013-05-02,magic,8,HGTX3,CIA HERING,Têxtil e Vestuário,8,-0.391905
+2013-05-02,magic,9,GRND3,GRENDENE SA,Têxtil e Vestuário,9,-0.354825
+2013-05-02,magic,10,SBSP3,SABESP,"Saneamento, Serv. Água e Gás",10,-0.205246
+2013-05-02,value,1,BRPR3,BR PROPERTIES S.A.,Emp. Adm. Part. - Sem Setor Principal,99.4681,-0.148606
+2013-05-02,value,2,TRPL4,CTEEP,Energia Elétrica,97.8723,-0.274059
+2013-05-02,value,3,CESP6,CESP CIA ENERGETICA SAO PAULO,Energia Elétrica,94.6809,0.260178
+2013-05-02,value,4,CPLE6,COPEL,Energia Elétrica,92.0213,0.00148949
+2013-05-02,value,5,VALE5,VALE,Extração Mineral,90.4255,-0.0858407
+2013-05-02,value,6,BRML3,BR MALLS PARTICIPAÇOES S.A.,Emp. Adm. Part. - Comércio (Atacado e Varejo),86.1702,-0.141095
+2013-05-02,value,7,MRFG3,MARFRIG,Alimentos,85.1064,-0.34058
+2013-05-02,value,8,MRVE3,MRV ENGENHARIA,"Construção Civil, Mat. Constr. e Decoração",85.1064,-0.124876
+2013-05-02,value,9,EVEN3,EVEN,"Construção Civil, Mat. Constr. e Decoração",84.0426,-0.193514
+2013-05-02,value,10,GOAU4,METALÚRGICA GERDAU,Emp. Adm. Part. - Metalurgia e Siderurgia,82.9787,-0.116014
+2013-05-02,quality,1,MPLU3,MULTIPLUS SA,Comércio (Atacado e Varejo),99.4681,-0.0970809
+2013-05-02,quality,2,CRUZ3,SOUZA CRUZ,Bebidas e Fumo,95.7447,-0.268799
+2013-05-02,quality,3,HGTX3,CIA HERING,Têxtil e Vestuário,94.6732,-0.391905
+2013-05-02,quality,4,AMBV4,AMBEV,Bebidas e Fumo,91.8287,0.0772501
+2013-05-02,quality,5,GRND3,GRENDENE SA,Têxtil e Vestuário,91.8135,-0.354825
+2013-05-02,quality,6,NATU3,NATURA COSMETICOS SA,Farmacêutico e Higiene,91.4855,-0.178592
+2013-05-02,quality,7,GETI4,AES TIETE SA,Energia Elétrica,91.1233,-0.0275819
+2013-05-02,quality,8,ODPV3,BRADSAÚDE S.A.,Serviços Médicos,90.4065,-0.0881764
+2013-05-02,quality,9,ARZZ3,AZZAS 2154 S.A.,Têxtil e Vestuário,90.048,-0.381295
+2013-05-02,quality,10,TECN3,TECHNOS SA,Comércio (Atacado e Varejo),89.3159,-0.46337
+2013-05-02,momentum,1,GRND3,GRENDENE SA,Têxtil e Vestuário,100,-0.354825
+2013-05-02,momentum,2,ESTC3,ESTACIO PARTICIPAÇÕES SA,Emp. Adm. Part. - Educação,98.9362,0.539591
+2013-05-02,momentum,3,BTOW3,AMERICANAS S.A. - EM RECUPERAÇÃO JUDICIAL,Comércio (Atacado e Varejo),97.8723,1.15325
+2013-05-02,momentum,4,MDIA3,M DIAS BRANCO SA IND E COM DE ALIMENTOS,Alimentos,96.8085,0.11101
+2013-05-02,momentum,5,AMIL3,AMIL PARTICIPAÇÕES S/A,Serviços Médicos,95.7447,0.00814026
+2013-05-02,momentum,6,BEEF3,MINERVA S/A,Alimentos,94.6809,-0.155129
+2013-05-02,momentum,7,LEVE3,MAHLE METAL LEVE,"Máquinas, Equipamentos, Veículos e Peças",93.617,-0.111363
+2013-05-02,momentum,8,KLBN4,KLABIN,Papel e Celulose,92.5532,-0.128984
+2013-05-02,momentum,9,TECN3,TECHNOS SA,Comércio (Atacado e Varejo),91.4894,-0.46337
+2013-05-02,momentum,10,IMCH3,INTERNATIONAL MEAL COMPANY,Alimentos,90.4255,-0.292929
+2013-05-02,income,1,CMIG4,CEMIG,Energia Elétrica,100,-0.200437
+2013-05-02,income,2,OIBR4,BRASIL TELECOM S.A.,Telecomunicações,98.9362,-0.460946
+2013-05-02,income,3,GETI4,AES TIETE SA,Energia Elétrica,97.8723,-0.0275819
+2013-05-02,income,4,CSNA3,CSN,Metalurgia e Siderurgia,96.8085,0.252419
+2013-05-02,income,5,VIVT4,TELEFÔNICA BRASIL,Telecomunicações,95.7447,-0.050682
+2013-05-02,income,6,PDGR3,PDG REALTY SA EMPREENDIMENTOS E PARTS,"Emp. Adm. Part. - Const. Civil, Mat. Const. e Decoração",94.6809,-0.353982
+2013-05-02,income,7,ENBR3,EDP ENERGIAS DO BRASIL S/A,Energia Elétrica,93.617,-0.111181
+2013-05-02,income,8,VALE5,VALE,Extração Mineral,92.5532,-0.0858407
+2013-05-02,income,9,HGTX3,CIA HERING,Têxtil e Vestuário,91.4894,-0.391905
+2013-05-02,income,10,LEVE3,MAHLE METAL LEVE,"Máquinas, Equipamentos, Veículos e Peças",90.4255,-0.111363
+2014-05-02,composite,1,GETI4,AES TIETE SA,Energia Elétrica,80.369,0.111041
+2014-05-02,composite,2,EZTC3,EZ TEC EMPREEND. E PARTICIPAÇÕES S/A,"Emp. Adm. Part. - Const. Civil, Mat. Const. e Decoração",77.9986,-0.312704
+2014-05-02,composite,3,CSNA3,CSN,Metalurgia e Siderurgia,74.6523,0.0447186
+2014-05-02,composite,4,VALE5,VALE,Extração Mineral,71.8545,-0.235151
+2014-05-02,composite,5,ENBR3,EDP ENERGIAS DO BRASIL S/A,Energia Elétrica,70.2897,0.202975
+2014-05-02,composite,6,BRKM5,BRASKEM,Petroquímicos e Borracha,68.1286,-0.046249
+2014-05-02,composite,7,CPLE6,COPEL,Energia Elétrica,67.4429,0.108356
+2014-05-02,composite,8,MRVE3,MRV ENGENHARIA,"Construção Civil, Mat. Constr. e Decoração",66.4426,0.213446
+2014-05-02,composite,9,MYPK3,IOCHPE-MAXION,"Máquinas, Equipamentos, Veículos e Peças",65.419,-0.429755
+2014-05-02,composite,10,RENT3,LOCALIZA RENT A CAR,Serviços Transporte e Logística,64.8484,0.0692943
+2014-05-02,magic,1,GETI4,AES TIETE SA,Energia Elétrica,1,0.111041
+2014-05-02,magic,2,MGLU3,MAGAZINE LUIZA SA,Comércio (Atacado e Varejo),2,-0.318251
+2014-05-02,magic,3,EZTC3,EZ TEC EMPREEND. E PARTICIPAÇÕES S/A,"Emp. Adm. Part. - Const. Civil, Mat. Const. e Decoração",3,-0.312704
+2014-05-02,magic,4,CMIG4,CEMIG,Energia Elétrica,4,0.088413
+2014-05-02,magic,5,HGTX3,CIA HERING,Têxtil e Vestuário,5,-0.234192
+2014-05-02,magic,6,EMBR3,EMBRAER,"Máquinas, Equipamentos, Veículos e Peças",6,0.229167
+2014-05-02,magic,7,VALE5,VALE,Extração Mineral,7,-0.235151
+2014-05-02,magic,8,CRUZ3,SOUZA CRUZ,Bebidas e Fumo,8,0.375693
+2014-05-02,magic,9,GRND3,GRENDENE SA,Têxtil e Vestuário,9,0.253569
+2014-05-02,magic,10,SBSP3,SABESP,"Saneamento, Serv. Água e Gás",10,-0.13496
+2014-05-02,value,1,VALE5,VALE,Extração Mineral,95.1807,-0.235151
+2014-05-02,value,2,BRPR3,BR PROPERTIES S.A.,Emp. Adm. Part. - Sem Setor Principal,92.1687,-0.138145
+2014-05-02,value,3,CPLE6,COPEL,Energia Elétrica,90.9639,0.108356
+2014-05-02,value,4,ENBR3,EDP ENERGIAS DO BRASIL S/A,Energia Elétrica,84.9398,0.202975
+2014-05-02,value,5,EVEN3,EVEN,"Construção Civil, Mat. Constr. e Decoração",84.3373,-0.327105
+2014-05-02,value,6,BRML3,BR MALLS PARTICIPAÇOES S.A.,Emp. Adm. Part. - Comércio (Atacado e Varejo),83.7349,-0.131611
+2014-05-02,value,7,GOAU4,METALÚRGICA GERDAU,Emp. Adm. Part. - Metalurgia e Siderurgia,82.5301,-0.384036
+2014-05-02,value,8,SBSP3,SABESP,"Saneamento, Serv. Água e Gás",81.9277,-0.13496
+2014-05-02,value,9,DIRR3,DIRECIONAL ENGENHARIA SA,"Construção Civil, Mat. Constr. e Decoração",81.9277,-0.373478
+2014-05-02,value,10,CSMG3,COPASA MG,"Saneamento, Serv. Água e Gás",78.9157,-0.45431
+2014-05-02,quality,1,MPLU3,MULTIPLUS SA,Comércio (Atacado e Varejo),98.7952,0.256912
+2014-05-02,quality,2,CRUZ3,SOUZA CRUZ,Bebidas e Fumo,94.7791,0.375693
+2014-05-02,quality,3,HGTX3,CIA HERING,Têxtil e Vestuário,93.5596,-0.234192
+2014-05-02,quality,4,ODPV3,BRADSAÚDE S.A.,Serviços Médicos,92.7662,0.204396
+2014-05-02,quality,5,GETI4,AES TIETE SA,Energia Elétrica,90.7533,0.111041
+2014-05-02,quality,6,TOTS3,TOTVS S.A,Comunicação e Informática,89.5386,0.0201264
+2014-05-02,quality,7,ARZZ3,AZZAS 2154 S.A.,Têxtil e Vestuário,89.1321,-0.0290698
+2014-05-02,quality,8,GRND3,GRENDENE SA,Têxtil e Vestuário,87.4914,0.253569
+2014-05-02,quality,9,EZTC3,EZ TEC EMPREEND. E PARTICIPAÇÕES S/A,"Emp. Adm. Part. - Const. Civil, Mat. Const. e Decoração",86.6931,-0.312704
+2014-05-02,quality,10,LREN3,RENNER,Comércio (Atacado e Varejo),84.6998,0.582836
+2014-05-02,momentum,1,BTOW3,AMERICANAS S.A. - EM RECUPERAÇÃO JUDICIAL,Comércio (Atacado e Varejo),100,0.0715706
+2014-05-02,momentum,2,ESTC3,ESTACIO PARTICIPAÇÕES SA,Emp. Adm. Part. - Educação,98.7952,-0.223559
+2014-05-02,momentum,3,LINX3,LINX S.A.,Comunicação e Informática,97.5904,-0.0330538
+2014-05-02,momentum,4,TIMP3,TIM,Emp. Adm. Part. - Telecomunicações,96.3855,-0.219078
+2014-05-02,momentum,5,CSNA3,CSN,Metalurgia e Siderurgia,95.1807,0.0447186
+2014-05-02,momentum,6,DASA3,DIAGNOSTICOS DA AMERICA SA,Serviços Médicos,93.9759,-0.284302
+2014-05-02,momentum,7,JBSS3,JBS SA,Alimentos,92.7711,1.00384
+2014-05-02,momentum,8,WEGE3,WEG SA,"Emp. Adm. Part. - Máqs., Equip., Veíc. e Peças",91.5663,0.252731
+2014-05-02,momentum,9,CESP6,CESP CIA ENERGETICA SAO PAULO,Energia Elétrica,90.3614,-0.261047
+2014-05-02,momentum,10,EMBR3,EMBRAER,"Máquinas, Equipamentos, Veículos e Peças",89.1566,0.229167
+2014-05-02,income,1,GETI4,AES TIETE SA,Energia Elétrica,100,0.111041
+2014-05-02,income,2,OIBR4,BRASIL TELECOM S.A.,Telecomunicações,98.7952,-0.766387
+2014-05-02,income,3,ECOR3,ECORODOVIAS INFRAESTRUTURA E LOGÍSTICA S.A.,Serviços Transporte e Logística,97.5904,-0.292583
+2014-05-02,income,4,CSNA3,CSN,Metalurgia e Siderurgia,96.3855,0.0447186
+2014-05-02,income,5,ENBR3,EDP ENERGIAS DO BRASIL S/A,Energia Elétrica,95.1807,0.202975
+2014-05-02,income,6,FLRY3,FLEURY SA,Serviços Médicos,93.9759,0.190396
+2014-05-02,income,7,BRAP4,BRADESPAR S/A,Emp. Adm. Part. - Extração Mineral,92.7711,-0.297039
+2014-05-02,income,8,VIVT4,TELEFÔNICA BRASIL,Telecomunicações,91.5663,0.146623
+2014-05-02,income,9,VALE5,VALE,Extração Mineral,90.3614,-0.235151
+2014-05-02,income,10,TCSA3,TECNISA S/A,"Construção Civil, Mat. Constr. e Decoração",89.1566,-0.428348
+2015-05-04,composite,1,MRVE3,MRV ENGENHARIA,"Construção Civil, Mat. Constr. e Decoração",78.6304,0.519084
+2015-05-04,composite,2,CMIG4,CEMIG,Energia Elétrica,75.8353,-0.510358
+2015-05-04,composite,3,MPLU3,MULTIPLUS SA,Comércio (Atacado e Varejo),75.4808,0.225005
+2015-05-04,composite,4,GETI4,AES TIETE SA,Energia Elétrica,72.6357,-0.151057
+2015-05-04,composite,5,BRPR3,BR PROPERTIES S.A.,Emp. Adm. Part. - Sem Setor Principal,72.4186,0.184943
+2015-05-04,composite,6,CPLE6,COPEL,Energia Elétrica,72.2007,-0.151092
+2015-05-04,composite,7,ENBR3,EDP ENERGIAS DO BRASIL S/A,Energia Elétrica,71.5465,0.180972
+2015-05-04,composite,8,EQTL3,EQUATORIAL S.A.,Energia Elétrica,70.3137,0.341977
+2015-05-04,composite,9,CRUZ3,SOUZA CRUZ,Bebidas e Fumo,70.0321,0.0321283
+2015-05-04,composite,10,EZTC3,EZ TEC EMPREEND. E PARTICIPAÇÕES S/A,"Emp. Adm. Part. - Const. Civil, Mat. Const. e Decoração",69.0879,-0.0231704
+2015-05-04,magic,1,VVAR11,PONTO FRIO,Comércio (Atacado e Varejo),1,-0.675676
+2015-05-04,magic,2,CMIG4,CEMIG,Energia Elétrica,2,-0.510358
+2015-05-04,magic,3,HGTX3,CIA HERING,Têxtil e Vestuário,3,-0.168755
+2015-05-04,magic,4,SEER3,SER EDUCACIONAL S.A.,Educação,4,-0.189729
+2015-05-04,magic,5,ENBR3,EDP ENERGIAS DO BRASIL S/A,Energia Elétrica,5,0.180972
+2015-05-04,magic,6,ECOR3,ECORODOVIAS INFRAESTRUTURA E LOGÍSTICA S.A.,Serviços Transporte e Logística,6,-0.147666
+2015-05-04,magic,7,GETI4,AES TIETE SA,Energia Elétrica,7,-0.151057
+2015-05-04,magic,8,EZTC3,EZ TEC EMPREEND. E PARTICIPAÇÕES S/A,"Emp. Adm. Part. - Const. Civil, Mat. Const. e Decoração",8,-0.0231704
+2015-05-04,magic,9,NATU3,NATURA COSMETICOS SA,Farmacêutico e Higiene,9,-0.125805
+2015-05-04,magic,10,BRKM5,BRASKEM,Petroquímicos e Borracha,10,0.834592
+2015-05-04,value,1,BRPR3,BR PROPERTIES S.A.,Emp. Adm. Part. - Sem Setor Principal,99.359,0.184943
+2015-05-04,value,2,DIRR3,DIRECIONAL ENGENHARIA SA,"Construção Civil, Mat. Constr. e Decoração",93.5897,0.0165163
+2015-05-04,value,3,CPLE6,COPEL,Energia Elétrica,90.3846,-0.151092
+2015-05-04,value,4,CESP6,CESP CIA ENERGETICA SAO PAULO,Energia Elétrica,90.3846,-0.270854
+2015-05-04,value,5,MRVE3,MRV ENGENHARIA,"Construção Civil, Mat. Constr. e Decoração",87.8205,0.519084
+2015-05-04,value,6,GOAU4,METALÚRGICA GERDAU,Emp. Adm. Part. - Metalurgia e Siderurgia,87.8205,-0.720728
+2015-05-04,value,7,ENBR3,EDP ENERGIAS DO BRASIL S/A,Energia Elétrica,85.8974,0.180972
+2015-05-04,value,8,RAPT4,RANDON S.A. IMPLEMENTOS E PARTICIPAÇÕES,"Máquinas, Equipamentos, Veículos e Peças",85.8974,-0.303178
+2015-05-04,value,9,BRML3,BR MALLS PARTICIPAÇOES S.A.,Emp. Adm. Part. - Comércio (Atacado e Varejo),85.2564,-0.000762195
+2015-05-04,value,10,TRPL4,CTEEP,Energia Elétrica,83.9744,0.313817
+2015-05-04,quality,1,MPLU3,MULTIPLUS SA,Comércio (Atacado e Varejo),99.359,0.225005
+2015-05-04,quality,2,CRUZ3,SOUZA CRUZ,Bebidas e Fumo,94.8718,0.0321283
+2015-05-04,quality,3,ODPV3,BRADSAÚDE S.A.,Serviços Médicos,94.8662,-0.0583942
+2015-05-04,quality,4,SMLE3,SMILES S.A.,Comércio (Atacado e Varejo),92.7239,-0.277905
+2015-05-04,quality,5,ABEV3,AMBEV S.A,Bebidas e Fumo,91.8581,0.00826873
+2015-05-04,quality,6,HGTX3,CIA HERING,Têxtil e Vestuário,91.8526,-0.168755
+2015-05-04,quality,7,SEER3,SER EDUCACIONAL S.A.,Educação,89.2829,-0.189729
+2015-05-04,quality,8,TOTS3,TOTVS S.A,Comunicação e Informática,87.568,-0.181085
+2015-05-04,quality,9,VVAR11,PONTO FRIO,Comércio (Atacado e Varejo),86.7355,-0.675676
+2015-05-04,quality,10,GRND3,GRENDENE SA,Têxtil e Vestuário,86.6855,-0.0786334
+2015-05-04,momentum,1,FIBR3,FIBRIA,Papel e Celulose,100,-0.230406
+2015-05-04,momentum,2,SUZB5,SUZANO PAPEL E CELULOSE SA,Papel e Celulose,98.7179,-0.125497
+2015-05-04,momentum,3,JBSS3,JBS SA,Alimentos,97.4359,-0.437061
+2015-05-04,momentum,4,TRPL4,CTEEP,Energia Elétrica,96.1538,0.313817
+2015-05-04,momentum,5,KLBN11,KLABIN,Papel e Celulose,94.8718,-0.0720867
+2015-05-04,momentum,6,RADL3,DROGASIL SA,Comércio (Atacado e Varejo),93.5897,0.620358
+2015-05-04,momentum,7,EQTL3,EQUATORIAL S.A.,Energia Elétrica,92.3077,0.341977
+2015-05-04,momentum,8,LREN3,RENNER,Comércio (Atacado e Varejo),91.0256,0.0206683
+2015-05-04,momentum,9,BRFS3,BRF S.A.,Emp. Adm. Part. - Alimentos,89.7436,-0.234481
+2015-05-04,momentum,10,IGTA3,IGUATEMI EMPRESA DE SHOPPING CENTERS S/A,Comércio (Atacado e Varejo),88.4615,-0.0023634
+2015-05-04,income,1,BRPR3,BR PROPERTIES S.A.,Emp. Adm. Part. - Sem Setor Principal,100,0.184943
+2015-05-04,income,2,CMIG4,CEMIG,Energia Elétrica,98.7179,-0.510358
+2015-05-04,income,3,EVEN3,EVEN,"Construção Civil, Mat. Constr. e Decoração",97.4359,-0.153477
+2015-05-04,income,4,BRAP4,BRADESPAR S/A,Emp. Adm. Part. - Extração Mineral,96.1538,-0.294171
+2015-05-04,income,5,GETI4,AES TIETE SA,Energia Elétrica,94.8718,-0.151057
+2015-05-04,income,6,VIVT4,TELEFÔNICA BRASIL,Telecomunicações,93.5897,-0.0737305
+2015-05-04,income,7,MRVE3,MRV ENGENHARIA,"Construção Civil, Mat. Constr. e Decoração",92.3077,0.519084
+2015-05-04,income,8,VALE5,VALE,Extração Mineral,91.0256,-0.17006
+2015-05-04,income,9,CPLE6,COPEL,Energia Elétrica,89.7436,-0.151092
+2015-05-04,income,10,EZTC3,EZ TEC EMPREEND. E PARTICIPAÇÕES S/A,"Emp. Adm. Part. - Const. Civil, Mat. Const. e Decoração",88.4615,-0.0231704
+2016-05-02,composite,1,ENBR3,EDP ENERGIAS DO BRASIL S/A,Energia Elétrica,81.8697,0.12533
+2016-05-02,composite,2,BRKM5,BRASKEM,Petroquímicos e Borracha,79.93,0.485574
+2016-05-02,composite,3,MPLU3,MULTIPLUS SA,Comércio (Atacado e Varejo),76.9643,0.0868682
+2016-05-02,composite,4,EQTL3,EQUATORIAL S.A.,Energia Elétrica,75.0105,0.379663
+2016-05-02,composite,5,LEVE3,MAHLE METAL LEVE,"Máquinas, Equipamentos, Veículos e Peças",73.9706,-0.0758932
+2016-05-02,composite,6,EZTC3,EZ TEC EMPREEND. E PARTICIPAÇÕES S/A,"Emp. Adm. Part. - Const. Civil, Mat. Const. e Decoração",73.2388,0.393646
+2016-05-02,composite,7,HGTX3,CIA HERING,Têxtil e Vestuário,72.6261,0.744505
+2016-05-02,composite,8,CMIG4,CEMIG,Energia Elétrica,68.5994,0.41334
+2016-05-02,composite,9,FIBR3,FIBRIA,Papel e Celulose,66.4076,-0.0218471
+2016-05-02,composite,10,NATU3,NATURA COSMETICOS SA,Farmacêutico e Higiene,66.2955,0.262028
+2016-05-02,magic,1,BRKM5,BRASKEM,Petroquímicos e Borracha,1,0.485574
+2016-05-02,magic,2,ALSC3,ALIANSCE,Emp. Adm. Part. - Comércio (Atacado e Varejo),2,-0.0112807
+2016-05-02,magic,3,CMIG4,CEMIG,Energia Elétrica,3,0.41334
+2016-05-02,magic,4,ENBR3,EDP ENERGIAS DO BRASIL S/A,Energia Elétrica,4,0.12533
+2016-05-02,magic,5,PCAR4,PÃO DE AÇÚCAR,Comércio (Atacado e Varejo),5,0.410355
+2016-05-02,magic,6,TIMP3,TIM,Emp. Adm. Part. - Telecomunicações,6,0.354167
+2016-05-02,magic,7,EQTL3,EQUATORIAL S.A.,Energia Elétrica,7,0.379663
+2016-05-02,magic,8,NATU3,NATURA COSMETICOS SA,Farmacêutico e Higiene,8,0.262028
+2016-05-02,magic,9,FIBR3,FIBRIA,Papel e Celulose,9,-0.0218471
+2016-05-02,magic,10,ESTC3,ESTACIO PARTICIPAÇÕES SA,Emp. Adm. Part. - Educação,10,0.489362
+2016-05-02,value,1,CPLE6,COPEL,Energia Elétrica,93.5714,0.0682302
+2016-05-02,value,2,CMIG4,CEMIG,Energia Elétrica,93.5714,0.41334
+2016-05-02,value,3,ENBR3,EDP ENERGIAS DO BRASIL S/A,Energia Elétrica,87.1429,0.12533
+2016-05-02,value,4,TRPL4,CTEEP,Energia Elétrica,86.4286,0.112478
+2016-05-02,value,5,EZTC3,EZ TEC EMPREEND. E PARTICIPAÇÕES S/A,"Emp. Adm. Part. - Const. Civil, Mat. Const. e Decoração",84.2857,0.393646
+2016-05-02,value,6,TIMP3,TIM,Emp. Adm. Part. - Telecomunicações,82.1429,0.354167
+2016-05-02,value,7,ALSC3,ALIANSCE,Emp. Adm. Part. - Comércio (Atacado e Varejo),81.4286,-0.0112807
+2016-05-02,value,8,SLCE3,SLC AGRICOLA SA,"Agricultura (Açúcar, Álcool e Cana)",80.7143,0.294565
+2016-05-02,value,9,BRML3,BR MALLS PARTICIPAÇOES S.A.,Emp. Adm. Part. - Comércio (Atacado e Varejo),80,0.0725997
+2016-05-02,value,10,CESP6,CESP CIA ENERGETICA SAO PAULO,Energia Elétrica,78.5714,0.261199
+2016-05-02,quality,1,MPLU3,MULTIPLUS SA,Comércio (Atacado e Varejo),99.2857,0.0868682
+2016-05-02,quality,2,SMLE3,SMILES S.A.,Comércio (Atacado e Varejo),96.4286,0.835927
+2016-05-02,quality,3,ODPV3,BRADSAÚDE S.A.,Serviços Médicos,95.7143,0.130814
+2016-05-02,quality,4,ABEV3,AMBEV S.A,Bebidas e Fumo,92.8291,-0.0481804
+2016-05-02,quality,5,CVCB3,CVC BRASIL OPERADORA E AGÊNCIA DE VIAGENS SA,Hospedagem e Turismo,90.4622,0.662342
+2016-05-02,quality,6,HGTX3,CIA HERING,Têxtil e Vestuário,85.5042,0.744505
+2016-05-02,quality,7,NATU3,NATURA COSMETICOS SA,Farmacêutico e Higiene,82.3249,0.262028
+2016-05-02,quality,8,LREN3,RENNER,Comércio (Atacado e Varejo),82.2969,0.451334
+2016-05-02,quality,9,EQTL3,EQUATORIAL S.A.,Energia Elétrica,80.7563,0.379663
+2016-05-02,quality,10,BRKM5,BRASKEM,Petroquímicos e Borracha,80.4342,0.485574
+2016-05-02,momentum,1,BRKM5,BRASKEM,Petroquímicos e Borracha,100,0.485574
+2016-05-02,momentum,2,RADL3,DROGASIL SA,Comércio (Atacado e Varejo),98.5714,0.276349
+2016-05-02,momentum,3,MRFG3,MARFRIG,Alimentos,97.1429,0.171429
+2016-05-02,momentum,4,MRVE3,MRV ENGENHARIA,"Construção Civil, Mat. Constr. e Decoração",95.7143,0.408238
+2016-05-02,momentum,5,HYPE3,HYPERA PHARMA S/A,Farmacêutico e Higiene,94.2857,0.0216522
+2016-05-02,momentum,6,SBSP3,SABESP,"Saneamento, Serv. Água e Gás",92.8571,0.183647
+2016-05-02,momentum,7,FLRY3,FLEURY SA,Serviços Médicos,91.4286,1.24296
+2016-05-02,momentum,8,EQTL3,EQUATORIAL S.A.,Energia Elétrica,90,0.379663
+2016-05-02,momentum,9,ELET6,AXIA ENERGIA S.A.,Emp. Adm. Part. - Energia Elétrica,88.5714,0.635736
+2016-05-02,momentum,10,BVMF3,B3,Bolsas de Valores/Mercadorias e Futuros,87.1429,0.140607
+2016-05-02,income,1,BRPR3,BR PROPERTIES S.A.,Emp. Adm. Part. - Sem Setor Principal,100,-0.0713332
+2016-05-02,income,2,FIBR3,FIBRIA,Papel e Celulose,98.5714,-0.0218471
+2016-05-02,income,3,MPLU3,MULTIPLUS SA,Comércio (Atacado e Varejo),97.1429,0.0868682
+2016-05-02,income,4,LEVE3,MAHLE METAL LEVE,"Máquinas, Equipamentos, Veículos e Peças",95.7143,-0.0758932
+2016-05-02,income,5,EZTC3,EZ TEC EMPREEND. E PARTICIPAÇÕES S/A,"Emp. Adm. Part. - Const. Civil, Mat. Const. e Decoração",94.2857,0.393646
+2016-05-02,income,6,CMIG4,CEMIG,Energia Elétrica,92.8571,0.41334
+2016-05-02,income,7,HGTX3,CIA HERING,Têxtil e Vestuário,91.4286,0.744505
+2016-05-02,income,8,VIVT4,TELEFÔNICA BRASIL,Telecomunicações,90,0.176175
+2016-05-02,income,9,ECOR3,ECORODOVIAS INFRAESTRUTURA E LOGÍSTICA S.A.,Serviços Transporte e Logística,88.5714,0.331263
+2016-05-02,income,10,BRKM5,BRASKEM,Petroquímicos e Borracha,87.1429,0.485574
+2017-05-02,composite,1,SAPR4,SANEPAR,"Saneamento, Serv. Água e Gás",83.6921,0.0710201
+2017-05-02,composite,2,VALE5,VALE,Extração Mineral,81.6926,0.242458
+2017-05-02,composite,3,CGAS5,COMPANHIA DE GÁS DE SÃO PAULO - COMGÁS,"Emp. Adm. Part. - Saneamento, Serv. Água e Gás",80.9151,0.391524
+2017-05-02,composite,4,BRAP4,BRADESPAR S/A,Emp. Adm. Part. - Extração Mineral,79.8156,0.869765
+2017-05-02,composite,5,CSMG3,COPASA MG,"Saneamento, Serv. Água e Gás",76.5011,0.423802
+2017-05-02,composite,6,ALUP11,ALUPAR INVESTIMENTO S/A,Emp. Adm. Part. - Energia Elétrica,73.156,-0.05391
+2017-05-02,composite,7,BRKM5,BRASKEM,Petroquímicos e Borracha,72.9381,0.361457
+2017-05-02,composite,8,SEER3,SER EDUCACIONAL S.A.,Educação,70.8737,-0.327264
+2017-05-02,composite,9,CPLE6,COPEL,Energia Elétrica,68.7151,-0.0387606
+2017-05-02,composite,10,SBSP3,SABESP,"Saneamento, Serv. Água e Gás",68.3294,0.190109
+2017-05-02,magic,1,TRPL4,CTEEP,Energia Elétrica,1,0.0677776
+2017-05-02,magic,2,BRKM5,BRASKEM,Petroquímicos e Borracha,2,0.361457
+2017-05-02,magic,3,CGAS5,COMPANHIA DE GÁS DE SÃO PAULO - COMGÁS,"Emp. Adm. Part. - Saneamento, Serv. Água e Gás",3,0.391524
+2017-05-02,magic,4,ELET6,AXIA ENERGIA S.A.,Emp. Adm. Part. - Energia Elétrica,4,0.0923582
+2017-05-02,magic,5,TIET11,CIA BRASILIANA DE ENERGIA,Emp. Adm. Part. - Energia Elétrica,5,-0.101966
+2017-05-02,magic,6,SMLE3,SMILES S.A.,Comércio (Atacado e Varejo),6,0.333621
+2017-05-02,magic,7,CARD3,CSU DIGITAL S.A.,Emp. Adm. Part. - Sem Setor Principal,7,-0.00288184
+2017-05-02,magic,8,SEER3,SER EDUCACIONAL S.A.,Educação,8,-0.327264
+2017-05-02,magic,9,NATU3,NATURA COSMETICOS SA,Farmacêutico e Higiene,9,0.0732899
+2017-05-02,magic,10,VALE5,VALE,Extração Mineral,10,0.242458
+2017-05-02,value,1,TRPL4,CTEEP,Energia Elétrica,98.7952,0.0677776
+2017-05-02,value,2,ELET6,AXIA ENERGIA S.A.,Emp. Adm. Part. - Energia Elétrica,95.1807,0.0923582
+2017-05-02,value,3,CPLE6,COPEL,Energia Elétrica,93.9759,-0.0387606
+2017-05-02,value,4,VALE5,VALE,Extração Mineral,92.7711,0.242458
+2017-05-02,value,5,CSMG3,COPASA MG,"Saneamento, Serv. Água e Gás",86.1446,0.423802
+2017-05-02,value,6,BRAP4,BRADESPAR S/A,Emp. Adm. Part. - Extração Mineral,84.9398,0.869765
+2017-05-02,value,7,ALUP11,ALUPAR INVESTIMENTO S/A,Emp. Adm. Part. - Energia Elétrica,84.3373,-0.05391
+2017-05-02,value,8,ENBR3,EDP ENERGIAS DO BRASIL S/A,Energia Elétrica,81.9277,0.025639
+2017-05-02,value,9,SAPR4,SANEPAR,"Saneamento, Serv. Água e Gás",81.9277,0.0710201
+2017-05-02,value,10,CSNA3,CSN,Metalurgia e Siderurgia,78.3133,0.123581
+2017-05-02,quality,1,MPLU3,MULTIPLUS SA,Comércio (Atacado e Varejo),98.1928,-0.190752
+2017-05-02,quality,2,SMLE3,SMILES S.A.,Comércio (Atacado e Varejo),94.3775,0.333621
+2017-05-02,quality,3,ODPV3,BRADSAÚDE S.A.,Serviços Médicos,93.971,0.257926
+2017-05-02,quality,4,TRPL4,CTEEP,Energia Elétrica,91.9581,0.0677776
+2017-05-02,quality,5,GRND3,GRENDENE SA,Têxtil e Vestuário,89.1077,0.0380287
+2017-05-02,quality,6,ABEV3,AMBEV S.A,Bebidas e Fumo,87.9273,0.220786
+2017-05-02,quality,7,CVCB3,CVC BRASIL OPERADORA E AGÊNCIA DE VIAGENS SA,Hospedagem e Turismo,86.3258,0.833748
+2017-05-02,quality,8,SEER3,SER EDUCACIONAL S.A.,Educação,85.9046,-0.327264
+2017-05-02,quality,9,BRKM5,BRASKEM,Petroquímicos e Borracha,85.1259,0.361457
+2017-05-02,quality,10,NATU3,NATURA COSMETICOS SA,Farmacêutico e Higiene,83.9064,0.0732899
+2017-05-02,momentum,1,SAPR4,SANEPAR,"Saneamento, Serv. Água e Gás",100,0.0710201
+2017-05-02,momentum,2,BRAP4,BRADESPAR S/A,Emp. Adm. Part. - Extração Mineral,98.7952,0.869765
+2017-05-02,momentum,3,CARD3,CSU DIGITAL S.A.,Emp. Adm. Part. - Sem Setor Principal,97.5904,-0.00288184
+2017-05-02,momentum,4,CSMG3,COPASA MG,"Saneamento, Serv. Água e Gás",96.3855,0.423802
+2017-05-02,momentum,5,FLRY3,FLEURY SA,Serviços Médicos,95.1807,-0.00445263
+2017-05-02,momentum,6,LIGT3,LIGHT S.A. - EM RECUPERAÇÃO JUDICIAL,Emp. Adm. Part. - Energia Elétrica,93.9759,-0.225169
+2017-05-02,momentum,7,VALE5,VALE,Extração Mineral,92.7711,0.242458
+2017-05-02,momentum,8,GOAU4,METALÚRGICA GERDAU,Emp. Adm. Part. - Metalurgia e Siderurgia,91.5663,0.651505
+2017-05-02,momentum,9,USIM5,USIMINAS,Metalurgia e Siderurgia,90.3614,1.46655
+2017-05-02,momentum,10,RAPT4,RANDON S.A. IMPLEMENTOS E PARTICIPAÇÕES,"Máquinas, Equipamentos, Veículos e Peças",89.1566,0.850823
+2017-05-02,income,1,CGAS5,COMPANHIA DE GÁS DE SÃO PAULO - COMGÁS,"Emp. Adm. Part. - Saneamento, Serv. Água e Gás",100,0.391524
+2017-05-02,income,2,MPLU3,MULTIPLUS SA,Comércio (Atacado e Varejo),98.7952,-0.190752
+2017-05-02,income,3,TIET11,CIA BRASILIANA DE ENERGIA,Emp. Adm. Part. - Energia Elétrica,97.5904,-0.101966
+2017-05-02,income,4,CPLE6,COPEL,Energia Elétrica,96.3855,-0.0387606
+2017-05-02,income,5,CSAN3,COSAN SA INDUSTRIA E COMERCIO,"Agricultura (Açúcar, Álcool e Cana)",95.1807,0.0805223
+2017-05-02,income,6,SAPR4,SANEPAR,"Saneamento, Serv. Água e Gás",93.9759,0.0710201
+2017-05-02,income,7,EZTC3,EZ TEC EMPREEND. E PARTICIPAÇÕES S/A,"Emp. Adm. Part. - Const. Civil, Mat. Const. e Decoração",92.7711,0.134789
+2017-05-02,income,8,POMO4,MARCOPOLO,"Máquinas, Equipamentos, Veículos e Peças",91.5663,0.643783
+2017-05-02,income,9,FLRY3,FLEURY SA,Serviços Médicos,90.3614,-0.00445263
+2017-05-02,income,10,VIVT4,TELEFÔNICA BRASIL,Telecomunicações,89.1566,0.0753612
+2018-05-02,composite,1,FESA4,FERBASA,Metalurgia e Siderurgia,88.024,0.0853893
+2018-05-02,composite,2,BRAP4,BRADESPAR S/A,Emp. Adm. Part. - Extração Mineral,86.4627,-0.110557
+2018-05-02,composite,3,SLCE3,SLC AGRICOLA SA,"Agricultura (Açúcar, Álcool e Cana)",83.3927,0.0454512
+2018-05-02,composite,4,EZTC3,EZ TEC EMPREEND. E PARTICIPAÇÕES S/A,"Emp. Adm. Part. - Const. Civil, Mat. Const. e Decoração",77.3784,0.0676658
+2018-05-02,composite,5,BRKM5,BRASKEM,Petroquímicos e Borracha,75.5347,0.0547036
+2018-05-02,composite,6,TGMA3,TEGMA GESTÃO LOGÍSTICA SA,Serviços Transporte e Logística,73.0092,0.138593
+2018-05-02,composite,7,CSMG3,COPASA MG,"Saneamento, Serv. Água e Gás",70.7369,0.487468
+2018-05-02,composite,8,EGIE3,TRACTEBEL ENERGIA,Energia Elétrica,68.8006,0.285372
+2018-05-02,composite,9,QGEP3,QGEP PARTICIPAÇÕES SA,Emp. Adm. Part. - Petróleo e Gás,68.1724,0.167871
+2018-05-02,composite,10,PRIO3,PETRO RIO S.A.,Petróleo e Gás,67.5169,1.63472
+2018-05-02,magic,1,PRIO3,PETRO RIO S.A.,Petróleo e Gás,1,1.63472
+2018-05-02,magic,2,BRKM5,BRASKEM,Petroquímicos e Borracha,2,0.0547036
+2018-05-02,magic,3,BRAP4,BRADESPAR S/A,Emp. Adm. Part. - Extração Mineral,3,-0.110557
+2018-05-02,magic,4,SEER3,SER EDUCACIONAL S.A.,Educação,4,0.377487
+2018-05-02,magic,5,VULC3,VULCABRAS S/A.,Têxtil e Vestuário,5,-0.238329
+2018-05-02,magic,6,FESA4,FERBASA,Metalurgia e Siderurgia,6,0.0853893
+2018-05-02,magic,7,QGEP3,QGEP PARTICIPAÇÕES SA,Emp. Adm. Part. - Petróleo e Gás,7,0.167871
+2018-05-02,magic,8,ECOR3,ECORODOVIAS INFRAESTRUTURA E LOGÍSTICA S.A.,Serviços Transporte e Logística,8,-0.126298
+2018-05-02,magic,9,TRPL4,CTEEP,Energia Elétrica,9,0.261104
+2018-05-02,magic,10,GUAR3,GUARARAPES CONFECÇÕES,Têxtil e Vestuário,10,0.104962
+2018-05-02,value,1,TRPL4,CTEEP,Energia Elétrica,98.3871,0.261104
+2018-05-02,value,2,BRPR3,BR PROPERTIES S.A.,Emp. Adm. Part. - Sem Setor Principal,98.3871,-0.00347625
+2018-05-02,value,3,PRIO3,PETRO RIO S.A.,Petróleo e Gás,95.1613,1.63472
+2018-05-02,value,4,CPLE6,COPEL,Energia Elétrica,93.5484,0.691543
+2018-05-02,value,5,QGEP3,QGEP PARTICIPAÇÕES SA,Emp. Adm. Part. - Petróleo e Gás,90.3226,0.167871
+2018-05-02,value,6,ENBR3,EDP ENERGIAS DO BRASIL S/A,Energia Elétrica,89.2473,0.360092
+2018-05-02,value,7,CMIG4,CEMIG,Energia Elétrica,88.172,0.918475
+2018-05-02,value,8,BRAP4,BRADESPAR S/A,Emp. Adm. Part. - Extração Mineral,87.0968,-0.110557
+2018-05-02,value,9,ALUP11,ALUPAR INVESTIMENTO S/A,Emp. Adm. Part. - Energia Elétrica,86.0215,0.359045
+2018-05-02,value,10,FESA4,FERBASA,Metalurgia e Siderurgia,85.4839,0.0853893
+2018-05-02,quality,1,MPLU3,MULTIPLUS SA,Comércio (Atacado e Varejo),97.8495,-0.0132345
+2018-05-02,quality,2,PRIO3,PETRO RIO S.A.,Petróleo e Gás,95.3366,1.63472
+2018-05-02,quality,3,ODPV3,BRADSAÚDE S.A.,Serviços Médicos,94.6237,0.151907
+2018-05-02,quality,4,ARZZ3,AZZAS 2154 S.A.,Têxtil e Vestuário,90.3031,-0.0201842
+2018-05-02,quality,5,GRND3,GRENDENE SA,Têxtil e Vestuário,88.4876,-0.19028
+2018-05-02,quality,6,MGLU3,MAGAZINE LUIZA SA,Comércio (Atacado e Varejo),88.1643,0.871227
+2018-05-02,quality,7,VULC3,VULCABRAS S/A.,Têxtil e Vestuário,87.7902,-0.238329
+2018-05-02,quality,8,BRAP4,BRADESPAR S/A,Emp. Adm. Part. - Extração Mineral,87.7863,-0.110557
+2018-05-02,quality,9,BRKM5,BRASKEM,Petroquímicos e Borracha,86.0098,0.0547036
+2018-05-02,quality,10,CVCB3,CVC BRASIL OPERADORA E AGÊNCIA DE VIAGENS SA,Hospedagem e Turismo,85.2891,0.0225542
+2018-05-02,momentum,1,MGLU3,MAGAZINE LUIZA SA,Comércio (Atacado e Varejo),100,0.871227
+2018-05-02,momentum,2,USIM5,USIMINAS,Metalurgia e Siderurgia,98.9247,-0.207484
+2018-05-02,momentum,3,VVAR11,PONTO FRIO,Comércio (Atacado e Varejo),97.8495,-0.498969
+2018-05-02,momentum,4,MAGG3,MAGNESITA REFRATARIOS S.A.,Emp. Adm. Part. - Extração Mineral,96.7742,0.0303556
+2018-05-02,momentum,5,FIBR3,FIBRIA,Papel e Celulose,95.6989,0.0306791
+2018-05-02,momentum,6,FESA4,FERBASA,Metalurgia e Siderurgia,94.6237,0.0853893
+2018-05-02,momentum,7,VULC3,VULCABRAS S/A.,Têxtil e Vestuário,93.5484,-0.238329
+2018-05-02,momentum,8,ESTC3,ESTACIO PARTICIPAÇÕES SA,Emp. Adm. Part. - Educação,92.4731,-0.127701
+2018-05-02,momentum,9,SLCE3,SLC AGRICOLA SA,"Agricultura (Açúcar, Álcool e Cana)",91.3978,0.0454512
+2018-05-02,momentum,10,TGMA3,TEGMA GESTÃO LOGÍSTICA SA,Serviços Transporte e Logística,90.3226,0.138593
+2018-05-02,income,1,EZTC3,EZ TEC EMPREEND. E PARTICIPAÇÕES S/A,"Emp. Adm. Part. - Const. Civil, Mat. Const. e Decoração",100,0.0676658
+2018-05-02,income,2,MPLU3,MULTIPLUS SA,Comércio (Atacado e Varejo),98.9247,-0.0132345
+2018-05-02,income,3,SLCE3,SLC AGRICOLA SA,"Agricultura (Açúcar, Álcool e Cana)",97.8495,0.0454512
+2018-05-02,income,4,EGIE3,TRACTEBEL ENERGIA,Energia Elétrica,96.7742,0.285372
+2018-05-02,income,5,HGTX3,CIA HERING,Têxtil e Vestuário,95.6989,0.717737
+2018-05-02,income,6,TAEE11,TRANSMISSORA ALIANÇA DE ENERGIA ELÉTRICA S.A.,Emp. Adm. Part. - Energia Elétrica,94.6237,0.420322
+2018-05-02,income,7,CMIG4,CEMIG,Energia Elétrica,93.5484,0.918475
+2018-05-02,income,8,TIET11,CIA BRASILIANA DE ENERGIA,Emp. Adm. Part. - Energia Elétrica,92.4731,0.0227034
+2018-05-02,income,9,BRKM5,BRASKEM,Petroquímicos e Borracha,91.3978,0.0547036
+2018-05-02,income,10,TUPY3,TUPY,Metalurgia e Siderurgia,90.3226,-0.0264035
+2019-05-02,composite,1,UNIP6,UNIPAR CARBOCLORO S.A.,Petroquímicos e Borracha,84.926,-0.387574
+2019-05-02,composite,2,CGAS5,COMPANHIA DE GÁS DE SÃO PAULO - COMGÁS,"Emp. Adm. Part. - Saneamento, Serv. Água e Gás",82.0475,1.41643
+2019-05-02,composite,3,SAPR11,SANEPAR,"Saneamento, Serv. Água e Gás",79.3216,0.0302278
+2019-05-02,composite,4,TAEE11,TRANSMISSORA ALIANÇA DE ENERGIA ELÉTRICA S.A.,Emp. Adm. Part. - Energia Elétrica,78.3578,0.109332
+2019-05-02,composite,5,ENBR3,EDP ENERGIAS DO BRASIL S/A,Energia Elétrica,77.4939,-0.002701
+2019-05-02,composite,6,TEND3,CONSTRUTORA TENDA S/A,"Construção Civil, Mat. Constr. e Decoração",74.0766,0.268696
+2019-05-02,composite,7,CPLE6,COPEL,Energia Elétrica,71.0485,0.357481
+2019-05-02,composite,8,EGIE3,TRACTEBEL ENERGIA,Energia Elétrica,70.3587,-0.0718515
+2019-05-02,composite,9,ELET3,AXIA ENERGIA S.A.,Emp. Adm. Part. - Energia Elétrica,69.8787,-0.289433
+2019-05-02,composite,10,ALUP11,ALUPAR INVESTIMENTO S/A,Emp. Adm. Part. - Energia Elétrica,69.8726,0.00801709
+2019-05-02,magic,1,UNIP6,UNIPAR CARBOCLORO S.A.,Petroquímicos e Borracha,1,-0.387574
+2019-05-02,magic,2,SMLS3,SMILES FIDELIDADE S.A.,Comércio (Atacado e Varejo),2,-0.719875
+2019-05-02,magic,3,BRKM5,BRASKEM,Petroquímicos e Borracha,3,-0.529202
+2019-05-02,magic,4,CGAS5,COMPANHIA DE GÁS DE SÃO PAULO - COMGÁS,"Emp. Adm. Part. - Saneamento, Serv. Água e Gás",4,1.41643
+2019-05-02,magic,5,CSNA3,CSN,Metalurgia e Siderurgia,5,-0.36524
+2019-05-02,magic,6,VALE3,VALE,Extração Mineral,6,-0.0785846
+2019-05-02,magic,7,TEND3,CONSTRUTORA TENDA S/A,"Construção Civil, Mat. Constr. e Decoração",7,0.268696
+2019-05-02,magic,8,ELET3,AXIA ENERGIA S.A.,Emp. Adm. Part. - Energia Elétrica,8,-0.289433
+2019-05-02,magic,9,LEVE3,MAHLE METAL LEVE,"Máquinas, Equipamentos, Veículos e Peças",9,-0.248678
+2019-05-02,magic,10,ECOR3,ECORODOVIAS INFRAESTRUTURA E LOGÍSTICA S.A.,Serviços Transporte e Logística,10,0.262112
+2019-05-02,value,1,GOAU4,METALÚRGICA GERDAU,Emp. Adm. Part. - Metalurgia e Siderurgia,99.0476,-0.22615
+2019-05-02,value,2,BRPR3,BR PROPERTIES S.A.,Emp. Adm. Part. - Sem Setor Principal,98.5714,0.0229007
+2019-05-02,value,3,ELET3,AXIA ENERGIA S.A.,Emp. Adm. Part. - Energia Elétrica,96.6667,-0.289433
+2019-05-02,value,4,MYPK3,IOCHPE-MAXION,"Máquinas, Equipamentos, Veículos e Peças",90.4762,-0.338224
+2019-05-02,value,5,BRML3,BR MALLS PARTICIPAÇOES S.A.,Emp. Adm. Part. - Comércio (Atacado e Varejo),90,-0.185429
+2019-05-02,value,6,ENBR3,EDP ENERGIAS DO BRASIL S/A,Energia Elétrica,89.5238,-0.002701
+2019-05-02,value,7,CPLE6,COPEL,Energia Elétrica,89.0476,0.357481
+2019-05-02,value,8,GGBR4,GERDAU S.A.,Metalurgia e Siderurgia,89.0476,-0.168301
+2019-05-02,value,9,BRAP4,BRADESPAR S/A,Emp. Adm. Part. - Extração Mineral,88.0952,-0.0256781
+2019-05-02,value,10,RLOG3,COSAN LOGÍSTICA S.A.,Serviços Transporte e Logística,84.2857,0.11338
+2019-05-02,quality,1,SMLS3,SMILES FIDELIDADE S.A.,Comércio (Atacado e Varejo),98.0952,-0.719875
+2019-05-02,quality,2,ODPV3,BRADSAÚDE S.A.,Serviços Médicos,93.9683,-0.124778
+2019-05-02,quality,3,PRIO3,PETRO RIO S.A.,Petróleo e Gás,91.4286,0.117847
+2019-05-02,quality,4,MGLU3,MAGAZINE LUIZA SA,Comércio (Atacado e Varejo),90.7937,1.16326
+2019-05-02,quality,5,UNIP6,UNIPAR CARBOCLORO S.A.,Petroquímicos e Borracha,89.8413,-0.387574
+2019-05-02,quality,6,ARZZ3,AZZAS 2154 S.A.,Têxtil e Vestuário,86.3492,-0.182
+2019-05-02,quality,7,ABEV3,AMBEV S.A,Bebidas e Fumo,86.3492,-0.344847
+2019-05-02,quality,8,ESTC3,ESTACIO PARTICIPAÇÕES SA,Emp. Adm. Part. - Educação,86.0317,0.239187
+2019-05-02,quality,9,CGAS5,COMPANHIA DE GÁS DE SÃO PAULO - COMGÁS,"Emp. Adm. Part. - Saneamento, Serv. Água e Gás",83.4921,1.41643
+2019-05-02,quality,10,TEND3,CONSTRUTORA TENDA S/A,"Construção Civil, Mat. Constr. e Decoração",82.2222,0.268696
+2019-05-02,momentum,1,PRIO3,PETRO RIO S.A.,Petróleo e Gás,100,0.117847
+2019-05-02,momentum,2,ELET3,AXIA ENERGIA S.A.,Emp. Adm. Part. - Energia Elétrica,99.0385,-0.289433
+2019-05-02,momentum,3,CSNA3,CSN,Metalurgia e Siderurgia,98.0769,-0.36524
+2019-05-02,momentum,4,MGLU3,MAGAZINE LUIZA SA,Comércio (Atacado e Varejo),97.1154,1.16326
+2019-05-02,momentum,5,JBSS3,JBS SA,Alimentos,96.1538,0.166496
+2019-05-02,momentum,6,CMIG4,CEMIG,Energia Elétrica,95.1923,-0.346877
+2019-05-02,momentum,7,DIRR3,DIRECIONAL ENGENHARIA SA,"Construção Civil, Mat. Constr. e Decoração",94.2308,0.0702143
+2019-05-02,momentum,8,CGAS5,COMPANHIA DE GÁS DE SÃO PAULO - COMGÁS,"Emp. Adm. Part. - Saneamento, Serv. Água e Gás",93.2692,1.41643
+2019-05-02,momentum,9,HGTX3,CIA HERING,Têxtil e Vestuário,92.3077,-0.537149
+2019-05-02,momentum,10,SEDU3,ABRIL EDUCAÇÃO S/A,Gráficas e Editoras,91.3462,0.0484581
+2019-05-02,income,1,SMLS3,SMILES FIDELIDADE S.A.,Comércio (Atacado e Varejo),100,-0.719875
+2019-05-02,income,2,DIRR3,DIRECIONAL ENGENHARIA SA,"Construção Civil, Mat. Constr. e Decoração",99.0476,0.0702143
+2019-05-02,income,3,VIVT4,TELEFÔNICA BRASIL,Telecomunicações,98.0952,0.0860258
+2019-05-02,income,4,TAEE11,TRANSMISSORA ALIANÇA DE ENERGIA ELÉTRICA S.A.,Emp. Adm. Part. - Energia Elétrica,97.1429,0.109332
+2019-05-02,income,5,TUPY3,TUPY,Metalurgia e Siderurgia,96.1905,-0.157196
+2019-05-02,income,6,TIET11,CIA BRASILIANA DE ENERGIA,Emp. Adm. Part. - Energia Elétrica,95.2381,0.409973
+2019-05-02,income,7,EGIE3,TRACTEBEL ENERGIA,Energia Elétrica,94.2857,-0.0718515
+2019-05-02,income,8,LEVE3,MAHLE METAL LEVE,"Máquinas, Equipamentos, Veículos e Peças",93.3333,-0.248678
+2019-05-02,income,9,CYRE3,CYRELA BRAZIL REALTY S.A.,"Construção Civil, Mat. Constr. e Decoração",92.381,-0.0689575
+2019-05-02,income,10,CSMG3,COPASA MG,"Saneamento, Serv. Água e Gás",91.4286,-0.277292
+2020-05-04,composite,1,JHSF3,JHSF,"Emp. Adm. Part. - Const. Civil, Mat. Const. e Decoração",78.2025,0.821833
+2020-05-04,composite,2,CPLE6,COPEL,Energia Elétrica,77.2039,0.283919
+2020-05-04,composite,3,TRIS3,TRISUL,"Emp. Adm. Part. - Const. Civil, Mat. Const. e Decoração",76.2397,0.291018
+2020-05-04,composite,4,ALUP11,ALUPAR INVESTIMENTO S/A,Emp. Adm. Part. - Energia Elétrica,73.9325,0.229746
+2020-05-04,composite,5,BRML3,BR MALLS PARTICIPAÇOES S.A.,Emp. Adm. Part. - Comércio (Atacado e Varejo),73.7948,0.0684492
+2020-05-04,composite,6,TGMA3,TEGMA GESTÃO LOGÍSTICA SA,Serviços Transporte e Logística,73.6915,0.281984
+2020-05-04,composite,7,TEND3,CONSTRUTORA TENDA S/A,"Construção Civil, Mat. Constr. e Decoração",73.5882,0.188355
+2020-05-04,composite,8,DIRR3,DIRECIONAL ENGENHARIA SA,"Construção Civil, Mat. Constr. e Decoração",73.2094,0.615135
+2020-05-04,composite,9,SAPR11,SANEPAR,"Saneamento, Serv. Água e Gás",72.5207,-0.158141
+2020-05-04,composite,10,LEVE3,MAHLE METAL LEVE,"Máquinas, Equipamentos, Veículos e Peças",70.3857,0.495155
+2020-05-04,magic,1,SMLS3,SMILES FIDELIDADE S.A.,Comércio (Atacado e Varejo),1,1.02432
+2020-05-04,magic,2,TGMA3,TEGMA GESTÃO LOGÍSTICA SA,Serviços Transporte e Logística,2,0.281984
+2020-05-04,magic,3,UNIP6,UNIPAR CARBOCLORO S.A.,Petroquímicos e Borracha,3,2.3451
+2020-05-04,magic,4,ALUP11,ALUPAR INVESTIMENTO S/A,Emp. Adm. Part. - Energia Elétrica,4,0.229746
+2020-05-04,magic,5,MRFG3,MARFRIG,Alimentos,5,0.513232
+2020-05-04,magic,6,SAPR11,SANEPAR,"Saneamento, Serv. Água e Gás",6,-0.158141
+2020-05-04,magic,7,TIMP3,TIM,Emp. Adm. Part. - Telecomunicações,7,0.000743494
+2020-05-04,magic,8,TRPL4,CTEEP,Energia Elétrica,8,0.405263
+2020-05-04,magic,9,LEVE3,MAHLE METAL LEVE,"Máquinas, Equipamentos, Veículos e Peças",9,0.495155
+2020-05-04,magic,10,TEND3,CONSTRUTORA TENDA S/A,"Construção Civil, Mat. Constr. e Decoração",10,0.188355
+2020-05-04,value,1,BRPR3,BR PROPERTIES S.A.,Emp. Adm. Part. - Sem Setor Principal,99.5868,0.0901908
+2020-05-04,value,2,GOAU4,METALÚRGICA GERDAU,Emp. Adm. Part. - Metalurgia e Siderurgia,97.9339,1.92298
+2020-05-04,value,3,TRPL4,CTEEP,Energia Elétrica,97.5207,0.405263
+2020-05-04,value,4,MYPK3,IOCHPE-MAXION,"Máquinas, Equipamentos, Veículos e Peças",92.9752,0.1664
+2020-05-04,value,5,BRML3,BR MALLS PARTICIPAÇOES S.A.,Emp. Adm. Part. - Comércio (Atacado e Varejo),92.1488,0.0684492
+2020-05-04,value,6,ENAT3,QGEP PARTICIPAÇÕES SA,Emp. Adm. Part. - Petróleo e Gás,91.7355,0.697117
+2020-05-04,value,7,JHSF3,JHSF,"Emp. Adm. Part. - Const. Civil, Mat. Const. e Decoração",89.6694,0.821833
+2020-05-04,value,8,JPSA3,IGUATEMI S.A.,Emp. Adm. Part. - Comércio (Atacado e Varejo),88.843,0.327578
+2020-05-04,value,9,PETR4,PETROBRAS,Petróleo e Gás,87.6033,0.39349
+2020-05-04,value,10,ELET3,AXIA ENERGIA S.A.,Emp. Adm. Part. - Energia Elétrica,85.9504,0.604884
+2020-05-04,quality,1,SMLS3,SMILES FIDELIDADE S.A.,Comércio (Atacado e Varejo),96.9697,1.02432
+2020-05-04,quality,2,ODPV3,BRADSAÚDE S.A.,Serviços Médicos,94.4904,-0.125
+2020-05-04,quality,3,CNTO3,GRUPO SBF S.A.,Comércio (Atacado e Varejo),91.4601,-0.111392
+2020-05-04,quality,4,TGMA3,TEGMA GESTÃO LOGÍSTICA SA,Serviços Transporte e Logística,89.8072,0.281984
+2020-05-04,quality,5,LREN3,RENNER,Comércio (Atacado e Varejo),88.9807,0.110825
+2020-05-04,quality,6,ARZZ3,AZZAS 2154 S.A.,Têxtil e Vestuário,88.7052,0.8489
+2020-05-04,quality,7,PARD3,INSTITUTO HERMES PARDINI S/A,Serviços Médicos,87.3278,0.0651318
+2020-05-04,quality,8,TEND3,CONSTRUTORA TENDA S/A,"Construção Civil, Mat. Constr. e Decoração",87.3278,0.188355
+2020-05-04,quality,9,ABEV3,AMBEV S.A,Bebidas e Fumo,87.0523,0.258503
+2020-05-04,quality,10,MGLU3,MAGAZINE LUIZA SA,Comércio (Atacado e Varejo),84.022,0.572619
+2020-05-04,momentum,1,CNTO3,GRUPO SBF S.A.,Comércio (Atacado e Varejo),100,-0.111392
+2020-05-04,momentum,2,WEGE3,WEG SA,"Emp. Adm. Part. - Máqs., Equip., Veíc. e Peças",99.1736,0.744462
+2020-05-04,momentum,3,ENEV3,ENEVA SA,Energia Elétrica,98.3471,0.666194
+2020-05-04,momentum,4,MGLU3,MAGAZINE LUIZA SA,Comércio (Atacado e Varejo),97.5207,0.572619
+2020-05-04,momentum,5,LOGN3,LOG-IN LOGISTICA INTERMODAL SA,Serviços Transporte e Logística,96.6942,0.53461
+2020-05-04,momentum,6,SQIA3,SINQUIA S.A.,Comunicação e Informática,95.8678,0.0425275
+2020-05-04,momentum,7,RADL3,DROGASIL SA,Comércio (Atacado e Varejo),95.0413,0.283019
+2020-05-04,momentum,8,TRIS3,TRISUL,"Emp. Adm. Part. - Const. Civil, Mat. Const. e Decoração",94.2149,0.291018
+2020-05-04,momentum,9,POSI3,POSITIVO INFORMATICA SA,Comunicação e Informática,93.3884,1.43076
+2020-05-04,momentum,10,ALPA4,ALPARGATAS,Têxtil e Vestuário,92.562,0.504545
+2020-05-04,income,1,SEER3,SER EDUCACIONAL S.A.,Educação,100,-0.237135
+2020-05-04,income,2,ENAT3,QGEP PARTICIPAÇÕES SA,Emp. Adm. Part. - Petróleo e Gás,99.1736,0.697117
+2020-05-04,income,3,LEVE3,MAHLE METAL LEVE,"Máquinas, Equipamentos, Veículos e Peças",98.3471,0.495155
+2020-05-04,income,4,CYRE3,CYRELA BRAZIL REALTY S.A.,"Construção Civil, Mat. Constr. e Decoração",97.5207,0.758781
+2020-05-04,income,5,BRML3,BR MALLS PARTICIPAÇOES S.A.,Emp. Adm. Part. - Comércio (Atacado e Varejo),96.6942,0.0684492
+2020-05-04,income,6,MRVE3,MRV ENGENHARIA,"Construção Civil, Mat. Constr. e Decoração",95.8678,0.213922
+2020-05-04,income,7,MYPK3,IOCHPE-MAXION,"Máquinas, Equipamentos, Veículos e Peças",95.0413,0.1664
+2020-05-04,income,8,TAEE11,TRANSMISSORA ALIANÇA DE ENERGIA ELÉTRICA S.A.,Emp. Adm. Part. - Energia Elétrica,94.2149,0.714955
+2020-05-04,income,9,FESA4,FERBASA,Metalurgia e Siderurgia,93.3884,1.49657
+2020-05-04,income,10,TGMA3,TEGMA GESTÃO LOGÍSTICA SA,Serviços Transporte e Logística,92.562,0.281984
+2021-05-03,composite,1,CYRE3,CYRELA BRAZIL REALTY S.A.,"Construção Civil, Mat. Constr. e Decoração",85.2735,-0.373139
+2021-05-03,composite,2,VALE3,VALE,Extração Mineral,83.1425,-0.106385
+2021-05-03,composite,3,SMLS3,SMILES FIDELIDADE S.A.,Comércio (Atacado e Varejo),82.4109,0.044289
+2021-05-03,composite,4,POSI3,POSITIVO INFORMATICA SA,Comunicação e Informática,80.3753,-0.23921
+2021-05-03,composite,5,RAPT4,RANDON S.A. IMPLEMENTOS E PARTICIPAÇÕES,"Máquinas, Equipamentos, Veículos e Peças",80.3435,-0.224971
+2021-05-03,composite,6,JHSF3,JHSF,"Emp. Adm. Part. - Const. Civil, Mat. Const. e Decoração",79.5483,0.0495687
+2021-05-03,composite,7,EVEN3,EVEN,"Construção Civil, Mat. Constr. e Decoração",78.9758,-0.419907
+2021-05-03,composite,8,UNIP6,UNIPAR CARBOCLORO S.A.,Petroquímicos e Borracha,76.9402,0.566351
+2021-05-03,composite,9,TAEE11,TRANSMISSORA ALIANÇA DE ENERGIA ELÉTRICA S.A.,Emp. Adm. Part. - Energia Elétrica,76.1768,0.154211
+2021-05-03,composite,10,CPLE6,COPEL,Energia Elétrica,75.986,0.307461
+2021-05-03,magic,1,MRFG3,MARFRIG,Alimentos,1,-0.027027
+2021-05-03,magic,2,CYRE3,CYRELA BRAZIL REALTY S.A.,"Construção Civil, Mat. Constr. e Decoração",2,-0.373139
+2021-05-03,magic,3,TRPL4,CTEEP,Energia Elétrica,3,-0.0349125
+2021-05-03,magic,4,CSNA3,CSN,Metalurgia e Siderurgia,4,-0.551509
+2021-05-03,magic,5,RAPT4,RANDON S.A. IMPLEMENTOS E PARTICIPAÇÕES,"Máquinas, Equipamentos, Veículos e Peças",5,-0.224971
+2021-05-03,magic,6,VALE3,VALE,Extração Mineral,6,-0.106385
+2021-05-03,magic,7,SEER3,SER EDUCACIONAL S.A.,Educação,7,-0.254
+2021-05-03,magic,8,TAEE11,TRANSMISSORA ALIANÇA DE ENERGIA ELÉTRICA S.A.,Emp. Adm. Part. - Energia Elétrica,8,0.154211
+2021-05-03,magic,9,ALUP11,ALUPAR INVESTIMENTO S/A,Emp. Adm. Part. - Energia Elétrica,9,-0.00998712
+2021-05-03,magic,10,UNIP6,UNIPAR CARBOCLORO S.A.,Petroquímicos e Borracha,10,0.566351
+2021-05-03,value,1,TRPL4,CTEEP,Energia Elétrica,98.0916,-0.0349125
+2021-05-03,value,2,GOAU4,METALÚRGICA GERDAU,Emp. Adm. Part. - Metalurgia e Siderurgia,98.0916,-0.0707265
+2021-05-03,value,3,BRPR3,BR PROPERTIES S.A.,Emp. Adm. Part. - Sem Setor Principal,97.7099,-0.0443693
+2021-05-03,value,4,EVEN3,EVEN,"Construção Civil, Mat. Constr. e Decoração",94.2748,-0.419907
+2021-05-03,value,5,ALUP11,ALUPAR INVESTIMENTO S/A,Emp. Adm. Part. - Energia Elétrica,92.7481,-0.00998712
+2021-05-03,value,6,CPLE6,COPEL,Energia Elétrica,90.458,0.307461
+2021-05-03,value,7,SAPR11,SANEPAR,"Saneamento, Serv. Água e Gás",89.313,-0.00795577
+2021-05-03,value,8,SEER3,SER EDUCACIONAL S.A.,Educação,87.4046,-0.254
+2021-05-03,value,9,ENBR3,EDP ENERGIAS DO BRASIL S/A,Energia Elétrica,85.8779,0.234573
+2021-05-03,value,10,CMIG4,CEMIG,Energia Elétrica,84.3511,0.311462
+2021-05-03,quality,1,ODPV3,BRADSAÚDE S.A.,Serviços Médicos,93.1298,-0.228571
+2021-05-03,quality,2,SMLS3,SMILES FIDELIDADE S.A.,Comércio (Atacado e Varejo),91.8575,0.044289
+2021-05-03,quality,3,UNIP6,UNIPAR CARBOCLORO S.A.,Petroquímicos e Borracha,88.2952,0.566351
+2021-05-03,quality,4,WEGE3,WEG SA,"Emp. Adm. Part. - Máqs., Equip., Veíc. e Peças",88.0407,-0.147675
+2021-05-03,quality,5,VALE3,VALE,Extração Mineral,87.5318,-0.106385
+2021-05-03,quality,6,CYRE3,CYRELA BRAZIL REALTY S.A.,"Construção Civil, Mat. Constr. e Decoração",86.514,-0.373139
+2021-05-03,quality,7,B3SA3,B3,Bolsas de Valores/Mercadorias e Futuros,86.514,-0.210374
+2021-05-03,quality,8,TASA4,TAURUS ARMAS S.A.,"Máquinas, Equipamentos, Veículos e Peças",84.7328,-0.0279658
+2021-05-03,quality,9,CSNA3,CSN,Metalurgia e Siderurgia,83.4606,-0.551509
+2021-05-03,quality,10,KEPL3,KEPLER WEBER SA,Emp. Adm. Part. - Metalurgia e Siderurgia,82.1883,0.529723
+2021-05-03,momentum,1,TASA4,TAURUS ARMAS S.A.,"Máquinas, Equipamentos, Veículos e Peças",100,-0.0279658
+2021-05-03,momentum,2,CSNA3,CSN,Metalurgia e Siderurgia,99.2366,-0.551509
+2021-05-03,momentum,3,PRIO3,PETRO RIO S.A.,Petróleo e Gás,98.4733,0.368931
+2021-05-03,momentum,4,LWSA3,LWSA S/A,Comunicação e Informática,97.7099,-0.747594
+2021-05-03,momentum,5,USIM5,USIMINAS,Metalurgia e Siderurgia,96.9466,-0.415565
+2021-05-03,momentum,6,PTBL3,PORTOBELLO S/A,"Construção Civil, Mat. Constr. e Decoração",96.1832,-0.264117
+2021-05-03,momentum,7,ROMI3,ROMI S.A.,"Máquinas, Equipamentos, Veículos e Peças",95.4198,-0.553504
+2021-05-03,momentum,8,UNIP6,UNIPAR CARBOCLORO S.A.,Petroquímicos e Borracha,94.6565,0.566351
+2021-05-03,momentum,9,GOAU4,METALÚRGICA GERDAU,Emp. Adm. Part. - Metalurgia e Siderurgia,93.8931,-0.0707265
+2021-05-03,momentum,10,GGBR4,GERDAU S.A.,Metalurgia e Siderurgia,93.1298,-0.0506365
+2021-05-03,income,1,SMLS3,SMILES FIDELIDADE S.A.,Comércio (Atacado e Varejo),100,0.044289
+2021-05-03,income,2,CPLE6,COPEL,Energia Elétrica,99.2366,0.307461
+2021-05-03,income,3,CSMG3,COPASA MG,"Saneamento, Serv. Água e Gás",98.4733,-0.234982
+2021-05-03,income,4,CYRE3,CYRELA BRAZIL REALTY S.A.,"Construção Civil, Mat. Constr. e Decoração",97.7099,-0.373139
+2021-05-03,income,5,CPFE3,CPFL ENERGIA S.A.,Emp. Adm. Part. - Energia Elétrica,96.9466,0.320532
+2021-05-03,income,6,VIVT3,TELEFÔNICA BRASIL,Telecomunicações,96.1832,0.306984
+2021-05-03,income,7,BEEF3,MINERVA S/A,Alimentos,95.4198,0.409186
+2021-05-03,income,8,BRAP4,BRADESPAR S/A,Emp. Adm. Part. - Extração Mineral,94.6565,-0.471379
+2021-05-03,income,9,TAEE11,TRANSMISSORA ALIANÇA DE ENERGIA ELÉTRICA S.A.,Emp. Adm. Part. - Energia Elétrica,93.8931,0.154211
+2021-05-03,income,10,ROMI3,ROMI S.A.,"Máquinas, Equipamentos, Veículos e Peças",93.1298,-0.553504
+2022-05-02,composite,1,PETR4,PETROBRAS,Petróleo e Gás,88.5198,0.30324
+2022-05-02,composite,2,ENAT3,QGEP PARTICIPAÇÕES SA,Emp. Adm. Part. - Petróleo e Gás,85.373,-0.457551
+2022-05-02,composite,3,UNIP6,UNIPAR CARBOCLORO S.A.,Petroquímicos e Borracha,84.8485,-0.260451
+2022-05-02,composite,4,GOAU4,METALÚRGICA GERDAU,Emp. Adm. Part. - Metalurgia e Siderurgia,82.838,0.131997
+2022-05-02,composite,5,AGRO3,BRASILAGRO CIA BRAS DE PROP AGRICOLAS,"Agricultura (Açúcar, Álcool e Cana)",82.6923,-0.234987
+2022-05-02,composite,6,CPLE6,COPEL,Energia Elétrica,82.634,0.232432
+2022-05-02,composite,7,FESA4,FERBASA,Metalurgia e Siderurgia,79.2832,0.211445
+2022-05-02,composite,8,GGBR4,GERDAU S.A.,Metalurgia e Siderurgia,78.6131,0.01444
+2022-05-02,composite,9,ENBR3,EDP ENERGIAS DO BRASIL S/A,Energia Elétrica,78.5548,0.150263
+2022-05-02,composite,10,KEPL3,KEPLER WEBER SA,Emp. Adm. Part. - Metalurgia e Siderurgia,77.9429,-0.187048
+2022-05-02,magic,1,BRAP4,BRADESPAR S/A,Emp. Adm. Part. - Extração Mineral,1,-0.0735286
+2022-05-02,magic,2,CMIN3,CSN MINERAÇÃO S.A,Extração Mineral,2,0.0764021
+2022-05-02,magic,3,FHER3,FERTILIZANTES HERINGER SA,Petroquímicos e Borracha,3,-0.188371
+2022-05-02,magic,4,BRKM5,BRASKEM,Petroquímicos e Borracha,4,-0.545872
+2022-05-02,magic,5,UNIP6,UNIPAR CARBOCLORO S.A.,Petroquímicos e Borracha,5,-0.260451
+2022-05-02,magic,6,CSNA3,CSN,Metalurgia e Siderurgia,6,-0.219809
+2022-05-02,magic,7,USIM5,USIMINAS,Metalurgia e Siderurgia,7,-0.330702
+2022-05-02,magic,8,GOAU4,METALÚRGICA GERDAU,Emp. Adm. Part. - Metalurgia e Siderurgia,8,0.131997
+2022-05-02,magic,9,VALE3,VALE,Extração Mineral,9,-0.0960192
+2022-05-02,magic,10,TASA4,TAURUS ARMAS S.A.,"Máquinas, Equipamentos, Veículos e Peças",10,-0.295116
+2022-05-02,value,1,GOAU4,METALÚRGICA GERDAU,Emp. Adm. Part. - Metalurgia e Siderurgia,99.6503,0.131997
+2022-05-02,value,2,EVEN3,EVEN,"Construção Civil, Mat. Constr. e Decoração",97.5524,-0.0528285
+2022-05-02,value,3,USIM5,USIMINAS,Metalurgia e Siderurgia,97.2028,-0.330702
+2022-05-02,value,4,TRPL4,CTEEP,Energia Elétrica,90.5594,-0.0832672
+2022-05-02,value,5,LAVV3,LAVVI EMPREENDIMENTOS IMOBILIÁRIOS S.A,"Construção Civil, Mat. Constr. e Decoração",89.5105,0.189429
+2022-05-02,value,6,MYPK3,IOCHPE-MAXION,"Máquinas, Equipamentos, Veículos e Peças",89.1608,-0.0764897
+2022-05-02,value,7,ALUP11,ALUPAR INVESTIMENTO S/A,Emp. Adm. Part. - Energia Elétrica,87.4126,0.103529
+2022-05-02,value,8,SAPR11,SANEPAR,"Saneamento, Serv. Água e Gás",86.3636,0.0573081
+2022-05-02,value,9,GGBR4,GERDAU S.A.,Metalurgia e Siderurgia,85.3147,0.01444
+2022-05-02,value,10,TRIS3,TRISUL,"Emp. Adm. Part. - Const. Civil, Mat. Const. e Decoração",84.2657,-0.144315
+2022-05-02,quality,1,UNIP6,UNIPAR CARBOCLORO S.A.,Petroquímicos e Borracha,91.1422,-0.260451
+2022-05-02,quality,2,CMIN3,CSN MINERAÇÃO S.A,Extração Mineral,91.1422,0.0764021
+2022-05-02,quality,3,CURY3,CURY CONSTRUTORA E INCORPORADORA S.A.,"Construção Civil, Mat. Constr. e Decoração",90.9091,0.738484
+2022-05-02,quality,4,BRAP4,BRADESPAR S/A,Emp. Adm. Part. - Extração Mineral,90.676,-0.0735286
+2022-05-02,quality,5,LPSB3,LOPES,"Emp. Adm. Part. - Const. Civil, Mat. Const. e Decoração",89.0443,-0.520615
+2022-05-02,quality,6,KEPL3,KEPLER WEBER SA,Emp. Adm. Part. - Metalurgia e Siderurgia,89.0443,-0.187048
+2022-05-02,quality,7,FHER3,FERTILIZANTES HERINGER SA,Petroquímicos e Borracha,88.5781,-0.188371
+2022-05-02,quality,8,VALE3,VALE,Extração Mineral,88.1119,-0.0960192
+2022-05-02,quality,9,TASA4,TAURUS ARMAS S.A.,"Máquinas, Equipamentos, Veículos e Peças",87.8788,-0.295116
+2022-05-02,quality,10,BRKM5,BRASKEM,Petroquímicos e Borracha,87.6457,-0.545872
+2022-05-02,momentum,1,AALR3,ALLIANÇA SAÚDE E PARTICIPAÇÕES S.A.,Serviços Médicos,100,0.168985
+2022-05-02,momentum,2,FHER3,FERTILIZANTES HERINGER SA,Petroquímicos e Borracha,99.3007,-0.188371
+2022-05-02,momentum,3,PETR4,PETROBRAS,Petróleo e Gás,98.6014,0.30324
+2022-05-02,momentum,4,ORVR3,ORIZON VALORIZAÇÃO DE RESÍDUOS S.A.,"Saneamento, Serv. Água e Gás",97.9021,-0.00526624
+2022-05-02,momentum,5,UNIP6,UNIPAR CARBOCLORO S.A.,Petroquímicos e Borracha,97.2028,-0.260451
+2022-05-02,momentum,6,LOGN3,LOG-IN LOGISTICA INTERMODAL SA,Serviços Transporte e Logística,96.5035,0.451462
+2022-05-02,momentum,7,KEPL3,KEPLER WEBER SA,Emp. Adm. Part. - Metalurgia e Siderurgia,95.8042,-0.187048
+2022-05-02,momentum,8,ENAT3,QGEP PARTICIPAÇÕES SA,Emp. Adm. Part. - Petróleo e Gás,95.1049,-0.457551
+2022-05-02,momentum,9,PRIO3,PETRO RIO S.A.,Petróleo e Gás,94.4056,0.332803
+2022-05-02,momentum,10,VAMO3,"VAMOS LOCAÇÃO DE CAMINHÕES, MÁQUINAS E EQUIPAMENTOS S.A.",Serviços Transporte e Logística,93.7063,-0.115658
+2022-05-02,income,1,BRAP4,BRADESPAR S/A,Emp. Adm. Part. - Extração Mineral,100,-0.0735286
+2022-05-02,income,2,PETR4,PETROBRAS,Petróleo e Gás,99.3007,0.30324
+2022-05-02,income,3,BRKM5,BRASKEM,Petroquímicos e Borracha,98.6014,-0.545872
+2022-05-02,income,4,GOAU4,METALÚRGICA GERDAU,Emp. Adm. Part. - Metalurgia e Siderurgia,97.9021,0.131997
+2022-05-02,income,5,LAVV3,LAVVI EMPREENDIMENTOS IMOBILIÁRIOS S.A,"Construção Civil, Mat. Constr. e Decoração",97.2028,0.189429
+2022-05-02,income,6,CMIN3,CSN MINERAÇÃO S.A,Extração Mineral,96.5035,0.0764021
+2022-05-02,income,7,UNIP6,UNIPAR CARBOCLORO S.A.,Petroquímicos e Borracha,95.8042,-0.260451
+2022-05-02,income,8,CPLE6,COPEL,Energia Elétrica,95.1049,0.232432
+2022-05-02,income,9,USIM5,USIMINAS,Metalurgia e Siderurgia,94.4056,-0.330702
+2022-05-02,income,10,LEVE3,MAHLE METAL LEVE,"Máquinas, Equipamentos, Veículos e Peças",93.7063,0.395579
+2023-05-02,composite,1,PETR4,PETROBRAS,Petróleo e Gás,91.0165,1.1564
+2023-05-02,composite,2,GOAU4,METALÚRGICA GERDAU,Emp. Adm. Part. - Metalurgia e Siderurgia,89.4799,0.0985156
+2023-05-02,composite,3,FESA4,FERBASA,Metalurgia e Siderurgia,85.2246,-0.310141
+2023-05-02,composite,4,BRAP4,BRADESPAR S/A,Emp. Adm. Part. - Extração Mineral,83.4515,0.0131567
+2023-05-02,composite,5,LEVE3,MAHLE METAL LEVE,"Máquinas, Equipamentos, Veículos e Peças",82.7128,0.317666
+2023-05-02,composite,6,KEPL3,KEPLER WEBER SA,Emp. Adm. Part. - Metalurgia e Siderurgia,82.5946,0.591896
+2023-05-02,composite,7,RANI3,IRANI PAPEL E EMBALAGEM S.A.,Embalagens,82.565,0.162311
+2023-05-02,composite,8,GGBR4,GERDAU S.A.,Metalurgia e Siderurgia,82.3877,-0.0264193
+2023-05-02,composite,9,POSI3,POSITIVO INFORMATICA SA,Comunicação e Informática,81.7376,0.47975
+2023-05-02,composite,10,VALE3,VALE,Extração Mineral,78.5165,0.0195872
+2023-05-02,magic,1,KEPL3,KEPLER WEBER SA,Emp. Adm. Part. - Metalurgia e Siderurgia,1,0.591896
+2023-05-02,magic,2,UNIP6,UNIPAR CARBOCLORO S.A.,Petroquímicos e Borracha,2,-0.0274708
+2023-05-02,magic,3,BRAP4,BRADESPAR S/A,Emp. Adm. Part. - Extração Mineral,3,0.0131567
+2023-05-02,magic,4,PETR4,PETROBRAS,Petróleo e Gás,4,1.1564
+2023-05-02,magic,5,TASA4,TAURUS ARMAS S.A.,"Máquinas, Equipamentos, Veículos e Peças",5,-0.200939
+2023-05-02,magic,6,FESA4,FERBASA,Metalurgia e Siderurgia,6,-0.310141
+2023-05-02,magic,7,GOAU4,METALÚRGICA GERDAU,Emp. Adm. Part. - Metalurgia e Siderurgia,7,0.0985156
+2023-05-02,magic,8,GGBR4,GERDAU S.A.,Metalurgia e Siderurgia,8,-0.0264193
+2023-05-02,magic,9,RECV3,PETRORECÔNCAVO S.A.,Emp. Adm. Part. - Petróleo e Gás,9,0.217554
+2023-05-02,magic,10,SLCE3,SLC AGRICOLA SA,"Agricultura (Açúcar, Álcool e Cana)",10,-0.0646655
+2023-05-02,value,1,GOAU4,METALÚRGICA GERDAU,Emp. Adm. Part. - Metalurgia e Siderurgia,99.2908,0.0985156
+2023-05-02,value,2,MRFG3,MARFRIG,Alimentos,91.844,0.490596
+2023-05-02,value,3,USIM5,USIMINAS,Metalurgia e Siderurgia,91.1348,0.154578
+2023-05-02,value,4,TRPL4,CTEEP,Energia Elétrica,91.1348,0.212567
+2023-05-02,value,5,MYPK3,IOCHPE-MAXION,"Máquinas, Equipamentos, Veículos e Peças",90.4255,0.149405
+2023-05-02,value,6,POSI3,POSITIVO INFORMATICA SA,Comunicação e Informática,89.3617,0.47975
+2023-05-02,value,7,CEAB3,C&A MODAS LTDA,Têxtil e Vestuário,89.3617,2.80205
+2023-05-02,value,8,ELET3,AXIA ENERGIA S.A.,Emp. Adm. Part. - Energia Elétrica,88.2979,0.144647
+2023-05-02,value,9,CBAV3,COMPANHIA BRASILEIRA DE ALUMINIO,Extração Mineral,88.2979,0.028
+2023-05-02,value,10,ENAT3,QGEP PARTICIPAÇÕES SA,Emp. Adm. Part. - Petróleo e Gás,87.234,1.59753
+2023-05-02,quality,1,KEPL3,KEPLER WEBER SA,Emp. Adm. Part. - Metalurgia e Siderurgia,94.5626,0.591896
+2023-05-02,quality,2,UNIP6,UNIPAR CARBOCLORO S.A.,Petroquímicos e Borracha,93.617,-0.0274708
+2023-05-02,quality,3,CURY3,CURY CONSTRUTORA E INCORPORADORA S.A.,"Construção Civil, Mat. Constr. e Decoração",93.617,0.694017
+2023-05-02,quality,4,BRAP4,BRADESPAR S/A,Emp. Adm. Part. - Extração Mineral,91.9622,0.0131567
+2023-05-02,quality,5,ODPV3,BRADSAÚDE S.A.,Serviços Médicos,91.9622,0.20603
+2023-05-02,quality,6,FESA4,FERBASA,Metalurgia e Siderurgia,91.253,-0.310141
+2023-05-02,quality,7,TASA4,TAURUS ARMAS S.A.,"Máquinas, Equipamentos, Veículos e Peças",91.0165,-0.200939
+2023-05-02,quality,8,RECV3,PETRORECÔNCAVO S.A.,Emp. Adm. Part. - Petróleo e Gás,90.7801,0.217554
+2023-05-02,quality,9,WEGE3,WEG SA,"Emp. Adm. Part. - Máqs., Equip., Veíc. e Peças",88.8889,-0.0301655
+2023-05-02,quality,10,LEVE3,MAHLE METAL LEVE,"Máquinas, Equipamentos, Veículos e Peças",88.6525,0.317666
+2023-05-02,momentum,1,CURY3,CURY CONSTRUTORA E INCORPORADORA S.A.,"Construção Civil, Mat. Constr. e Decoração",100,0.694017
+2023-05-02,momentum,2,EMBR3,EMBRAER,"Máquinas, Equipamentos, Veículos e Peças",99.2908,0.702393
+2023-05-02,momentum,3,TTEN3,TRÊS TENTOS AGROINDUSTRIAL S.A.,"Agricultura (Açúcar, Álcool e Cana)",98.5816,-0.0353731
+2023-05-02,momentum,4,DIRR3,DIRECIONAL ENGENHARIA SA,"Construção Civil, Mat. Constr. e Decoração",97.8723,0.614489
+2023-05-02,momentum,5,WEGE3,WEG SA,"Emp. Adm. Part. - Máqs., Equip., Veíc. e Peças",97.1631,-0.0301655
+2023-05-02,momentum,6,RANI3,IRANI PAPEL E EMBALAGEM S.A.,Embalagens,96.4539,0.162311
+2023-05-02,momentum,7,ROMI3,ROMI S.A.,"Máquinas, Equipamentos, Veículos e Peças",95.7447,-0.221601
+2023-05-02,momentum,8,LEVE3,MAHLE METAL LEVE,"Máquinas, Equipamentos, Veículos e Peças",95.0355,0.317666
+2023-05-02,momentum,9,MILS3,MILLS ESTRUTURAS E SERVIÇOS DE ENGENHARIA S/A,Serviços Transporte e Logística,94.3262,0.601181
+2023-05-02,momentum,10,POMO4,MARCOPOLO,"Máquinas, Equipamentos, Veículos e Peças",93.617,0.934255
+2023-05-02,income,1,PETR4,PETROBRAS,Petróleo e Gás,100,1.1564
+2023-05-02,income,2,CSNA3,CSN,Metalurgia e Siderurgia,99.2908,0.154928
+2023-05-02,income,3,UNIP6,UNIPAR CARBOCLORO S.A.,Petroquímicos e Borracha,98.5816,-0.0274708
+2023-05-02,income,4,TAEE11,TRANSMISSORA ALIANÇA DE ENERGIA ELÉTRICA S.A.,Emp. Adm. Part. - Energia Elétrica,97.8723,0.0672366
+2023-05-02,income,5,GGBR4,GERDAU S.A.,Metalurgia e Siderurgia,97.1631,-0.0264193
+2023-05-02,income,6,LEVE3,MAHLE METAL LEVE,"Máquinas, Equipamentos, Veículos e Peças",96.4539,0.317666
+2023-05-02,income,7,KEPL3,KEPLER WEBER SA,Emp. Adm. Part. - Metalurgia e Siderurgia,95.7447,0.591896
+2023-05-02,income,8,PARD3,INSTITUTO HERMES PARDINI S/A,Serviços Médicos,95.0355,0
+2023-05-02,income,9,BRAP4,BRADESPAR S/A,Emp. Adm. Part. - Extração Mineral,94.3262,0.0131567
+2023-05-02,income,10,CMIN3,CSN MINERAÇÃO S.A,Extração Mineral,93.617,0.273861
+2024-05-02,composite,1,PETR4,PETROBRAS,Petróleo e Gás,86.0802,-0.137691
+2024-05-02,composite,2,VLID3,AMERICAN BANKNOTE COMPANY,Comunicação e Informática,83.7346,0.618135
+2024-05-02,composite,3,VBBR3,VIBRA ENERGIA S/A,Comércio (Atacado e Varejo),81.2963,-0.1145
+2024-05-02,composite,4,LAVV3,LAVVI EMPREENDIMENTOS IMOBILIÁRIOS S.A,"Construção Civil, Mat. Constr. e Decoração",79.9074,0.283581
+2024-05-02,composite,5,CMIN3,CSN MINERAÇÃO S.A,Extração Mineral,77.5,0.3415
+2024-05-02,composite,6,SOJA3,BOA SAFRA SEMENTES S.A.,Alimentos,77.284,-0.403898
+2024-05-02,composite,7,CSMG3,COPASA MG,"Saneamento, Serv. Água e Gás",77.2222,0.149068
+2024-05-02,composite,8,VULC3,VULCABRAS S/A.,Têxtil e Vestuário,77.0988,0.187861
+2024-05-02,composite,9,PLPL3,PLANO & PLANO DESENVOLVIMENTO IMOBILIÁRIO S.A.,"Construção Civil, Mat. Constr. e Decoração",77.0988,0.196001
+2024-05-02,composite,10,RAPT4,RANDON S.A. IMPLEMENTOS E PARTICIPAÇÕES,"Máquinas, Equipamentos, Veículos e Peças",76.9444,-0.150448
+2024-05-02,magic,1,CMIN3,CSN MINERAÇÃO S.A,Extração Mineral,1,0.3415
+2024-05-02,magic,2,PETR4,PETROBRAS,Petróleo e Gás,2,-0.137691
+2024-05-02,magic,3,KEPL3,KEPLER WEBER SA,Emp. Adm. Part. - Metalurgia e Siderurgia,3,-0.179744
+2024-05-02,magic,4,LEVE3,MAHLE METAL LEVE,"Máquinas, Equipamentos, Veículos e Peças",4,0.034436
+2024-05-02,magic,5,VBBR3,VIBRA ENERGIA S/A,Comércio (Atacado e Varejo),5,-0.1145
+2024-05-02,magic,6,BRAP4,BRADESPAR S/A,Emp. Adm. Part. - Extração Mineral,6,-0.0984042
+2024-05-02,magic,7,VLID3,AMERICAN BANKNOTE COMPANY,Comunicação e Informática,7,0.618135
+2024-05-02,magic,8,UNIP6,UNIPAR CARBOCLORO S.A.,Petroquímicos e Borracha,8,0.133941
+2024-05-02,magic,9,VALE3,VALE,Extração Mineral,9,-0.102435
+2024-05-02,magic,10,CPFE3,CPFL ENERGIA S.A.,Emp. Adm. Part. - Energia Elétrica,10,0.268314
+2024-05-02,value,1,GOAU4,METALÚRGICA GERDAU,Emp. Adm. Part. - Metalurgia e Siderurgia,99.6296,-0.199611
+2024-05-02,value,2,ELET3,AXIA ENERGIA S.A.,Emp. Adm. Part. - Energia Elétrica,99.6296,0.159197
+2024-05-02,value,3,PCAR3,PÃO DE AÇÚCAR,Comércio (Atacado e Varejo),95.1852,0.226415
+2024-05-02,value,4,TRPL4,CTEEP,Energia Elétrica,93.7037,-0.0583658
+2024-05-02,value,5,GGBR4,GERDAU S.A.,Metalurgia e Siderurgia,91.4815,-0.163467
+2024-05-02,value,6,POSI3,POSITIVO INFORMATICA SA,Comunicação e Informática,90.7407,-0.370696
+2024-05-02,value,7,EVEN3,EVEN,"Construção Civil, Mat. Constr. e Decoração",88.5185,-0.0690523
+2024-05-02,value,8,JHSF3,JHSF,"Emp. Adm. Part. - Const. Civil, Mat. Const. e Decoração",87.7778,0.265844
+2024-05-02,value,9,RAPT4,RANDON S.A. IMPLEMENTOS E PARTICIPAÇÕES,"Máquinas, Equipamentos, Veículos e Peças",87.037,-0.150448
+2024-05-02,value,10,SAPR11,SANEPAR,"Saneamento, Serv. Água e Gás",87.037,0.201798
+2024-05-02,quality,1,CURY3,CURY CONSTRUTORA E INCORPORADORA S.A.,"Construção Civil, Mat. Constr. e Decoração",97.5309,0.413219
+2024-05-02,quality,2,CMIN3,CSN MINERAÇÃO S.A,Extração Mineral,94.8148,0.3415
+2024-05-02,quality,3,WEGE3,WEG SA,"Emp. Adm. Part. - Máqs., Equip., Veíc. e Peças",94.321,0.161705
+2024-05-02,quality,4,PLPL3,PLANO & PLANO DESENVOLVIMENTO IMOBILIÁRIO S.A.,"Construção Civil, Mat. Constr. e Decoração",94.321,0.196001
+2024-05-02,quality,5,KEPL3,KEPLER WEBER SA,Emp. Adm. Part. - Metalurgia e Siderurgia,93.5802,-0.179744
+2024-05-02,quality,6,UNIP6,UNIPAR CARBOCLORO S.A.,Petroquímicos e Borracha,91.358,0.133941
+2024-05-02,quality,7,LEVE3,MAHLE METAL LEVE,"Máquinas, Equipamentos, Veículos e Peças",91.358,0.034436
+2024-05-02,quality,8,TGMA3,TEGMA GESTÃO LOGÍSTICA SA,Serviços Transporte e Logística,87.9012,0.603773
+2024-05-02,quality,9,STBP3,SANTOS BRASIL PARTICIPAÇÕES S.A.,Emp. Adm. Part. - Serviços Transporte e Logística,87.4074,0.180387
+2024-05-02,quality,10,PRIO3,PETRO RIO S.A.,Petróleo e Gás,87.1605,-0.231759
+2024-05-02,momentum,1,CEAB3,C&A MODAS LTDA,Têxtil e Vestuário,100,0.24239
+2024-05-02,momentum,2,BRFS3,BRF S.A.,Emp. Adm. Part. - Alimentos,99.2593,0.381536
+2024-05-02,momentum,3,PLPL3,PLANO & PLANO DESENVOLVIMENTO IMOBILIÁRIO S.A.,"Construção Civil, Mat. Constr. e Decoração",98.5185,0.196001
+2024-05-02,momentum,4,MDNE3,MOURA DUBEUX,"Construção Civil, Mat. Constr. e Decoração",97.7778,0.356069
+2024-05-02,momentum,5,TEND3,CONSTRUTORA TENDA S/A,"Construção Civil, Mat. Constr. e Decoração",97.037,0.293891
+2024-05-02,momentum,6,ENAT3,QGEP PARTICIPAÇÕES SA,Emp. Adm. Part. - Petróleo e Gás,96.2963,-0.207326
+2024-05-02,momentum,7,POMO4,MARCOPOLO,"Máquinas, Equipamentos, Veículos e Peças",95.5556,0.168409
+2024-05-02,momentum,8,YDUQ3,ESTACIO PARTICIPAÇÕES SA,Emp. Adm. Part. - Educação,94.8148,0.0303654
+2024-05-02,momentum,9,ANIM3,ANIMA HOLDING S/A,Educação,94.0741,0.037957
+2024-05-02,momentum,10,UGPA3,ULTRAPAR PARTICIPAÇÕES SA,Emp. Adm. Part. - Petróleo e Gás,93.3333,-0.300024
+2024-05-02,income,1,AURE3,AUREN ENERGIA S.A,Energia Elétrica,100,-0.211659
+2024-05-02,income,2,LEVE3,MAHLE METAL LEVE,"Máquinas, Equipamentos, Veículos e Peças",99.2593,0.034436
+2024-05-02,income,3,VULC3,VULCABRAS S/A.,Têxtil e Vestuário,98.5185,0.187861
+2024-05-02,income,4,CSMG3,COPASA MG,"Saneamento, Serv. Água e Gás",97.7778,0.149068
+2024-05-02,income,5,MTRE3,MITRE REALTY EMPREENDIMENTOS E PARTICIPAÇÕES S.A.,"Construção Civil, Mat. Constr. e Decoração",97.037,-0.0138666
+2024-05-02,income,6,BRAP4,BRADESPAR S/A,Emp. Adm. Part. - Extração Mineral,96.2963,-0.0984042
+2024-05-02,income,7,GOAU4,METALÚRGICA GERDAU,Emp. Adm. Part. - Metalurgia e Siderurgia,95.5556,-0.199611
+2024-05-02,income,8,CMIN3,CSN MINERAÇÃO S.A,Extração Mineral,94.8148,0.3415
+2024-05-02,income,9,AGRO3,BRASILAGRO CIA BRAS DE PROP AGRICOLAS,"Agricultura (Açúcar, Álcool e Cana)",94.0741,-0.112421
+2024-05-02,income,10,SLCE3,SLC AGRICOLA SA,"Agricultura (Açúcar, Álcool e Cana)",93.3333,0.105408
+2025-05-02,composite,1,LAVV3,LAVVI EMPREENDIMENTOS IMOBILIÁRIOS S.A,"Construção Civil, Mat. Constr. e Decoração",84.0116,0.431487
+2025-05-02,composite,2,CMIN3,CSN MINERAÇÃO S.A,Extração Mineral,83.2364,-0.15434
+2025-05-02,composite,3,VLID3,AMERICAN BANKNOTE COMPANY,Comunicação e Informática,82.8488,-0.23006
+2025-05-02,composite,4,CMIG4,CEMIG,Energia Elétrica,82.5581,0.254497
+2025-05-02,composite,5,PLPL3,PLANO & PLANO DESENVOLVIMENTO IMOBILIÁRIO S.A.,"Construção Civil, Mat. Constr. e Decoração",77.8747,-0.108415
+2025-05-02,composite,6,TGMA3,TEGMA GESTÃO LOGÍSTICA SA,Serviços Transporte e Logística,77.7455,-0.0323306
+2025-05-02,composite,7,DIRR3,DIRECIONAL ENGENHARIA SA,"Construção Civil, Mat. Constr. e Decoração",76.5504,0.225709
+2025-05-02,composite,8,BRAP4,BRADESPAR S/A,Emp. Adm. Part. - Extração Mineral,74.7416,0.558154
+2025-05-02,composite,9,PETR4,PETROBRAS,Petróleo e Gás,74.031,0.751485
+2025-05-02,composite,10,BMOB3,BEMOBI MOBILE TECH S.A.,Comunicação e Informática,73.4496,0.501388
+2025-05-02,magic,1,PLPL3,PLANO & PLANO DESENVOLVIMENTO IMOBILIÁRIO S.A.,"Construção Civil, Mat. Constr. e Decoração",1,-0.108415
+2025-05-02,magic,2,VBBR3,VIBRA ENERGIA S/A,Comércio (Atacado e Varejo),2,0.943284
+2025-05-02,magic,3,CMIN3,CSN MINERAÇÃO S.A,Extração Mineral,3,-0.15434
+2025-05-02,magic,4,LEVE3,MAHLE METAL LEVE,"Máquinas, Equipamentos, Veículos e Peças",4,0.279165
+2025-05-02,magic,5,KEPL3,KEPLER WEBER SA,Emp. Adm. Part. - Metalurgia e Siderurgia,5,0.0559401
+2025-05-02,magic,6,VLID3,AMERICAN BANKNOTE COMPANY,Comunicação e Informática,6,-0.23006
+2025-05-02,magic,7,CMIG4,CEMIG,Energia Elétrica,7,0.254497
+2025-05-02,magic,8,LJQQ3,LOJAS QUERO-QUERO S.A.,Comércio (Atacado e Varejo),8,-0.363958
+2025-05-02,magic,9,LAVV3,LAVVI EMPREENDIMENTOS IMOBILIÁRIOS S.A,"Construção Civil, Mat. Constr. e Decoração",9,0.431487
+2025-05-02,magic,10,CEAB3,C&A MODAS LTDA,Têxtil e Vestuário,10,-0.121107
+2025-05-02,value,1,ELET3,AXIA ENERGIA S.A.,Emp. Adm. Part. - Energia Elétrica,100,0.318948
+2025-05-02,value,2,GOAU4,METALÚRGICA GERDAU,Emp. Adm. Part. - Metalurgia e Siderurgia,99.2248,0.645333
+2025-05-02,value,3,POSI3,POSITIVO INFORMATICA SA,Comunicação e Informática,93.7984,-0.201334
+2025-05-02,value,4,JHSF3,JHSF,"Emp. Adm. Part. - Const. Civil, Mat. Const. e Decoração",90.3101,1.54281
+2025-05-02,value,5,MYPK3,IOCHPE-MAXION,"Máquinas, Equipamentos, Veículos e Peças",90.3101,-0.201165
+2025-05-02,value,6,RAPT4,RANDON S.A. IMPLEMENTOS E PARTICIPAÇÕES,"Máquinas, Equipamentos, Veículos e Peças",86.4341,-0.403189
+2025-05-02,value,7,BRAP4,BRADESPAR S/A,Emp. Adm. Part. - Extração Mineral,85.2713,0.558154
+2025-05-02,value,8,ALOS3,ALLOS S.A.,Emp. Adm. Part. - Comércio (Atacado e Varejo),84.8837,0.529356
+2025-05-02,value,9,MGLU3,MAGAZINE LUIZA SA,Comércio (Atacado e Varejo),84.4961,-0.0912152
+2025-05-02,value,10,GGBR4,GERDAU S.A.,Metalurgia e Siderurgia,84.4961,0.570914
+2025-05-02,quality,1,CMIN3,CSN MINERAÇÃO S.A,Extração Mineral,96.8992,-0.15434
+2025-05-02,quality,2,CURY3,CURY CONSTRUTORA E INCORPORADORA S.A.,"Construção Civil, Mat. Constr. e Decoração",96.3824,0.140585
+2025-05-02,quality,3,ODPV3,BRADSAÚDE S.A.,Serviços Médicos,95.8656,0.371689
+2025-05-02,quality,4,PLPL3,PLANO & PLANO DESENVOLVIMENTO IMOBILIÁRIO S.A.,"Construção Civil, Mat. Constr. e Decoração",94.832,-0.108415
+2025-05-02,quality,5,WEGE3,WEG SA,"Emp. Adm. Part. - Máqs., Equip., Veíc. e Peças",91.7313,0.0297405
+2025-05-02,quality,6,TGMA3,TEGMA GESTÃO LOGÍSTICA SA,Serviços Transporte e Logística,91.2145,-0.0323306
+2025-05-02,quality,7,DIRR3,DIRECIONAL ENGENHARIA SA,"Construção Civil, Mat. Constr. e Decoração",89.9225,0.225709
+2025-05-02,quality,8,LEVE3,MAHLE METAL LEVE,"Máquinas, Equipamentos, Veículos e Peças",89.6641,0.279165
+2025-05-02,quality,9,KEPL3,KEPLER WEBER SA,Emp. Adm. Part. - Metalurgia e Siderurgia,87.8553,0.0559401
+2025-05-02,quality,10,B3SA3,B3,Bolsas de Valores/Mercadorias e Futuros,87.3385,0.386392
+2025-05-02,momentum,1,AMBP3,AMBIPAR PARTICIPAÇÕES E EMPREENDIMENTOS S.A.,"Saneamento, Serv. Água e Gás",100,-0.9825
+2025-05-02,momentum,2,EMBR3,EMBRAER,"Máquinas, Equipamentos, Veículos e Peças",99.2248,0.316994
+2025-05-02,momentum,3,MRFG3,MARFRIG,Alimentos,98.4496,-0.0217693
+2025-05-02,momentum,4,JBSS3,JBS SA,Alimentos,97.6744,-0.101519
+2025-05-02,momentum,5,ELMD3,ELETROMIDIA S.A.,Emp. Adm. Part. - Comunicação e Informática,96.8992,0.0190664
+2025-05-02,momentum,6,BHIA3,PONTO FRIO,Comércio (Atacado e Varejo),96.124,-0.531481
+2025-05-02,momentum,7,BMOB3,BEMOBI MOBILE TECH S.A.,Comunicação e Informática,95.3488,0.501388
+2025-05-02,momentum,8,FRAS3,FRASLE MOBILITY S.A.,"Máquinas, Equipamentos, Veículos e Peças",94.5736,-0.256399
+2025-05-02,momentum,9,TGMA3,TEGMA GESTÃO LOGÍSTICA SA,Serviços Transporte e Logística,93.7984,-0.0323306
+2025-05-02,momentum,10,DIRR3,DIRECIONAL ENGENHARIA SA,"Construção Civil, Mat. Constr. e Decoração",93.0233,0.225709
+2025-05-02,income,1,PETR4,PETROBRAS,Petróleo e Gás,100,0.751485
+2025-05-02,income,2,RECV3,PETRORECÔNCAVO S.A.,Emp. Adm. Part. - Petróleo e Gás,99.2248,0.0957764
+2025-05-02,income,3,ANIM3,ANIMA HOLDING S/A,Educação,98.4496,0.215554
+2025-05-02,income,4,EVEN3,EVEN,"Construção Civil, Mat. Constr. e Decoração",97.6744,0.146073
+2025-05-02,income,5,CSNA3,CSN,Metalurgia e Siderurgia,96.8992,-0.349733
+2025-05-02,income,6,CMIN3,CSN MINERAÇÃO S.A,Extração Mineral,96.124,-0.15434
+2025-05-02,income,7,BRAP4,BRADESPAR S/A,Emp. Adm. Part. - Extração Mineral,95.3488,0.558154
+2025-05-02,income,8,CMIG4,CEMIG,Energia Elétrica,94.5736,0.254497
+2025-05-02,income,9,KEPL3,KEPLER WEBER SA,Emp. Adm. Part. - Metalurgia e Siderurgia,93.7984,0.0559401
+2025-05-02,income,10,TAEE11,TRANSMISSORA ALIANÇA DE ENERGIA ELÉTRICA S.A.,Emp. Adm. Part. - Energia Elétrica,93.0233,0.274598
+2026-05-04,composite,1,LAVV3,LAVVI EMPREENDIMENTOS IMOBILIÁRIOS S.A,"Construção Civil, Mat. Constr. e Decoração",82.4261,-0.350556
+2026-05-04,composite,2,MDNE3,MOURA DUBEUX,"Construção Civil, Mat. Constr. e Decoração",81.5188,-0.377586
+2026-05-04,composite,3,JHSF3,JHSF,"Emp. Adm. Part. - Const. Civil, Mat. Const. e Decoração",80.3091,-0.121447
+2026-05-04,composite,4,CYRE3,CYRELA BRAZIL REALTY S.A.,"Construção Civil, Mat. Constr. e Decoração",74.7648,-0.135305
+2026-05-04,composite,5,LOGG3,LOG COMMERCIAL PROPERTIES E PARTICIPAÇÕES S.A.,"Construção Civil, Mat. Constr. e Decoração",73.6895,-0.132
+2026-05-04,composite,6,CURY3,CURY CONSTRUTORA E INCORPORADORA S.A.,"Construção Civil, Mat. Constr. e Decoração",73.4207,-0.0367329
+2026-05-04,composite,7,EVEN3,EVEN,"Construção Civil, Mat. Constr. e Decoração",72.1774,-0.408178
+2026-05-04,composite,8,VULC3,VULCABRAS S/A.,Têxtil e Vestuário,72.043,-0.220523
+2026-05-04,composite,9,PETR4,PETROBRAS,Petróleo e Gás,71.9758,-0.0441759
+2026-05-04,composite,10,PGMN3,EMPREENDIMENTOS PAGUE MENOS SA,Comércio (Atacado e Varejo),71.4046,-0.534323
+2026-05-04,magic,1,PLPL3,PLANO & PLANO DESENVOLVIMENTO IMOBILIÁRIO S.A.,"Construção Civil, Mat. Constr. e Decoração",1,-0.558095
+2026-05-04,magic,2,CMIN3,CSN MINERAÇÃO S.A,Extração Mineral,2,0.0958606
+2026-05-04,magic,3,CVCB3,CVC BRASIL OPERADORA E AGÊNCIA DE VIAGENS SA,Hospedagem e Turismo,3,-0.647059
+2026-05-04,magic,4,JHSF3,JHSF,"Emp. Adm. Part. - Const. Civil, Mat. Const. e Decoração",4,-0.121447
+2026-05-04,magic,5,CEAB3,C&A MODAS LTDA,Têxtil e Vestuário,5,-0.272646
+2026-05-04,magic,6,BEEF3,MINERVA S/A,Alimentos,6,-0.344221
+2026-05-04,magic,7,SEER3,SER EDUCACIONAL S.A.,Educação,7,-0.118572
+2026-05-04,magic,8,LEVE3,MAHLE METAL LEVE,"Máquinas, Equipamentos, Veículos e Peças",8,-0.0870827
+2026-05-04,magic,9,CURY3,CURY CONSTRUTORA E INCORPORADORA S.A.,"Construção Civil, Mat. Constr. e Decoração",9,-0.0367329
+2026-05-04,magic,10,TGMA3,TEGMA GESTÃO LOGÍSTICA SA,Serviços Transporte e Logística,10,0.206031
+2026-05-04,value,1,GOAU4,METALÚRGICA GERDAU,Emp. Adm. Part. - Metalurgia e Siderurgia,95.9677,0.104552
+2026-05-04,value,2,POSI3,POSITIVO INFORMATICA SA,Comunicação e Informática,93.9516,-0.276347
+2026-05-04,value,3,MGLU3,MAGAZINE LUIZA SA,Comércio (Atacado e Varejo),93.9516,-0.29875
+2026-05-04,value,4,MYPK3,IOCHPE-MAXION,"Máquinas, Equipamentos, Veículos e Peças",93.5484,0.00204082
+2026-05-04,value,5,BHIA3,PONTO FRIO,Comércio (Atacado e Varejo),92.3387,-0.719368
+2026-05-04,value,6,ANIM3,ANIMA HOLDING S/A,Educação,91.129,-0.379487
+2026-05-04,value,7,AZZA3,AZZAS 2154 S.A.,Têxtil e Vestuário,89.1129,-0.324485
+2026-05-04,value,8,SIMH3,SIMPAR S.A.,Serviços Transporte e Logística,85.8871,-0.457319
+2026-05-04,value,9,CEAB3,C&A MODAS LTDA,Têxtil e Vestuário,85.8871,-0.272646
+2026-05-04,value,10,VTRU3,VITRU EDUCAÇÃO S.A.,Educação,85.4839,-0.070239
+2026-05-04,quality,1,CURY3,CURY CONSTRUTORA E INCORPORADORA S.A.,"Construção Civil, Mat. Constr. e Decoração",96.5054,-0.0367329
+2026-05-04,quality,2,ODPV3,BRADSAÚDE S.A.,Serviços Médicos,95.6989,0
+2026-05-04,quality,3,WEGE3,WEG SA,"Emp. Adm. Part. - Máqs., Equip., Veíc. e Peças",94.086,0.091116
+2026-05-04,quality,4,PLPL3,PLANO & PLANO DESENVOLVIMENTO IMOBILIÁRIO S.A.,"Construção Civil, Mat. Constr. e Decoração",92.2043,-0.558095
+2026-05-04,quality,5,B3SA3,B3,Bolsas de Valores/Mercadorias e Futuros,91.129,-0.172556
+2026-05-04,quality,6,CMIN3,CSN MINERAÇÃO S.A,Extração Mineral,89.5161,0.0958606
+2026-05-04,quality,7,LEVE3,MAHLE METAL LEVE,"Máquinas, Equipamentos, Veículos e Peças",88.9785,-0.0870827
+2026-05-04,quality,8,TGMA3,TEGMA GESTÃO LOGÍSTICA SA,Serviços Transporte e Logística,88.9785,0.206031
+2026-05-04,quality,9,TEND3,CONSTRUTORA TENDA S/A,"Construção Civil, Mat. Constr. e Decoração",88.7097,-0.382901
+2026-05-04,quality,10,DIRR3,DIRECIONAL ENGENHARIA SA,"Construção Civil, Mat. Constr. e Decoração",87.9032,-0.311129
+2026-05-04,momentum,1,CSMG3,COPASA MG,"Saneamento, Serv. Água e Gás",100,-0.0612817
+2026-05-04,momentum,2,CBAV3,COMPANHIA BRASILEIRA DE ALUMINIO,Extração Mineral,99.1935,0.059322
+2026-05-04,momentum,3,SEER3,SER EDUCACIONAL S.A.,Educação,98.3871,-0.118572
+2026-05-04,momentum,4,FIQE3,UNIFIQUE TELECOMUNICAÇÕES S.A.,Emp. Adm. Part. - Telecomunicações,97.5806,-0.191102
+2026-05-04,momentum,5,MDNE3,MOURA DUBEUX,"Construção Civil, Mat. Constr. e Decoração",96.7742,-0.377586
+2026-05-04,momentum,6,TEND3,CONSTRUTORA TENDA S/A,"Construção Civil, Mat. Constr. e Decoração",95.9677,-0.382901
+2026-05-04,momentum,7,MOVI3,MOVIDA PARTICIPAÇÕES S.A.,Serviços Transporte e Logística,95.1613,-0.450303
+2026-05-04,momentum,8,ALPA4,ALPARGATAS,Têxtil e Vestuário,94.3548,0.0925297
+2026-05-04,momentum,9,DESK3,DESKTOP S.A,Telecomunicações,93.5484,0.0668622
+2026-05-04,momentum,10,JHSF3,JHSF,"Emp. Adm. Part. - Const. Civil, Mat. Const. e Decoração",92.7419,-0.121447
+2026-05-04,income,1,VULC3,VULCABRAS S/A.,Têxtil e Vestuário,100,-0.220523
+2026-05-04,income,2,JSLG3,JSL S.A.,Serviços Transporte e Logística,99.1935,-0.173851
+2026-05-04,income,3,GRND3,GRENDENE SA,Têxtil e Vestuário,98.3871,-0.0646589
+2026-05-04,income,4,LAVV3,LAVVI EMPREENDIMENTOS IMOBILIÁRIOS S.A,"Construção Civil, Mat. Constr. e Decoração",97.5806,-0.350556
+2026-05-04,income,5,DIRR3,DIRECIONAL ENGENHARIA SA,"Construção Civil, Mat. Constr. e Decoração",96.7742,-0.311129
+2026-05-04,income,6,UNIP6,UNIPAR CARBOCLORO S.A.,Petroquímicos e Borracha,95.9677,-0.146207
+2026-05-04,income,7,POMO4,MARCOPOLO,"Máquinas, Equipamentos, Veículos e Peças",95.1613,-0.403272
+2026-05-04,income,8,LOGG3,LOG COMMERCIAL PROPERTIES E PARTICIPAÇÕES S.A.,"Construção Civil, Mat. Constr. e Decoração",94.3548,-0.132
+2026-05-04,income,9,CMIN3,CSN MINERAÇÃO S.A,Extração Mineral,93.5484,0.0958606
+2026-05-04,income,10,EVEN3,EVEN,"Construção Civil, Mat. Constr. e Decoração",92.7419,-0.408178

@@ -10,7 +10,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from . import cotahist, cvm, events, picks, report, screen
+from . import backtest, cotahist, cvm, events, history, picks, report, screen
 
 REPO = Path(__file__).resolve().parent.parent
 
@@ -21,20 +21,40 @@ def _today(a) -> dt.date:
 
 def refresh_cvm(data_dir: Path, cache: Path, year: int) -> None:
     """Register, trading codes, and the statements the screen can use:
-    annual reports for the last two years, quarterlies for this and last."""
+    annual reports filed in the last three calendar years, quarterlies for this and last."""
     out = data_dir / "cvm"
     out.mkdir(parents=True, exist_ok=True)
     cvm.companies(cvm.fetch_register(cache)).to_csv(out / "companies.csv", index=False, lineterminator="\n")
-    for y in (year, year - 1):        # this year's FCA may not exist yet in January
+    for y in (year - 1, year):        # this year's FCA may not exist yet in January
         fca = cvm.fetch_doc("FCA", y, cache)
         if fca is not None:
-            cvm.tickers(fca).to_csv(out / "tickers.csv", index=False, lineterminator="\n")
-            break
-    for kind, years in (("DFP", (year - 2, year - 1)), ("ITR", (year - 1, year))):
+            cvm.merge_tickers(cvm.tickers(fca), data_dir)
+    # This year's DFP file too: companies with fiscal years ending in
+    # February or March (CAML, SMTO) file their latest annual report there.
+    for kind, years in (("DFP", (year - 2, year - 1, year)), ("ITR", (year - 1, year))):
         for y in years:
             z = cvm.fetch_doc(kind, y, cache)
             if z is not None:
                 cvm.store_filings(cvm.filings(kind, z), data_dir)
+
+
+def backfill_cvm(data_dir: Path, cache: Path, first: int = 2010, last: int | None = None) -> None:
+    """Statements, trading codes and the FRE capital timeline since ``first``
+    (for the backtest; the daily job keeps the recent years fresh)."""
+    last = last or dt.datetime.now(dt.UTC).year
+    for y in range(first, last + 1):
+        for kind in ("DFP", "ITR"):
+            z = cvm.fetch_doc(kind, y, cache)
+            if z is not None:
+                cvm.store_filings(cvm.filings(kind, z), data_dir)
+        fca = cvm.fetch_doc("FCA", y, cache)
+        if fca is not None:
+            cvm.merge_tickers(cvm.tickers(fca), data_dir)
+        if y <= 2021:      # DFP/ITR carry share capital from 2020 on
+            fre = cvm.fetch_doc("FRE", y, cache)
+            if fre is not None:
+                cvm.store_capital(cvm.capital_history(fre), data_dir)
+        print(f"[cvm] {y} done", file=sys.stderr)
 
 
 def candidate_issuers(data_dir: Path, min_volume: float = 1e6) -> list[str]:
@@ -46,6 +66,14 @@ def candidate_issuers(data_dir: Path, min_volume: float = 1e6) -> list[str]:
     sessions = sorted(px.date.unique())[-screen.LIQUIDITY_WINDOW:]
     liq = px[px.date.isin(sessions)].groupby("ticker").volume.sum() / screen.LIQUIDITY_WINDOW
     return sorted({t[:4] for t in liq[liq >= min_volume].index})
+
+
+def refresh_inferred(data_dir: Path) -> None:
+    """Re-derive splits missing from B3's events service from B3's ex-markers
+    (see events.infer_stock_events)."""
+    px = cotahist.load(data_dir)
+    _, stock = events.load(data_dir)
+    events.save_inferred(events.infer_stock_events(px, stock[~stock.label.str.contains("INFERIDO")]), data_dir)
 
 
 def write_status(data_dir: Path, df: pd.DataFrame) -> None:
@@ -62,6 +90,8 @@ def cmd_daily(a) -> int:
     cotahist.update_daily(a.data, a.cache, today)
     refresh_cvm(a.data, a.cache, today.year)
     print(f"[events] {events.refresh(candidate_issuers(a.data), a.data)}", file=sys.stderr)
+    history.update_cdi(a.data)
+    refresh_inferred(a.data)
     df = screen.build(a.data)
     screen.save(df, a.data)
     write_status(a.data, df)
@@ -75,6 +105,7 @@ def cmd_weekly(a) -> int:
     # daily run missed (B3 sometimes 404s a daily file for a while).
     years = [today.year - 1, today.year] if today.month == 1 else [today.year]
     cotahist.backfill(years, a.data, a.cache)
+    refresh_inferred(a.data)
     df = screen.build(a.data)
     screen.save(df, a.data)
     write_status(a.data, df)
@@ -90,6 +121,29 @@ def cmd_weekly(a) -> int:
     picks.save_performance(curve, cohorts, a.data)
     subject, html_body, text = report.build(df, new, entered, left, cohorts, curve)
     report.send(subject, html_body, text, a.out)
+    return 0
+
+
+def cmd_backtest(a) -> int:
+    res = backtest.run(a.data, a.first_year, log=lambda m: print(m, file=sys.stderr))
+    backtest.save(res, a.data)
+    print(res["summary"].round(3).to_string(index=False), file=sys.stderr)
+    return 0
+
+
+def cmd_history(a) -> int:
+    """One-time backfill of everything the backtest needs since 2010."""
+    today = _today(a)
+    cotahist.backfill(list(range(a.first_year, today.year + 1)), a.data, a.cache)
+    backfill_cvm(a.data, a.cache, a.first_year, today.year)
+    px = cotahist.load(a.data)
+    codes = sorted({t[:4] for t in px[px.kind != "ETF"].ticker.unique()})
+    print(f"[events] {events.refresh(codes, a.data)}", file=sys.stderr)
+    iss = pd.read_csv(a.data / "events" / "issuers.csv", dtype=str, keep_default_na=False)
+    print(f"[history] {history.backfill_dividends({r.issuer: r.name for r in iss.itertuples() if r.name}, px, a.data)}",
+          file=sys.stderr)
+    history.update_cdi(a.data)
+    refresh_inferred(a.data)
     return 0
 
 
@@ -119,6 +173,15 @@ def main(argv: list[str] | None = None) -> int:
     w.add_argument("--today")
     w.add_argument("--out", type=Path, default=REPO / "out")
     w.set_defaults(fn=cmd_weekly)
+
+    t = sub.add_parser("backtest", help="yearly buy-and-hold backtest of the screen, point in time")
+    t.add_argument("--first-year", type=int, default=backtest.FIRST_YEAR)
+    t.set_defaults(fn=cmd_backtest)
+
+    h = sub.add_parser("history", help="one-time backfill of quotes, filings, events and dividends since 2010")
+    h.add_argument("--first-year", type=int, default=2010)
+    h.add_argument("--today")
+    h.set_defaults(fn=cmd_history)
 
     b = sub.add_parser("backfill", help="load whole years of quotes from B3's yearly files")
     b.add_argument("years", nargs="+", type=int)

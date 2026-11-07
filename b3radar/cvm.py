@@ -125,7 +125,12 @@ def filings(kind: str, zip_path: Path) -> pd.DataFrame:
     with zipfile.ZipFile(zip_path) as z:
         idx = _csv(_member(z, f"{k}_cia_aberta_{year}.csv"), usecols=["CNPJ_CIA", "DT_REFER", "VERSAO", "CD_CVM", "DT_RECEB"])
         con, ind = _extract(z, kind, year, "con"), _extract(z, kind, year, "ind")
-        cap = _csv(_member(z, f"_composicao_capital_{year}.csv"))
+        # Share capital is in DFP/ITR files only from 2020; earlier years
+        # take it from the FRE capital timeline (capital_history below).
+        member = _member(z, f"_composicao_capital_{year}.csv")
+        cap = _csv(member) if member is not None else pd.DataFrame(columns=[
+            "CNPJ_CIA", "DT_REFER", "VERSAO", "QT_ACAO_ORDIN_CAP_INTEGR", "QT_ACAO_PREF_CAP_INTEGR",
+            "QT_ACAO_ORDIN_TESOURO", "QT_ACAO_PREF_TESOURO"])
     key = ["CNPJ_CIA", "DT_REFER", "VERSAO"]
     if not ind.empty and not con.empty:
         ind = ind.merge(con[key], on=key, how="left", indicator=True)
@@ -164,3 +169,44 @@ def store_filings(new: pd.DataFrame, data_dir: Path) -> None:
         new = pd.concat([old, new], ignore_index=True)
     path.parent.mkdir(parents=True, exist_ok=True)
     new.sort_values(["cnpj", "kind", "dt_refer"]).to_csv(path, index=False, lineterminator="\n", float_format="%.0f")
+
+
+# -------------------------------------------------------- capital timeline
+
+def capital_history(fre_zip: Path) -> pd.DataFrame:
+    """Paid-in share counts per company with the date each was approved,
+    from one year's Reference Forms (FRE): the whole capital history each
+    company reported, latest form version."""
+    year = fre_zip.stem.split("_")[-1]
+    with zipfile.ZipFile(fre_zip) as z:
+        df = _csv(_member(z, f"_capital_social_{year}.csv"))
+    df = df[df.Tipo_Capital == "Capital Integralizado"]
+    df["Versao"] = df.Versao.astype(int)
+    df = df[df.Versao == df.groupby("CNPJ_Companhia").Versao.transform("max")]
+    num = lambda s: pd.to_numeric(s, errors="coerce")  # noqa: E731
+    out = pd.DataFrame({"cnpj": df.CNPJ_Companhia, "date": df.Data_Autorizacao_Aprovacao,
+                        "shares_on": num(df.Quantidade_Acoes_Ordinarias), "shares_pn": num(df.Quantidade_Acoes_Preferenciais),
+                        "form": year})
+    out = out[(out.date != "") & (out.shares_on.fillna(0) + out.shares_pn.fillna(0) > 0)]
+    return out.drop_duplicates(["cnpj", "date"], keep="last")
+
+
+def store_capital(new: pd.DataFrame, data_dir: Path) -> None:
+    """Merge into data/cvm/capital.csv; for the same (company, date) the
+    most recent form wins (later forms correct earlier ones)."""
+    path = data_dir / "cvm" / "capital.csv"
+    if path.exists():
+        new = pd.concat([pd.read_csv(path, dtype={"cnpj": str, "date": str, "form": str}), new], ignore_index=True)
+    new = new.sort_values(["cnpj", "date", "form"]).drop_duplicates(["cnpj", "date"], keep="last")
+    path.parent.mkdir(parents=True, exist_ok=True)
+    new.to_csv(path, index=False, lineterminator="\n", float_format="%.0f")
+
+
+def merge_tickers(new: pd.DataFrame, data_dir: Path) -> None:
+    """Union of trading codes across years, so delisted companies keep their
+    mapping; the newest form wins for a code that moved."""
+    path = data_dir / "cvm" / "tickers.csv"
+    if path.exists():
+        new = pd.concat([pd.read_csv(path, dtype=str, keep_default_na=False), new], ignore_index=True)
+    new.drop_duplicates("ticker", keep="last").sort_values(["cnpj", "ticker"]).to_csv(
+        path, index=False, lineterminator="\n")

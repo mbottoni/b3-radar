@@ -66,7 +66,7 @@ def changes(log: pd.DataFrame, strategy: str = "composite") -> tuple[list[str], 
 def _adjusted(px: pd.DataFrame, cash, stock) -> dict[str, pd.Series]:
     out = {}
     for t, g in px.groupby("ticker"):
-        out[t] = events.adjusted_close(g[["date", "close"]], g["isin"].iloc[-1], cash, stock)
+        out[t] = events.adjusted_close(g[["date", "close"]], set(g["isin"]), cash, stock)
     return out
 
 

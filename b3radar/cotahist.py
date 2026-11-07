@@ -1,8 +1,12 @@
 """B3 daily quotes (COTAHIST): parse the fixed-width files, keep stocks and the benchmark.
 
 Layout (B3, "Séries Históricas"): one 245-character record per instrument
-per day. We keep the cash market (TPMERC 010), standard lots (CODBDI 02) of
-shares and units, plus BOVA11 as the benchmark. Prices are stored per share
+per day. We keep the cash market (TPMERC 010) of shares and units in the
+standard segment (CODBDI 02) and in the special segments a company is moved
+to when sanctioned or in distress (05-09: judicial and extrajudicial
+recovery...), plus BOVA11 as the benchmark. The distressed segments are kept
+so that a stock's returns follow it into bankruptcy instead of freezing at
+its last normal price; the screen excludes them from the universe. Prices are stored per share
 (divided by the quotation factor FATCOT), in reais.
 """
 
@@ -20,7 +24,12 @@ from .fetch import download_zip, log
 BASE = "https://bvmf.bmfbovespa.com.br/InstDados/SerHist"
 STOCK_KINDS = {"ON", "PN", "PNA", "PNB", "PNC", "PND", "PNE", "PNF", "PNG", "UNT"}
 BENCHMARK = "BOVA11"
-COLUMNS = ["date", "ticker", "isin", "kind", "open", "high", "low", "close", "volume", "trades"]
+SEGMENTS = {"02", "05", "06", "07", "08", "09"}
+# B3 marks the session an event takes effect in the specification field:
+# ED/EJ/EDJ ex-dividend/JCP, EB ex-bonus or split, EG ex-reverse split,
+# ES ex-subscription, ER ex-income... Kept in ``ex`` (events.infer_stock_events
+# uses EB/EG to fill splits missing from B3's corporate-events service).
+COLUMNS = ["date", "ticker", "isin", "kind", "open", "high", "low", "close", "volume", "trades", "bdi", "ex"]
 
 
 def parse_lines(lines) -> pd.DataFrame:
@@ -33,7 +42,7 @@ def parse_lines(lines) -> pd.DataFrame:
         kind = spec[0] if spec else ""
         if ticker == BENCHMARK:
             kind = "ETF"
-        elif r[10:12] != "02" or kind not in STOCK_KINDS:
+        elif r[10:12] not in SEGMENTS or kind not in STOCK_KINDS:
             continue
         fat = int(r[210:217]) or 1
 
@@ -42,7 +51,8 @@ def parse_lines(lines) -> pd.DataFrame:
 
         d = r[2:10]
         rows.append((f"{d[:4]}-{d[4:6]}-{d[6:]}", ticker, r[230:242].strip(), "UNIT" if kind == "UNT" else kind,
-                     px(56, 69), px(69, 82), px(82, 95), px(108, 121), round(int(r[170:188]) / 100, 2), int(r[147:152])))
+                     px(56, 69), px(69, 82), px(82, 95), px(108, 121), round(int(r[170:188]) / 100, 2), int(r[147:152]),
+                     r[10:12], " ".join(t for t in spec[1:] if t.startswith("E") and len(t) <= 4)))
     return pd.DataFrame(rows, columns=COLUMNS)
 
 
@@ -67,7 +77,8 @@ def store(df: pd.DataFrame, data_dir: Path) -> list[str]:
         path = _month_path(data_dir, m)
         new = df[df.date.str[:7] == m]
         if path.exists():
-            old = pd.read_csv(path, dtype={"date": str, "ticker": str, "isin": str, "kind": str})
+            old = pd.read_csv(path, dtype={"date": str, "ticker": str, "isin": str, "kind": str, "bdi": str, "ex": str},
+                              keep_default_na=False)
             new = pd.concat([old[~old.date.isin(new.date)], new])
         path.parent.mkdir(parents=True, exist_ok=True)
         new.sort_values(["date", "ticker"]).to_csv(path, index=False, lineterminator="\n")
@@ -80,7 +91,8 @@ def load(data_dir: Path, since: str | None = None) -> pd.DataFrame:
         files = [f for f in files if f.stem >= since[:7]]
     if not files:
         return pd.DataFrame(columns=COLUMNS)
-    df = pd.concat(pd.read_csv(f, dtype={"date": str, "ticker": str, "isin": str, "kind": str}) for f in files)
+    df = pd.concat(pd.read_csv(f, dtype={"date": str, "ticker": str, "isin": str, "kind": str, "bdi": str, "ex": str},
+                               keep_default_na=False) for f in files)
     return df[df.date >= since] if since else df
 
 

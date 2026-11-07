@@ -103,6 +103,58 @@ def refresh(codes: list[str], data_dir: Path, pause: float = 0.25) -> dict:
     return {"issuers": len(set(codes)), "missing": missing, "cash": len(cash), "stock": len(stock)}
 
 
+NICE_RATIOS = sorted({n for n in range(2, 101)} | {1.5, 2.5, 1.25, 1.2, 1.4, 1.6})
+
+
+def infer_stock_events(px: pd.DataFrame, stock: pd.DataFrame, window_days: int = 10) -> pd.DataFrame:
+    """Splits and reverse splits B3's corporate-events service does not list
+    (MGLU's 2017 and 2019 8:1 bonus splits are missing there), found from B3's
+    own ex-markers in the quote files: the first session a ticker is marked
+    EB (bonus / split) or EG (reverse split) with no recorded stock event
+    within ``window_days``. The multiplier is previous close / that session's
+    open, snapped to a clean ratio (2, 3, 8, 10, 3:2, 1:10...); moves under
+    30% are left alone (a 5% bonus looks like an ordinary day)."""
+    known = {}
+    for r in stock.itertuples():
+        known.setdefault(r.isin, []).append(pd.Timestamp(r.last_date_prior))
+    out = []
+    for t, g in px[px.kind != "ETF"].sort_values("date").groupby("ticker"):
+        ex = g.ex.fillna("")
+        marked = ex.str.contains(r"\bE[A-Z]*[BG][A-Z]*\b")      # EB, EG, EDB, EJB...
+        first = marked & ~marked.shift(fill_value=False)
+        for i in np.flatnonzero(first.to_numpy()):
+            if i == 0:
+                continue
+            prev, cur = g.iloc[i - 1], g.iloc[i]
+            d = pd.Timestamp(prev.date)
+            isins = set(g["isin"])
+            if any(abs((k - d).days) <= window_days for s in isins for k in known.get(s, [])):
+                continue
+            ref = cur.open if cur.open > 0 else cur.close
+            if not (prev.close > 0 and ref > 0):
+                continue
+            r = prev.close / ref                      # shares multiplier
+            up = r if r >= 1 else 1 / r
+            if up < 1.3:
+                continue
+            nice = min(NICE_RATIOS, key=lambda n: abs(n - up) / n)
+            if abs(nice - up) / nice > 0.08:
+                continue                              # not a clean ratio: a real move, leave it
+            mult = nice if r >= 1 else 1 / nice
+            label = "DESDOBRAMENTO" if r >= 1 else "GRUPAMENTO"
+            factor = (mult - 1) * 100 if r >= 1 else mult
+            for s in isins:
+                out.append([t[:4], s, f"{label} (INFERIDO)", factor, prev.date, ""])
+    df = pd.DataFrame(out, columns=STOCK_COLUMNS).drop_duplicates(["isin", "last_date_prior"])
+    return df.sort_values(["issuer", "last_date_prior", "isin"]).reset_index(drop=True)
+
+
+def save_inferred(df: pd.DataFrame, data_dir: Path) -> None:
+    path = data_dir / "events" / "stock_inferred.csv"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    df.to_csv(path, index=False, lineterminator="\n")
+
+
 def load(data_dir: Path) -> tuple[pd.DataFrame, pd.DataFrame]:
     ev = data_dir / "events"
     cash = pd.read_csv(ev / "cash.csv", dtype=str, keep_default_na=False) if (ev / "cash.csv").exists() \
@@ -110,15 +162,23 @@ def load(data_dir: Path) -> tuple[pd.DataFrame, pd.DataFrame]:
     stock = pd.read_csv(ev / "stock.csv", dtype=str, keep_default_na=False) if (ev / "stock.csv").exists() \
         else pd.DataFrame(columns=STOCK_COLUMNS)
     cash["rate"] = pd.to_numeric(cash.rate, errors="coerce")
+    inferred = ev / "stock_inferred.csv"
+    if inferred.exists():
+        stock = pd.concat([stock, pd.read_csv(inferred, dtype=str, keep_default_na=False)], ignore_index=True)
     stock["factor"] = pd.to_numeric(stock.factor, errors="coerce")
-    stock["mult"] = [share_multiplier(lbl, f) for lbl, f in zip(stock.label, stock.factor)]
+    stock["mult"] = [share_multiplier(lbl.replace(" (INFERIDO)", ""), f) for lbl, f in zip(stock.label, stock.factor)]
     return cash, stock
 
 
 # ---------------------------------------------------------------- adjustment
 
-def adjusted_close(px: pd.DataFrame, isin: str, cash: pd.DataFrame, stock: pd.DataFrame) -> pd.Series:
+def adjusted_close(px: pd.DataFrame, isin, cash: pd.DataFrame, stock: pd.DataFrame) -> pd.Series:
     """Total-return adjusted closes for one ticker (latest close unchanged).
+
+    ``isin``: every ISIN the ticker has had (a str is accepted). B3 often
+    issues a new ISIN after a reverse split, and the event is filed under
+    the old one (HAPV 2025, AZEV 2026): matching the latest ISIN only would
+    leave a 15-20x jump in the series.
 
     ``px``: that ticker's rows (date, close), any order. Each event takes
     effect on the first session after its last 'com' date: a cash event
@@ -130,8 +190,12 @@ def adjusted_close(px: pd.DataFrame, isin: str, cash: pd.DataFrame, stock: pd.Da
         return s
     dates = s.index.to_numpy()
     factor = pd.Series(1.0, index=s.index)
-    evs = [("cash", r.last_date_prior, r.rate) for r in cash[cash["isin"] == isin].itertuples()]
-    evs += [("stock", r.last_date_prior, r.mult) for r in stock[stock["isin"] == isin].itertuples()]
+    isins = {isin} if isinstance(isin, str) else set(isin)
+    # The same payment can be on file under the old and the new ISIN.
+    ca = cash[cash["isin"].isin(isins)].drop_duplicates(["label", "last_date_prior", "rate"])
+    evs = [("cash", r.last_date_prior, r.rate) for r in ca.itertuples()]
+    st = stock[stock["isin"].isin(isins)].drop_duplicates(["label", "last_date_prior"])  # one event, several ISINs
+    evs += [("stock", r.last_date_prior, r.mult) for r in st.itertuples()]
     for kind, last_com, val in evs:
         if not last_com or not np.isfinite(val):
             continue
@@ -141,8 +205,10 @@ def adjusted_close(px: pd.DataFrame, isin: str, cash: pd.DataFrame, stock: pd.Da
         if kind == "cash":
             base = s.iloc[pos - 1]
             f = 1 - val / base if base > 0 else 1.0
+            ok = 0 < f < 1          # a payment lowers the price; anything else is a data error
         else:
             f = 1 / val if val > 0 else 1.0
-        if 0 < f <= 10:
+            ok = f > 0              # reverse splits give large factors (HAPV 15:1 -> 15, PDGR 100:1 -> 100)
+        if ok:
             factor.iloc[:pos] *= f
     return s * factor

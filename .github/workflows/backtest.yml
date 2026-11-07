@@ -1,0 +1,37 @@
+name: backtest
+
+# Monthly: the yearly lists only change in May, but prices, dividends and
+# corrections keep moving the results. Second day of the month, 12:00 UTC.
+on:
+  schedule:
+    - cron: "0 12 2 * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: data
+  cancel-in-progress: false
+
+jobs:
+  backtest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+      - run: uv sync --frozen
+      - run: uv run pytest -q
+      - name: Backtest (point in time, from the committed data)
+        run: uv run python -m b3radar backtest
+      - name: Commit the results
+        run: |
+          git add data/backtest
+          if git diff --staged --quiet; then echo "No changes."; exit 0; fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "backtest: through $(jq -r .last data/backtest/meta.json)"
+          git push || { git pull --rebase && git push; }

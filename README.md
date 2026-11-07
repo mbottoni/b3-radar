@@ -10,6 +10,9 @@ record of every shortlist against BOVA11, losers included.
   are committed to `data/`; the screen is rebuilt.
 - **Weekly** (Mon, 07:30 Brasília): the top 10 is logged, the track record
   updated, and the email sent.
+- **Backtest** (monthly): the yearly list since 2012, bought each May and
+  held, point in time, against BOVA11, the CDI and all eligible stocks; also
+  each list held untouched for 1, 3 and 5 years.
 - **[METHODOLOGY.md](METHODOLOGY.md)**: every rule, and every problem found in
   the data with how it is handled.
 
@@ -31,6 +34,7 @@ rendered email is kept as a workflow artifact.
 uv sync
 uv run python -m b3radar daily     # fetch and rebuild data/
 uv run python -m b3radar weekly    # list, track record, email (dry run without the env vars)
+uv run python -m b3radar backtest  # yearly buy-and-hold backtest from data/
 uv run pytest -q
 ```
 
@@ -43,6 +47,8 @@ data/events/                  dividends, JCP, splits; B3 share counts
 data/screen/latest.csv        today's metrics, scores and exclusions
 data/screen/history/          the screen behind each weekly list
 data/picks/                   every list, the track record, per-list returns
+data/backtest/                yearly buy-and-hold backtest since 2012
+data/macro/cdi.csv            daily CDI since 2010
 ```
 
 A rules-based screen of public data, not investment advice. Code: MIT.

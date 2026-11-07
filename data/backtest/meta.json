@@ -1,0 +1,8 @@
+{
+  "first": "2012-05-02",
+  "last": "2026-11-06",
+  "rebalances": 15,
+  "top_n": 10,
+  "rebalance": "first session of month 5",
+  "costs": "none"
+}

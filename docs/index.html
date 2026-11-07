@@ -10,22 +10,25 @@
     color-scheme: light;
     --page: #f9f9f7; --surface: #fcfcfb; --ink: #0b0b0b; --ink2: #52514e; --muted: #898781;
     --grid: #e1e0d9; --axis: #c3c2b7; --border: rgba(11, 11, 11, 0.10);
-    --s1: #2a78d6; --s2: #eb6834; --good: #006300; --bad: #d03b3b; --chip: #eef3fb;
+    --s1: #2a78d6; --s2: #eb6834; --s3: #1baf7a; --other: #b5b4ad; --good: #006300; --bad: #d03b3b; --chip: #eef3fb;
   }
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
       color-scheme: dark;
       --page: #0d0d0d; --surface: #1a1a19; --ink: #f0efec; --ink2: #c3c2b7; --muted: #898781;
       --grid: #2c2c2a; --axis: #383835; --border: rgba(255, 255, 255, 0.10);
-      --s1: #3987e5; --s2: #d95926; --good: #0ca30c; --bad: #e66767; --chip: #1f2a3a;
+      --s1: #3987e5; --s2: #d95926; --s3: #199e70; --other: #5c5b57; --good: #0ca30c; --bad: #e66767; --chip: #1f2a3a;
     }
   }
   :root[data-theme="dark"] {
     color-scheme: dark;
     --page: #0d0d0d; --surface: #1a1a19; --ink: #f0efec; --ink2: #c3c2b7; --muted: #898781;
     --grid: #2c2c2a; --axis: #383835; --border: rgba(255, 255, 255, 0.10);
-    --s1: #3987e5; --s2: #d95926; --good: #0ca30c; --bad: #e66767; --chip: #1f2a3a;
+    --s1: #3987e5; --s2: #d95926; --s3: #199e70; --other: #5c5b57; --good: #0ca30c; --bad: #e66767; --chip: #1f2a3a;
   }
+  details summary { cursor: pointer; padding: 6px 0; font-weight: 600; }
+  .caveats { margin: 0; padding-left: 18px; color: var(--ink2); }
+  .caveats li { margin: 4px 0; }
   * { box-sizing: border-box; }
   body { margin: 0; background: var(--page); color: var(--ink); font: 14px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif; }
   main { max-width: 1240px; margin: 0 auto; padding: 24px 16px 48px; }
@@ -81,6 +84,43 @@
     <div class="scroll"><table id="list"></table></div>
     <p class="note" style="margin:10px 0 4px">Magic Formula baseline (Greenblatt: earnings yield + return on capital):</p>
     <div class="chips" id="magic"></div>
+  </section>
+
+  <section class="card">
+    <h2>Backtest: buy the list once a year and hold</h2>
+    <p class="note" id="btNote">Loading…</p>
+    <div id="btChart"></div>
+    <div class="scroll" style="margin-top:12px"><table id="btSummary"></table></div>
+  </section>
+
+  <section class="two">
+    <div class="card">
+      <h2>Year by year</h2>
+      <p class="note">Bought on the first session of May, held twelve months, dividends reinvested.</p>
+      <div class="scroll"><table id="btYears"></table></div>
+    </div>
+    <div class="card">
+      <h2>Buy once, hold for 1, 3 or 5 years</h2>
+      <p class="note">Each year's list bought and never touched again. * = still running (return to date).</p>
+      <div class="scroll"><table id="btCohorts"></table></div>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>What the backtest held</h2>
+    <p class="note">The top 10 by score each May, and how each did over the following year.</p>
+    <div id="btHoldings"></div>
+  </section>
+
+  <section class="card">
+    <h2>How much to trust the backtest</h2>
+    <ul class="caveats">
+      <li><b>Point in time:</b> each list uses only quotes, filings and events public on its date, through the same code as the live screen.</li>
+      <li><b>Not in the numbers:</b> brokerage, taxes, slippage. A yearly rebalance trades little, but taxes on gains are real.</li>
+      <li><b>Survivors:</b> companies that went bankrupt or in recovery stay in, and their quotes follow them into the special segments. Companies that delisted keep their quotes but lose their dividends (B3 only serves listed companies' history), which slightly understates returns.</li>
+      <li><b>Approximations before 2020:</b> share counts come from the yearly Reference Form, checked against B3's count carried back through splits; registration status is today's, so it is not used as a filter in the past.</li>
+      <li><b>One path:</b> fifteen yearly decisions are a small sample. A strategy that beat the market here can lag for years; compare it with "all eligible stocks" to see what the picking itself added.</li>
+    </ul>
   </section>
 
   <section class="two">
@@ -266,6 +306,133 @@ function renderScreen() {
   }
 }
 
+
+// --------------------------------------------------------------- backtest
+const BT_LABEL = { composite: "Score (top 10)", magic: "Magic Formula (top 10)", value: "Value only", quality: "Quality only",
+  momentum: "Momentum only", income: "Income only", eligible: "All eligible stocks", bova11: "BOVA11 (Ibovespa)", cdi: "CDI (cash)" };
+const BT_SHORT = { composite: "Score", magic: "Magic", value: "Value", quality: "Quality", momentum: "Mom.", income: "Income", eligible: "All elig.", bova11: "BOVA11", cdi: "CDI" };
+const BT_CHART = [["composite", "--s1"], ["bova11", "--s2"], ["cdi", "--s3"], ["eligible", "--other"]];
+
+function renderBtChart(curve) {
+  const box = $("#btChart"); box.replaceChildren();
+  if (!curve || !curve.length) return;
+  const by = {}; for (const r of curve) (by[r.series] ||= []).push({ date: r.date, v: +r.value });
+  const dates = [...new Set(curve.map((r) => r.date))].sort();
+  const val = Object.fromEntries(BT_CHART.map(([k]) => [k, new Map((by[k] || []).map((p) => [p.date, p.v]))]));
+  const w = box.clientWidth || 800, h = 320, ml = 48, mr = 150, mt = 10, mb = 24;
+  const all = BT_CHART.flatMap(([k]) => (by[k] || []).map((p) => p.v));
+  const lo = Math.log(Math.min(...all) * 0.9), hi = Math.log(Math.max(...all) * 1.1);
+  const x = (i) => ml + (i / (dates.length - 1)) * (w - ml - mr), y = (v) => mt + (1 - (Math.log(v) - lo) / (hi - lo)) * (h - mt - mb);
+  const s = svg("svg", { width: w, height: h, role: "img", "aria-label": "Growth of R$100, log scale" });
+  for (const v of [50, 100, 200, 400, 800, 1600, 3200]) {
+    if (Math.log(v) < lo || Math.log(v) > hi) continue;
+    s.append(svg("line", { x1: ml, x2: w - mr, y1: y(v), y2: y(v), stroke: css("--grid") }));
+    const t = svg("text", { x: ml - 6, y: y(v) + 4, "text-anchor": "end", "font-size": 10, fill: css("--muted") }); t.textContent = `R$${v}`; s.append(t);
+  }
+  const years = dates.map((d, i) => [d, i]).filter(([d], i, a) => i === 0 || d.slice(0, 4) !== a[i - 1][0].slice(0, 4));
+  for (const [d, i] of years) { if (+d.slice(0, 4) % 2) continue; const t = svg("text", { x: x(i), y: h - 6, "text-anchor": "middle", "font-size": 10, fill: css("--muted") }); t.textContent = d.slice(0, 4); s.append(t); }
+  const ends = [];
+  for (const [k, c] of [...BT_CHART].reverse()) {
+    const pts = dates.map((d, i) => [i, val[k].get(d)]).filter(([, v]) => Number.isFinite(v));
+    if (!pts.length) continue;
+    s.append(svg("path", { d: pts.map(([i, v], j) => `${j ? "L" : "M"}${x(i)},${y(v)}`).join(""), fill: "none", stroke: css(c), "stroke-width": k === "composite" ? 2.5 : 2, "stroke-linejoin": "round" }));
+    const [li, lv] = pts.at(-1); ends.push({ k, c, y: y(lv), v: lv, x: x(li) });
+  }
+  ends.sort((a, b) => a.y - b.y);
+  for (let i = 1; i < ends.length; i++) if (ends[i].y - ends[i - 1].y < 14) ends[i].y = ends[i - 1].y + 14;
+  for (const e of ends) {
+    const t = svg("text", { x: e.x + 8, y: e.y + 4, "font-size": 11, fill: css("--ink") }); t.textContent = `${BT_SHORT[e.k]} R$${e.v.toFixed(0)}`; s.append(t);
+  }
+  const hair = svg("line", { y1: mt, y2: h - mb, stroke: css("--ink2"), opacity: 0 }); s.append(hair);
+  const hit = svg("rect", { x: ml, y: 0, width: w - ml - mr, height: h, fill: "transparent" });
+  hit.addEventListener("pointermove", (ev) => {
+    const r = s.getBoundingClientRect(), i = Math.max(0, Math.min(dates.length - 1, Math.round(((ev.clientX - r.left - ml) / (w - ml - mr)) * (dates.length - 1))));
+    hair.setAttribute("x1", x(i)); hair.setAttribute("x2", x(i)); hair.setAttribute("opacity", 1);
+    showTip(ev, [el("b", { textContent: dates[i] }), ...BT_CHART.map(([k, c]) => tipRow(css(c), Number.isFinite(val[k].get(dates[i])) ? `R$ ${val[k].get(dates[i]).toFixed(0)}` : "–", BT_LABEL[k]))]);
+  });
+  hit.addEventListener("pointerleave", () => { hair.setAttribute("opacity", 0); hideTip(); });
+  s.append(hit); box.append(s);
+  box.append(el("div", { className: "legend" }, ...BT_CHART.map(([k, c]) => el("span", {}, el("i", { style: `background:${css(c)}` }), BT_LABEL[k])), el("span", { className: "muted", textContent: "· log scale, R$100 invested" })));
+}
+
+function renderBtSummary(summary) {
+  const t = $("#btSummary");
+  const head = ["", "R$100 became", "Per year", "Volatility", "Worst fall", "Best year", "Worst year", "Years beating BOVA11", "Per year vs CDI"];
+  t.replaceChildren(el("tr", {}, ...head.map((h, i) => el("th", { className: i ? "" : "l", textContent: h }))));
+  const order = ["composite", "magic", "value", "quality", "momentum", "income", "eligible", "bova11", "cdi"];
+  for (const k of order) {
+    const r = summary.find((x) => x.series === k); if (!r) continue;
+    const strong = k === "composite";
+    t.append(el("tr", {},
+      el("td", { className: "l", innerHTML: "" }, strong ? el("b", { textContent: BT_LABEL[k] }) : BT_LABEL[k]),
+      el("td", { textContent: `R$ ${(100 * (1 + num(r.total_return))).toFixed(0)}` }),
+      el("td", {}, signed(num(r.cagr))), el("td", { textContent: pct(num(r.volatility)) }),
+      el("td", {}, signed(num(r.max_drawdown), 0)), el("td", {}, signed(num(r.best_year), 0)), el("td", {}, signed(num(r.worst_year), 0)),
+      el("td", { textContent: r.years_beating_bova11 || "–" }), el("td", {}, signed(num(r.excess_over_cdi)))));
+  }
+}
+
+function renderBtYears(periods) {
+  const cols = ["composite", "magic", "value", "quality", "momentum", "income", "eligible", "bova11", "cdi"];
+  const starts = [...new Set(periods.map((p) => p.start))].sort().reverse();
+  const t = $("#btYears");
+  t.replaceChildren(el("tr", {}, el("th", { className: "l", textContent: "Held from" }), ...cols.map((c) => el("th", { textContent: BT_SHORT[c] }))));
+  for (const d of starts) {
+    const row = Object.fromEntries(periods.filter((p) => p.start === d).map((p) => [p.series, num(p.return)]));
+    const end = periods.find((p) => p.start === d).end;
+    t.append(el("tr", {}, el("td", { className: "l", textContent: d.slice(0, 7), title: `${d} → ${end}` }), ...cols.map((c) => el("td", {}, signed(row[c], 0)))));
+  }
+}
+
+function renderBtCohorts(cohorts) {
+  const t = $("#btCohorts");
+  const hs = [1, 3, 5];
+  t.replaceChildren(
+    el("tr", {}, el("th", {}), ...hs.map((h) => el("th", { colSpan: 3, textContent: `${h} year${h > 1 ? "s" : ""}`, style: "text-align:center" }))),
+    el("tr", {}, el("th", { className: "l", textContent: "Bought" }), ...hs.flatMap(() => ["List", "BOVA11", "CDI"].map((x) => el("th", { textContent: x })))));
+  const starts = [...new Set(cohorts.map((c) => c.start))].sort().reverse();
+  for (const d of starts) {
+    const cells = hs.flatMap((h) => {
+      const c = cohorts.find((r) => r.start === d && +r.horizon === h);
+      if (!c) return [el("td"), el("td"), el("td")];
+      const partial = c.complete === "False";
+      const mk = (v) => { const td = el("td", {}, signed(num(v), 0)); if (partial) { td.className = "muted"; td.append("*"); } return td; };
+      return [mk(c.composite), mk(c.bova11), mk(c.cdi)];
+    });
+    t.append(el("tr", {}, el("td", { className: "l", textContent: d.slice(0, 7) }), ...cells));
+  }
+}
+
+function renderBtHoldings(holdings) {
+  const box = $("#btHoldings"); box.replaceChildren();
+  const dates = [...new Set(holdings.map((h) => h.date))].sort().reverse();
+  dates.forEach((d, i) => {
+    const rows = holdings.filter((h) => h.date === d && h.strategy === "composite").sort((a, b) => a.rank - b.rank);
+    const avg = rows.map((r) => num(r.period_return)).filter(Number.isFinite);
+    const det = el("details", { open: i === 0 });
+    det.append(el("summary", { textContent: `${d}: ${rows.map((r) => r.ticker).join(", ")} (average ${pct(avg.reduce((a, b) => a + b, 0) / (avg.length || 1), 0, true)})` }));
+    const t = el("table");
+    t.append(el("tr", {}, ...["#", "Ticker", "Company", "Sector", "Score", "Return over the year"].map((h, j) => el("th", { className: j >= 1 && j <= 3 ? "l" : "", textContent: h }))));
+    for (const r of rows) t.append(el("tr", {}, el("td", { textContent: r.rank }), el("td", { className: "l tk", textContent: r.ticker }),
+      el("td", { className: "l company", textContent: r.company }), el("td", { className: "l muted", textContent: r.sector }),
+      el("td", { textContent: f1(num(r.metric), 0) }), el("td", {}, signed(num(r.period_return), 0))));
+    det.append(el("div", { className: "scroll" }, t)); box.append(det);
+  });
+}
+
+async function loadBacktest() {
+  const [meta, summary, curve, periods, cohorts, holdings] = await Promise.all([get("backtest/meta.json", JSON.parse),
+    get("backtest/summary.csv"), get("backtest/curve.csv"), get("backtest/periods.csv"), get("backtest/cohorts.csv"), get("backtest/holdings.csv")]);
+  if (!summary) { $("#btNote").textContent = "The backtest has not been run yet."; return; }
+  const c = summary.find((r) => r.series === "composite"), b = summary.find((r) => r.series === "bova11"), d = summary.find((r) => r.series === "cdi");
+  $("#btNote").textContent = `${meta.first} to ${meta.last}: every May, the top ${meta.top_n} by score as the screen stood that day, equal weights, held a year, dividends reinvested, no costs or taxes. ` +
+    `R$100 became R$${(100 * (1 + num(c.total_return))).toFixed(0)} (${pct(num(c.cagr), 1)} a year), vs R$${(100 * (1 + num(b.total_return))).toFixed(0)} in BOVA11 and R$${(100 * (1 + num(d.total_return))).toFixed(0)} in the CDI.`;
+  renderBtChart(curve); renderBtSummary(summary); renderBtYears(periods); renderBtCohorts(cohorts); renderBtHoldings(holdings);
+  let lastW = 0;
+  new ResizeObserver(([e]) => { const w = Math.round(e.contentRect.width); if (w !== lastW) { lastW = w; renderBtChart(curve); } }).observe($("#btChart"));
+  matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => renderBtChart(curve));
+}
+
 (async () => {
   const [status, screen, picks, curve, cohorts] = await Promise.all([
     get("status.json", JSON.parse), get("screen/latest.csv"), get("picks/picks.csv"), get("picks/performance.csv"), get("picks/cohorts.csv")]);
@@ -276,6 +443,7 @@ function renderScreen() {
   $("#sector").append(...sectors.map((s) => el("option", { value: s, textContent: s })));
   for (const id of ["#q", "#sector", "#showExcluded"]) $(id).addEventListener("input", renderScreen);
   renderList(picks || [], screen); renderChart(curve); renderCohorts(cohorts); renderScreen();
+  loadBacktest();
   let lastW = 0;
   new ResizeObserver(([e]) => { const w = Math.round(e.contentRect.width); if (w !== lastW) { lastW = w; renderChart(curve); } }).observe($("#chart"));
   matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => renderChart(curve));

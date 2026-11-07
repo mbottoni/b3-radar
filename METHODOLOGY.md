@@ -39,8 +39,25 @@ share (divided by B3's quotation factor).
   units, 800–1250× it is thousands, anything else (Lavvi filed an extra
   digit; OceanPact issued shares since its filing) uses B3's count. The
   screen records which source each count came from.
-- **B3 lists only about a year of cash events.** Every fetch is merged into
-  `data/events/`, so the repo accumulates the full history from now on.
+- **B3's corporate-events service lists about a year of cash events**; the
+  full history (since the 1990s) comes from its `GetListedCashDividends`
+  service, per share class, and every later fetch is merged into
+  `data/events/`.
+- **B3 often issues a new ISIN after a reverse split** and files the event
+  under the old one (Hapvida 2025, Azevedo & Travassos 2026). Events are
+  matched against every ISIN a ticker has traded under, and a payment on
+  file under both is counted once.
+- **B3's events service misses some splits** (Magazine Luiza's 2017 and
+  2019 8:1 bonus splits). B3 marks the session an event takes effect in the
+  quote file (`EB` ex-bonus/split, `EG` ex-reverse split): a marked session
+  with no recorded event gets an inferred one, the multiplier being the
+  previous close over that session's open snapped to a clean ratio (2, 3,
+  8, 10, 3:2, 1:10...). Moves under 30% are not inferred. These live in
+  `data/events/stock_inferred.csv`, labelled `(INFERIDO)`. 156 were found
+  for 2010–2026. After this, the price moves over 2.5x in a session that
+  remain in stocks the screen could hold are real: crashes (Americanas 2023,
+  Ambipar 2025, the market-wide fall of 2026-10-26), spin-offs (below) and
+  tickers returning after years without trades.
 
 ## Point in time
 
@@ -88,7 +105,10 @@ Each excluded company is still listed on the page with its reason.
   adjusted for every dividend, JCP, capital return, split, reverse split and
   bonus. An event takes effect on the first session after its last "com"
   date: a cash event scales earlier prices by 1 − amount / close, a stock
-  event by 1 / share multiplier. Spin-offs and rights issues are not adjusted.
+  event by 1 / share multiplier. **Spin-offs and rights issues are not
+  adjusted**: when GPA spun off Assaí (2021) and Éxito (2023), or Lojas
+  Americanas reorganized (2021), the value that moved to the new shares
+  shows as a loss in the old ticker.
 - **Dividend yield**: dividends, JCP and other income paid in the last 365
   days (per share as the stock trades today) / price. Capital returns are
   excluded: they are cash, but not a recurring dividend.
@@ -123,6 +143,45 @@ next list**, on adjusted prices (dividends reinvested), and compares it with
 BOVA11 over the same sessions. A ticker that stops trading keeps its last
 price. The return is measured from the close used to make the list, so it
 assumes you could buy at that close; buying at Monday's open will differ.
+
+## Backtest
+
+`python -m b3radar backtest` (monthly in CI, results in `data/backtest/`)
+replays the screen as a long-term investor would use it:
+
+- **Once a year**, on the first session of May (annual reports, due at the
+  end of March, are public), the screen is computed **as it stood that
+  day** (the same code, point in time) and the top 10 are bought in equal
+  weights, held twelve months with dividends reinvested, then replaced.
+  First list: May 2012 (quotes and statements start in 2010–2011).
+- **Buy once and hold**: each yearly list is also followed untouched for
+  one, three and five years.
+- Six strategies (the score, the Magic Formula, and each category alone)
+  against **BOVA11** (the Ibovespa is a total-return index), the **CDI**
+  (Banco Central series 12, compounded daily: what cash earns) and **every
+  eligible stock in equal weights**, which isolates what the picking adds
+  over simply owning the universe.
+
+History behind it:
+
+- Quotes since 2010 from B3's yearly files, **including the sanctioned and
+  recovery segments** (CODBDI 05–09), so a stock that goes into judicial
+  recovery keeps its falling quotes instead of freezing at its last normal
+  price. The screen never picks from those segments.
+- Dividends and JCP since the 1990s from B3's `GetListedCashDividends`, per
+  share class; splits from the corporate-events service.
+- Share counts: DFP/ITR from 2020; before that the capital timeline of
+  CVM's Reference Form (FRE). A historical count is checked against B3's
+  current count carried back through every later split, with a wider band
+  (0.6–1.6x) since later issuance and buybacks are unknown; outside it, the
+  carried-back count is used.
+- Registration and issuer status are only known as of today, so they are
+  not applied to past dates (the special trading segments still are).
+
+What it does not include: brokerage, taxes, slippage; dividends of
+companies that have since delisted (B3 only serves listed companies'
+history), which understates returns slightly; the fact that a May close is
+not always where you would have bought.
 
 ## Known limits
 
