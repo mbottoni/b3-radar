@@ -57,6 +57,12 @@ def test_email_dry_run_without_secrets(tmp_path, monkeypatch):
     assert "2026-11-06" in subject and "A &lt;&amp;&gt; Co" in body and "NEW" in body
     assert report.send(subject, body, text, tmp_path) is False
     assert (tmp_path / "email.html").exists() and "AAA3" in (tmp_path / "email.txt").read_text()
+    m = {"earnings_yield": 0.129, "cheaper_than": 0.8, "history_from": "2011-05-31", "history_median": 0.105,
+         "cdi": 0.136, "real_cdi": None}
+    assert report.market_line(m) == ("The typical eligible stock earns 12.9% of its value a year (EBIT / EV), cheaper "
+                                      "than 80% of months since 2011 (median 10.5%). Cash: CDI 13.6%.")
+    assert "cheaper than 80%" in report.build(screen, new, ["AAA3"], [], pd.DataFrame(),
+                                              pd.DataFrame(columns=["strategy"]), m)[1]
 
 
 # ------------------------------------------------------------------ fetch

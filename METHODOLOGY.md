@@ -38,7 +38,36 @@ share (divided by B3's quotation factor).
   count through any split since the filing date: within 0.8–1.25× it is
   units, 800–1250× it is thousands, anything else (Lavvi filed an extra
   digit; OceanPact issued shares since its filing) uses B3's count. The
-  screen records which source each count came from.
+  screen records which source each count came from. A count is read as
+  thousands only if it is under 100 million (no company has 100 billion
+  shares).
+- **Share counts before 2020 are not in the statements.** CVM's Reference
+  Form (FRE) gives them two ways. Its capital timeline is not point in
+  time: later forms rewrite earlier entries in later share terms
+  (Odontoprev's 2021 form lists its 2010 capital with 2021's share count,
+  three times the 2010 one after a 2012 split), and the data keeps only
+  the latest. Its free-float table (item 15.3) is used instead: shares in
+  free float divided by their percentage of the class gives the class
+  total (CCR 2013: 861.3 million / 48.78% = 1,765.6 million), dated by the
+  day CVM received the form version (`data/cvm/shares_fre.csv`). Most
+  forms give the count at receipt; some, received after a split, still
+  give the one of their last shareholders' meeting before it (Sabesp
+  2013, Totvs 2011). When a split falls between the two dates, the next
+  form decides: if it is about the split larger, the count predates it.
+  A class with no free float (Gol's voting shares, all held by its
+  controller) falls back to the capital timeline.
+- **In the backtest, B3's count is no reference.** It is today's count
+  carried back through every later split, which knows nothing of shares
+  issued since: PDG went from 1.3 billion shares in 2012 to 27 million
+  after five reverse splits and a restructuring, so its carried-back count
+  gave a market cap of R$63 quadrillion. Past dates keep the count filed
+  at the time. Until this was fixed (November 2026) the backtest held 14
+  company-years with market caps over R$1 trillion, and CCR, Marisa and
+  Odontoprev at 3–15x their size; they now match history (Ambev R$285
+  billion, Petrobras R$237 billion, CCR R$36 billion in January 2013).
+  Across the yearly backtest dates, 47 of 1,361 year-on-year steps in a
+  company's share count (in today's terms) exceed 1.6x; most are real
+  issuance (Hapvida's merger, Minerva's and Cosan's offerings).
 - **B3's corporate-events service lists about a year of cash events**; the
   full history (since the 1990s) comes from its `GetListedCashDividends`
   service, per share class, and every later fetch is merged into
@@ -154,12 +183,12 @@ WEG turned R$100 into about R$2,460 from 2010 while never being cheap, and
 the score never picked it. Before testing, the rule was fixed: growth
 joins the score at an equal one-fifth weight only if, on its own, its top
 fifth beats its bottom fifth over the backtest and in at least half the
-years. It did neither. From 2013 the fastest-growing fifth returned 2.8% a
-year and the slowest 6.3%; the top beat the bottom in 5 of 14 years. Fast
+years. It did neither. From 2013 the fastest-growing fifth returned 2.7% a
+year and the slowest 6.7%; the top beat the bottom in 5 of 14 years. Fast
 growers were already priced for it (median P/E around 20–30 against
 13–17 for the slowest), and the slowest included the beaten-down companies
 that rebounded hardest, as in 2016. Added anyway at one fifth, the score's
-backtest would have fallen from 8.4% to 3.7% a year. Growth stays on the
+backtest would have fallen from 8.9% to 4.8% a year. Growth stays on the
 page and on the company pages, for reading a company, with no weight.
 
 **Rules fingerprint.** Everything above that decides eligibility and
@@ -174,6 +203,30 @@ fingerprint: it cannot change a rank.
 
 **Magic Formula** (Greenblatt), the baseline: rank by earnings yield plus
 rank by ROIC, among eligible companies with positive EBIT.
+
+## The market against cash
+
+`python -m b3radar market` (monthly, with the backtest; `data/market/`)
+sums up the screen at every month end since May 2011, point in time:
+
+- **Earnings yield of the typical stock**: the median EBIT / EV of the
+  eligible companies, the screen's own value metric. Also the aggregate
+  (sum of EBIT over sum of EV), the aggregate P/E and dividend yields.
+- **The CDI**, annualized from the day's rate (Banco Central series 12),
+  and **the CDI after inflation**: deflated by the IPCA of the last twelve
+  months published by then (series 433; a month's IPCA counts from the 15th
+  of the next). Earnings rise with prices, so an earnings yield compares
+  with a real rate more than with a nominal one.
+- **Cheaper than X% of months**: where today's earnings yield stands in
+  that history (higher yield = cheaper).
+- **What came next**: every eligible stock, equal weights, dividends
+  reinvested, held three years from each month end, against the CDI over
+  the same three years. Consecutive months share most of their three
+  years, so 150 monthly starts are closer to four or five independent
+  periods: this describes the past, it is not a forecast.
+
+Today's figures come from the daily screen (`data/market/today.json`) and
+the weekly email carries them in one line.
 
 ## The weekly list and the track record
 
@@ -208,11 +261,15 @@ replays the screen as a long-term investor would use it:
 **Does each score separate winners from losers?** At every yearly date the
 eligible universe is cut into fifths by the composite and by each pillar
 (Q1 = best), each fifth held for the year in equal weights. A factor that
-works steps down from Q1 to Q5. Through 2026 the clearest effects were the
-bottom fifth of the score and of value doing much worse than the rest, and
-momentum's top fifth doing best; the top fifth of quality did not beat the
-middle, and growth's top fifth did worst of all (from 2013, when growth
-can first be measured). Fifteen yearly periods are a small sample: these results describe
+works steps down from Q1 to Q5. Through 2026: value's top two fifths
+returned about 9% a year against 2–4% for the bottom three; momentum's top
+fifth did best; the top fifth of quality did not beat the middle; growth's
+top fifth did worst of all (from 2013, when growth can first be measured).
+An earlier version showed the bottom fifths of value and of the score
+losing 4–6% a year; much of that came from the market-cap errors fixed in
+November 2026 (distressed companies with absurd market caps looked
+extremely expensive), and with correct counts the bottom fifth of the score
+returns about 0%. Fifteen yearly periods are a small sample: these results describe
 the past, and re-weighting the score to fit them would overfit it.
 
 History behind it:

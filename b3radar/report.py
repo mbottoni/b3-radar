@@ -44,8 +44,23 @@ def _th(v, align="right"):
             f'color:{MUTED};font-size:12px">{v}</th>')
 
 
+def market_line(m: dict | None) -> str:
+    """The market against cash, in one sentence (market.today's figures)."""
+    if not m or m.get("earnings_yield") is None:
+        return ""
+    f = lambda k, d=1: _pct(m[k] if m.get(k) is not None else np.nan, d)  # noqa: E731
+    out = f"The typical eligible stock earns {f('earnings_yield')} of its value a year (EBIT / EV)"
+    if m.get("cheaper_than") is not None:
+        out += (f", cheaper than {f('cheaper_than', 0)} of months since {m['history_from'][:4]}"
+                f" (median {f('history_median')})")
+    out += f". Cash: CDI {f('cdi')}"
+    if m.get("real_cdi") is not None:
+        out += f", {f('real_cdi')} after the last 12 months' inflation"
+    return out + "."
+
+
 def build(screen: pd.DataFrame, picks: pd.DataFrame, entered: list[str], left: list[str],
-          cohorts: pd.DataFrame, curve: pd.DataFrame) -> tuple[str, str, str]:
+          cohorts: pd.DataFrame, curve: pd.DataFrame, market: dict | None = None) -> tuple[str, str, str]:
     """(subject, html, text)."""
     asof = screen["asof"].iloc[0]
     eligible = int((screen.excluded.fillna("") == "").sum())
@@ -103,6 +118,7 @@ def build(screen: pd.DataFrame, picks: pd.DataFrame, entered: list[str], left: l
 <p style="margin:10px 0 0;color:{MUTED};font-size:12px">Score: equal-weight mix of Value (EBIT/EV, book/price),
 Quality (ROIC, ROE, low leverage), Momentum (12-month return excluding the last month) and Income (dividend yield),
 each a percentile within the eligible universe.</p>
+{f'<h3 style="margin:22px 0 4px">The market against cash</h3><p style="margin:0">{html.escape(market_line(market))}</p>' if market_line(market) else ""}
 <h3 style="margin:22px 0 4px">Magic Formula baseline</h3>
 <p style="margin:0">{html.escape(magic_line)}</p>
 <h3 style="margin:22px 0 4px">Track record</h3>
@@ -117,6 +133,8 @@ each a percentile within the eligible universe.</p>
                     f"P/E {_num(r.pe)}  ROE {_pct(r.roe)}  12-1m {_pct(r.momentum, sign=True)}  DY {_pct(r.dividend_yield, 1)}")
     if entered or left:
         text += ["", f"Entered: {', '.join(entered) or '-'}   Left: {', '.join(left) or '-'}"]
+    if market_line(market):
+        text += ["", market_line(market)]
     text += ["", f"Magic Formula baseline: {magic_line}", "", PAGE, "", DISCLAIMER]
     return subject, body, "\n".join(text)
 

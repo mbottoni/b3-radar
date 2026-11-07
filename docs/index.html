@@ -4,175 +4,159 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>B3 Radar</title>
-<meta name="description" content="A daily screen of Brazilian stocks from official open data, a weekly shortlist, and the shortlist's public track record.">
-<style>
-  :root {
-    color-scheme: light;
-    --page: #f9f9f7; --surface: #fcfcfb; --ink: #0b0b0b; --ink2: #52514e; --muted: #898781;
-    --grid: #e1e0d9; --axis: #c3c2b7; --border: rgba(11, 11, 11, 0.10);
-    --s1: #2a78d6; --s2: #eb6834; --s3: #1baf7a; --other: #b5b4ad; --good: #006300; --bad: #d03b3b; --chip: #eef3fb;
-  }
-  @media (prefers-color-scheme: dark) {
-    :root:not([data-theme="light"]) {
-      color-scheme: dark;
-      --page: #0d0d0d; --surface: #1a1a19; --ink: #f0efec; --ink2: #c3c2b7; --muted: #898781;
-      --grid: #2c2c2a; --axis: #383835; --border: rgba(255, 255, 255, 0.10);
-      --s1: #3987e5; --s2: #d95926; --s3: #199e70; --other: #5c5b57; --good: #0ca30c; --bad: #e66767; --chip: #1f2a3a;
-    }
-  }
-  :root[data-theme="dark"] {
-    color-scheme: dark;
-    --page: #0d0d0d; --surface: #1a1a19; --ink: #f0efec; --ink2: #c3c2b7; --muted: #898781;
-    --grid: #2c2c2a; --axis: #383835; --border: rgba(255, 255, 255, 0.10);
-    --s1: #3987e5; --s2: #d95926; --s3: #199e70; --other: #5c5b57; --good: #0ca30c; --bad: #e66767; --chip: #1f2a3a;
-  }
-  details summary { cursor: pointer; padding: 6px 0; font-weight: 600; }
-  tr.clickable { cursor: pointer; }
-  tr.clickable:hover td, tr.clickable:focus-visible td { background: var(--page); }
-  tr.clickable:focus-visible { outline: 2px solid var(--s1); outline-offset: -2px; }
-  tr.detail > td { background: var(--page); padding: 14px 16px; white-space: normal; text-align: left; }
-  .bd { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 18px; }
-  .bd h4 { margin: 0 0 8px; font-size: 13px; }
-  .bd .m { display: grid; grid-template-columns: 1fr auto; gap: 3px 8px; font-size: 12px; margin-bottom: 10px; }
-  .bd .m strong { font-variant-numeric: tabular-nums; }
-  .bar { grid-column: 1 / -1; height: 6px; border-radius: 3px; background: var(--grid); overflow: hidden; }
-  .bar i { display: block; height: 100%; background: var(--s1); border-radius: 3px; }
-  .bd .pctl { grid-column: 1 / -1; color: var(--muted); }
-  .bd .off { color: var(--muted); font-size: 12px; margin: -6px 0 8px; }
-  .bd .meta { grid-column: 1 / -1; color: var(--muted); font-size: 12px; border-top: 1px solid var(--grid); padding-top: 8px; }
-  @media (max-width: 900px) { .bd { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-  .quint { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 12px; }
-  .quint h4 { margin: 0; font-size: 13px; }
-  .quint .sub { font-size: 12px; color: var(--muted); margin-bottom: 4px; }
-  .quint svg { display: block; width: 100%; }
-  @media (max-width: 900px) { .quint { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-  @media (max-width: 520px) { .bd { grid-template-columns: 1fr; } }
-  .caveats { margin: 0; padding-left: 18px; color: var(--ink2); }
-  .caveats li { margin: 4px 0; }
-  * { box-sizing: border-box; }
-  body { margin: 0; background: var(--page); color: var(--ink); font: 14px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif; }
-  main { max-width: 1240px; margin: 0 auto; padding: 24px 16px 48px; }
-  h1 { font-size: 22px; margin: 0 0 4px; }
-  h2 { font-size: 16px; margin: 0 0 4px; }
-  .lede { color: var(--ink2); margin: 0; max-width: 860px; }
-  .status { color: var(--muted); font-size: 12px; margin: 6px 0 18px; }
-  a { color: var(--s1); }
-  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 16px; margin-bottom: 14px; }
-  .note { color: var(--muted); font-size: 12px; margin: 0 0 10px; }
-  .scroll { overflow-x: auto; }
-  table { border-collapse: collapse; width: 100%; font-size: 13px; font-variant-numeric: tabular-nums; }
-  th, td { padding: 6px 8px; border-bottom: 1px solid var(--grid); text-align: right; white-space: nowrap; }
-  th { color: var(--ink2); font-weight: 600; font-size: 12px; position: sticky; top: 0; background: var(--surface); }
-  th.l, td.l { text-align: left; }
-  th.sortable { cursor: pointer; user-select: none; }
-  th.sortable:hover, th.sortable:focus-visible { color: var(--ink); outline: none; }
-  td.company { max-width: 240px; overflow: hidden; text-overflow: ellipsis; }
-  .tk { font-weight: 650; }
-  a.tk { color: inherit; text-decoration: underline; text-decoration-color: var(--axis); text-underline-offset: 3px; }
-  a.tk:hover { text-decoration-color: currentColor; }
-  .new { color: var(--s1); font-size: 10px; font-weight: 700; margin-left: 4px; }
-  .pos { color: var(--good); } .neg { color: var(--bad); }
-  .muted { color: var(--muted); }
-  .chips { display: flex; gap: 6px; flex-wrap: wrap; }
-  .chip { background: var(--chip); border-radius: 999px; padding: 2px 9px; font-size: 12px; font-weight: 600; }
-  .controls { display: flex; gap: 12px; flex-wrap: wrap; align-items: end; margin-bottom: 10px; }
-  .controls label { display: flex; flex-direction: column; gap: 4px; font-size: 12px; color: var(--ink2); }
-  .controls input[type=search], .controls select { font: inherit; color: var(--ink); background: var(--surface);
-    border: 1px solid var(--border); border-radius: 6px; padding: 6px 8px; min-height: 34px; }
-  .controls .check { flex-direction: row; align-items: center; gap: 6px; padding-bottom: 8px; }
-  .two { display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); gap: 14px; }
-  #chart svg { display: block; width: 100%; }
-  #tip { position: fixed; pointer-events: none; z-index: 10; display: none; background: var(--surface); color: var(--ink);
-    border: 1px solid var(--border); border-radius: 8px; padding: 8px 10px; font-size: 12px; box-shadow: 0 4px 16px rgba(0,0,0,.12); }
-  #tip b { display: block; font-size: 13px; }
-  #tip .row { display: flex; gap: 6px; align-items: center; color: var(--ink2); }
-  #tip .row strong { color: var(--ink); font-variant-numeric: tabular-nums; }
-  #tip .key { width: 12px; height: 2px; display: inline-block; }
-  .legend { display: flex; gap: 14px; font-size: 12px; color: var(--ink2); margin-top: 6px; }
-  .legend i { display: inline-block; width: 14px; height: 2px; vertical-align: middle; margin-right: 6px; }
-  footer { color: var(--muted); font-size: 12px; margin-top: 18px; }
-  @media (max-width: 900px) { .two { grid-template-columns: 1fr; } }
-</style>
+<meta name="description" content="Every Brazilian stock with a year of quotes, scored daily on value, quality, momentum and income from official open data (B3, CVM, Banco Central), with a point-in-time backtest and the market against cash.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='6' fill='%232a78d6'/%3E%3Ccircle cx='12' cy='12' r='3.5' fill='none' stroke='white' stroke-width='2.2'/%3E%3Cpath d='M12 12l6-6' stroke='white' stroke-width='2.2' stroke-linecap='round'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="assets/app.css">
 </head>
 <body>
+<header id="top"></header>
 <main>
-  <h1>B3 Radar</h1>
-  <p class="lede">Every Brazilian stock with a year of quotes, scored daily on value, quality, momentum and income from official open data, with growth shown alongside (B3, CVM, Banco Central). Each Monday's top 10 is logged and tracked against BOVA11, losers included.</p>
-  <p class="status" id="status">Loading…</p>
 
-  <section class="card">
-    <h2>This week's shortlist</h2>
-    <p class="note" id="listNote"></p>
-    <div class="scroll"><table id="list"></table></div>
-    <p class="note" style="margin:10px 0 4px">Magic Formula baseline (Greenblatt: earnings yield + return on capital):</p>
-    <div class="chips" id="magic"></div>
-  </section>
-
-  <section class="card">
-    <h2>Backtest: buy the list once a year and hold</h2>
-    <p class="note" id="btNote">Loading…</p>
-    <div id="btChart"></div>
-    <div class="scroll" style="margin-top:12px"><table id="btSummary"></table></div>
-  </section>
-
-  <section class="card">
-    <h2>Does the score separate winners from losers?</h2>
-    <p class="note">Each May, every eligible company split into fifths by each score (Q1 = best), each fifth held as an equal-weight portfolio for the year. Bars: return per year, 2012–today (growth: 2013–today, it needs three years of statements). A working factor steps down from Q1 to Q5; the gray line is all eligible stocks. Growth failed this test, so it is shown but not counted in the score.</p>
-    <div id="quintiles" class="quint"></div>
-  </section>
-
-  <section class="two">
-    <div class="card">
-      <h2>Year by year</h2>
-      <p class="note">Bought on the first session of May, held twelve months, dividends reinvested.</p>
-      <div class="scroll"><table id="btYears"></table></div>
+  <!-- ============================================================ OVERVIEW -->
+  <section data-tab="overview">
+    <div class="pagehead">
+      <h1>Brazil market snapshot</h1>
+      <p class="meta" id="status">Loading…</p>
     </div>
-    <div class="card">
-      <h2>Buy once, hold for 1, 3 or 5 years</h2>
-      <p class="note">Each year's list bought and never touched again. * = still running (return to date).</p>
-      <div class="scroll"><table id="btCohorts"></table></div>
+    <div class="cards" id="cards"></div>
+
+    <section class="card">
+      <p class="eyebrow">Is the market cheap? Stocks against cash</p>
+      <div class="panel3">
+        <div class="gauge" id="gauge"></div>
+        <div><div id="mkChart"></div></div>
+        <div>
+          <h3>Why this reading</h3>
+          <div class="kv" id="mkWhy"></div>
+        </div>
+      </div>
+      <p class="note" id="mkNote" style="margin:12px 0 0"></p>
+    </section>
+
+    <div class="two">
+      <section class="card">
+        <p class="eyebrow">Did it matter? What the next three years paid</p>
+        <p class="note">Each dot is a month since 2011: how far the earnings yield stood above cash after inflation, and how much every eligible stock (equal weights, dividends reinvested) beat or trailed the CDI per year over the next three years.</p>
+        <div id="mkScatter"></div>
+      </section>
+      <section class="card">
+        <p class="eyebrow">By how cheap stocks were, in thirds</p>
+        <p class="note">The same months, split into thirds by the gap at the start.</p>
+        <div class="scroll"><table id="mkThirds"></table></div>
+        <p class="note" style="margin-top:10px" id="mkCaveat"></p>
+      </section>
     </div>
+
+    <section class="card">
+      <div class="pagehead" style="margin:0 0 6px">
+        <p class="eyebrow" style="margin:0">This week's shortlist</p>
+        <a href="#/screener" class="meta">Full screener →</a>
+      </div>
+      <p class="note" id="listNote"></p>
+      <div class="scroll"><table id="list" class="dense"></table></div>
+      <p class="note" style="margin:12px 0 6px">Magic Formula baseline (Greenblatt: earnings yield + return on capital):</p>
+      <div class="chips" id="magic"></div>
+    </section>
   </section>
 
-  <section class="card">
-    <h2>What the backtest held</h2>
-    <p class="note">The top 10 by score each May, and how each did over the following year.</p>
-    <div id="btHoldings"></div>
-  </section>
-
-  <section class="card">
-    <h2>How much to trust the backtest</h2>
-    <ul class="caveats">
-      <li><b>Point in time:</b> each list uses only quotes, filings and events public on its date, through the same code as the live screen.</li>
-      <li><b>Not in the numbers:</b> brokerage, taxes, slippage. A yearly rebalance trades little, but taxes on gains are real.</li>
-      <li><b>Survivors:</b> companies that went bankrupt or in recovery stay in, and their quotes follow them into the special segments. Companies that delisted keep their quotes but lose their dividends (B3 only serves listed companies' history), which slightly understates returns.</li>
-      <li><b>Approximations before 2020:</b> share counts come from the yearly Reference Form, checked against B3's count carried back through splits; registration status is today's, so it is not used as a filter in the past.</li>
-      <li><b>One path:</b> fifteen yearly decisions are a small sample. A strategy that beat the market here can lag for years; compare it with "all eligible stocks" to see what the picking itself added.</li>
-    </ul>
-  </section>
-
-  <section class="two">
-    <div class="card">
-      <h2>Track record</h2>
-      <p class="note">Each list held as an equal-weight portfolio until the next one, on dividend- and split-adjusted prices. Start = 100.</p>
-      <div id="chart"></div>
+  <!-- ============================================================ SCREENER -->
+  <section data-tab="screener" hidden>
+    <div class="pagehead">
+      <h1>Screener</h1>
+      <p class="meta" id="scrMeta"></p>
     </div>
-    <div class="card">
-      <h2>Every list so far</h2>
-      <p class="note">Return to date of each list (composite), vs BOVA11 over the same days.</p>
-      <div class="scroll"><table id="cohorts"></table></div>
-    </div>
-  </section>
-
-  <section class="card">
-    <h2>Screener</h2>
-    <p class="note">Scores are percentiles within the eligible universe (0–100). Click a column to sort, a row for why it scores what it does.</p>
+    <p class="lede">Every listed company, scored on four pillars, each a percentile within the eligible universe (0–100; blue above the median, red below). Growth is shown, not scored. Click a column to sort, a row for why it scores what it does, a ticker for its history.</p>
+    <div class="presets" id="presets"></div>
     <div class="controls">
       <label>Search <input type="search" id="q" placeholder="Ticker or company"></label>
       <label>Sector <select id="sector"><option value="">All sectors</option></select></label>
-      <label class="check"><input type="checkbox" id="showExcluded"> Show excluded companies (with the reason)</label>
+      <label>Daily volume <select id="liq"><option value="0">Any</option><option value="2e7">Over R$ 20m</option><option value="1e8">Over R$ 100m</option></select></label>
+      <span class="count" id="scrCount"></span>
     </div>
-    <div class="scroll" style="max-height:640px;overflow-y:auto"><table id="screen"></table></div>
+    <div class="card" style="padding:0">
+      <div class="tbl-wrap"><table id="screen" class="dense"></table></div>
+    </div>
+  </section>
+
+  <!-- ============================================================ BACKTEST -->
+  <section data-tab="backtest" hidden>
+    <div class="pagehead">
+      <h1>Backtest: buy the list once a year and hold</h1>
+      <p class="meta" id="btMeta"></p>
+    </div>
+    <p class="lede" id="btNote">Loading…</p>
+    <div class="tiles" id="btTiles"></div>
+
+    <section class="card">
+      <p class="eyebrow">R$100 invested in May 2012</p>
+      <div id="btChart"></div>
+      <div class="scroll" style="margin-top:12px"><table id="btSummary"></table></div>
+    </section>
+
+    <section class="card">
+      <p class="eyebrow">Does the score separate winners from losers?</p>
+      <p class="note">Each May, every eligible company split into fifths by each score (Q1 = best), each fifth held as an equal-weight portfolio for the year. Bars: return per year, 2012–today (growth: 2013–today, it needs three years of statements). A working factor steps down from Q1 to Q5; the gray line is all eligible stocks. Growth failed this test, so it is shown but not counted in the score.</p>
+      <div id="quintiles" class="quint"></div>
+    </section>
+
+    <div>
+      <section class="card">
+        <p class="eyebrow">Year by year</p>
+        <p class="note">Bought on the first session of May, held twelve months, dividends reinvested. Cells shaded by return.</p>
+        <div class="scroll"><table id="btYears"></table></div>
+      </section>
+      <section class="card">
+        <p class="eyebrow">Buy once, hold for 1, 3 or 5 years</p>
+        <p class="note">Each year's list bought and never touched again. * = still running (return to date).</p>
+        <div class="scroll"><table id="btCohorts"></table></div>
+      </section>
+    </div>
+
+    <section class="card">
+      <p class="eyebrow">What the backtest held</p>
+      <p class="note">The top 10 by score each May, and how each did over the following year.</p>
+      <div id="btHoldings"></div>
+    </section>
+
+    <section class="card">
+      <p class="eyebrow">How much to trust the backtest</p>
+      <ul class="caveats">
+        <li><b>Point in time:</b> each list uses only quotes, filings and events public on its date, through the same code as the live screen; share counts are the ones filed at the time.</li>
+        <li><b>Not in the numbers:</b> brokerage, taxes, slippage. A yearly rebalance trades little, but taxes on gains are real.</li>
+        <li><b>Survivors:</b> companies that went bankrupt or into recovery stay in, and their quotes follow them into the special segments. Companies that delisted keep their quotes but lose their dividends (B3 only serves listed companies' history), which slightly understates returns.</li>
+        <li><b>Approximations before 2020:</b> share counts come from the yearly Reference Form, dated by when CVM received it; registration status is today's, so it is not used as a filter in the past.</li>
+        <li><b>One path:</b> fifteen yearly decisions are a small sample. A strategy that beat the market here can lag for years; compare it with "all eligible stocks" to see what the picking itself added.</li>
+      </ul>
+    </section>
+  </section>
+
+  <!-- ======================================================== TRACK RECORD -->
+  <section data-tab="record" hidden>
+    <div class="pagehead">
+      <h1>Track record</h1>
+      <p class="meta" id="recMeta"></p>
+    </div>
+    <section class="card">
+      <p class="eyebrow">How it is kept</p>
+      <ul class="caveats">
+        <li>Every Monday the top 10 by score (and by the Magic Formula) is appended to <code>data/picks/picks.csv</code> with its prices. Nothing is ever removed.</li>
+        <li>Each list is held as an equal-weight portfolio until the next one, on dividend- and split-adjusted prices, against BOVA11 over the same days.</li>
+        <li>Lists are stamped with the scoring rules' fingerprint: a rule change ends one record and starts another, it never rewrites the past.</li>
+      </ul>
+    </section>
+    <div id="recCallout"></div>
+    <div class="two">
+      <section class="card">
+        <p class="eyebrow">The live lists against BOVA11</p>
+        <p class="note">Start = 100.</p>
+        <div id="chart"></div>
+      </section>
+      <section class="card">
+        <p class="eyebrow">Every list so far</p>
+        <p class="note">Return to date of each list (composite), vs BOVA11 over the same days.</p>
+        <div class="scroll"><table id="cohorts"></table></div>
+      </section>
+    </div>
   </section>
 
   <footer>
@@ -182,394 +166,7 @@
   </footer>
 </main>
 <div id="tip" role="tooltip"></div>
-
-<script>
-const LOCAL = ["localhost", "127.0.0.1"].includes(location.hostname);
-let RULES = "";
-const DATA = LOCAL ? "../data/" : "https://raw.githubusercontent.com/mbottoni/b3-radar/main/data/";
-const $ = (s) => document.querySelector(s);
-const css = (v) => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
-const el = (tag, props = {}, ...kids) => { const e = document.createElement(tag); Object.assign(e, props); e.append(...kids); return e; };
-const svg = (tag, attrs = {}) => { const e = document.createElementNS("http://www.w3.org/2000/svg", tag); for (const [k, v] of Object.entries(attrs)) e.setAttribute(k, v); return e; };
-const num = (x) => (x === "" || x == null ? NaN : +x);
-const f1 = (x, d = 1) => (Number.isFinite(x) ? x.toFixed(d) : "–");
-const pct = (x, d = 0, sign = false) => (Number.isFinite(x) ? `${sign && x > 0 ? "+" : ""}${(x * 100).toFixed(d)}%` : "–");
-const brl = (x) => !Number.isFinite(x) ? "–" : x >= 1e9 ? `R$ ${(x / 1e9).toFixed(1)}bn` : `R$ ${(x / 1e6).toFixed(0)}m`;
-
-function parseCSV(text) {
-  const rows = []; let row = [], field = "", q = false;
-  for (let i = 0; i < text.length; i++) {
-    const c = text[i];
-    if (q) { if (c === '"') { if (text[i + 1] === '"') { field += '"'; i++; } else q = false; } else field += c; }
-    else if (c === '"') q = true;
-    else if (c === ",") { row.push(field); field = ""; }
-    else if (c === "\n") { row.push(field); rows.push(row); row = []; field = ""; }
-    else if (c !== "\r") field += c;
-  }
-  if (field !== "" || row.length) { row.push(field); rows.push(row); }
-  const [h, ...b] = rows;
-  return h ? b.map((r) => Object.fromEntries(h.map((k, j) => [k, r[j] ?? ""]))) : [];
-}
-async function get(path, parse = parseCSV) {
-  const r = await fetch(DATA + path);
-  if (!r.ok) return null;
-  return parse(await r.text());
-}
-
-function showTip(ev, kids) {
-  const t = $("#tip"); t.replaceChildren(...kids); t.style.display = "block";
-  const r = t.getBoundingClientRect();
-  let x = ev.clientX + 14, y = ev.clientY + 14;
-  if (x + r.width > innerWidth - 8) x = ev.clientX - r.width - 14;
-  if (y + r.height > innerHeight - 8) y = ev.clientY - r.height - 14;
-  t.style.left = `${x}px`; t.style.top = `${y}px`;
-}
-const hideTip = () => ($("#tip").style.display = "none");
-const tipRow = (color, value, label) => el("div", { className: "row" }, el("span", { className: "key", style: `background:${color}` }), el("strong", { textContent: value }), label);
-const signed = (x, d = 1) => el("span", { className: x > 0 ? "pos" : x < 0 ? "neg" : "", textContent: pct(x, d, true) });
-
-// ------------------------------------------------------- why this score
-const METRICS = {
-  value: [["earnings_yield", "Earnings yield (EBIT / EV)", (x) => pct(x, 1)], ["book_to_market", "Book / market value", (x) => f1(x, 2)]],
-  quality: [["roic", "Return on invested capital", (x) => pct(x)], ["roe", "Return on equity", (x) => pct(x)],
-            ["net_debt_ebit", "Net debt / EBIT (lower is better)", (x) => f1(x)]],
-  momentum: [["momentum", "12-month return, last month left out", (x) => pct(x, 0, true)]],
-  income: [["dividend_yield", "Dividends of the last 12 months / price", (x) => pct(x, 1)]],
-  growth: [["revenue_growth", "Revenue growth per year, 3 years", (x) => pct(x, 1, true)],
-           ["earnings_growth", "Net income growth per year, 3 years", (x, p) => (Number.isFinite(x) ? pct(x, 1, true) : Number.isFinite(p) ? "loss now" : "–")],
-           ["growth_consistency", "Quarters with revenue above a year before", (x) => pct(x, 0)]],
-};
-const PILLAR = { value: "Value", quality: "Quality", momentum: "Momentum", income: "Income", growth: "Growth" };
-// Shown for information: a pillar with no weight in the score (METHODOLOGY.md: why growth is out).
-const UNSCORED = { growth: "Not in the score: in the backtest the fastest growers did worst." };
-function breakdown(r) {
-  const box = el("div", { className: "bd" });
-  for (const [k, ms] of Object.entries(METRICS)) {
-    const col = el("div", {}, el("h4", { textContent: `${PILLAR[k]}: ${f1(num(r[k + "_score"]), 0)} / 100` }));
-    if (UNSCORED[k]) col.append(el("div", { className: "off", textContent: UNSCORED[k] }));
-    for (const [m, label, fmt] of ms) {
-      const p = num(r["p_" + m]);
-      col.append(el("div", { className: "m" },
-        el("span", { textContent: label }), el("strong", { textContent: fmt(num(r[m]), p) }),
-        el("div", { className: "bar", role: "img", ariaLabel: `percentile ${f1(p, 0)}` }, el("i", { style: `width:${Number.isFinite(p) ? p : 0}%` })),
-        el("span", { className: "pctl", textContent: Number.isFinite(p) ? `percentile ${f1(p, 0)} among eligible companies` : "not scored" })));
-    }
-    box.append(col);
-  }
-  box.append(el("div", { className: "meta", textContent:
-    `Statements up to ${r.fundamentals_date || "–"}, filed with CVM on ${r.filed || "–"}` +
-    (r.growth_base ? ` · growth measured from ${r.growth_base}` : "") + ` · share count from ${(r.shares_source || "–").toUpperCase()} · tickers: ${r.tickers || r.ticker}` +
-    (r.excluded ? ` · not ranked: ${r.excluded}` : "") }));
-  return box;
-}
-// A row that expands into the breakdown on click or Enter; ``open`` keeps
-// the expanded tickers across re-renders.
-function expandable(table, open, key, cells, row, span) {
-  const tr = el("tr", { className: "clickable", tabIndex: 0 }, ...cells);
-  tr.setAttribute("aria-expanded", String(open.has(key)));
-  const toggle = () => { open.has(key) ? open.delete(key) : open.add(key); rerender(); };
-  tr.addEventListener("click", toggle);
-  tr.addEventListener("keydown", (e) => (e.key === "Enter" || e.key === " ") && (e.preventDefault(), toggle()));
-  table.append(tr);
-  if (open.has(key)) table.append(el("tr", { className: "detail" }, el("td", { colSpan: span }, breakdown(row))));
-}
-const OPEN_LIST = new Set(), OPEN_SCREEN = new Set();
-// Ticker -> its company page; the click must not also expand the row.
-function companyLink(ticker, title) {
-  const a = el("a", { className: "tk", href: `company.html?t=${encodeURIComponent(ticker)}`, textContent: ticker, title: title || `${ticker}: history, valuation, dividends` });
-  a.addEventListener("click", (e) => e.stopPropagation());
-  a.addEventListener("keydown", (e) => e.stopPropagation());
-  return a;
-}
-let rerender = () => {};
-
-// ------------------------------------------------------------ shortlist
-function renderList(picks, screen) {
-  const by = new Map(screen.map((r) => [r.ticker, r]));
-  const dates = [...new Set(picks.map((p) => p.date))].sort();
-  const cur = dates.at(-1), prev = dates.at(-2);
-  const now = picks.filter((p) => p.date === cur && p.strategy === "composite").sort((a, b) => a.rank - b.rank);
-  const before = new Set(picks.filter((p) => p.date === prev && p.strategy === "composite").map((p) => p.ticker));
-  $("#listNote").textContent = cur ? `List of ${cur} (closing prices). Why = Value · Quality · Momentum · Income scores. Click a row for the full breakdown.` : "No list yet: the first one is made on Monday.";
-  const head = ["#", "Ticker", "Company", "Score", "Why (V · Q · M · I)", "P/E", "EV/EBIT", "ROE", "12–1m", "Div. yield", "Price"];
-  const t = $("#list"); t.replaceChildren(el("tr", {}, ...head.map((h, i) => el("th", { className: i >= 1 && i <= 2 || i === 4 ? "l" : "", textContent: h }))));
-  for (const p of now) {
-    const s = by.get(p.ticker) || {};
-    const why = ["value_score", "quality_score", "momentum_score", "income_score"].map((k) => f1(num(s[k]), 0)).join(" · ");
-    expandable(t, OPEN_LIST, p.ticker, [
-      el("td", { textContent: p.rank }),
-      el("td", { className: "l" }, companyLink(p.ticker), ...(prev && !before.has(p.ticker) ? [el("span", { className: "new", textContent: "NEW" })] : [])),
-      el("td", { className: "l company", textContent: p.company, title: p.company }),
-      el("td", { textContent: f1(num(p.score), 0) }),
-      el("td", { className: "l muted", textContent: why }),
-      el("td", { textContent: f1(num(s.pe)) }), el("td", { textContent: f1(num(s.ev_ebit)) }),
-      el("td", { textContent: pct(num(s.roe)) }), el("td", {}, signed(num(s.momentum), 0)),
-      el("td", { textContent: pct(num(s.dividend_yield), 1) }), el("td", { textContent: `R$ ${f1(num(p.price), 2)}` })],
-      s, head.length);
-  }
-  $("#magic").replaceChildren(...picks.filter((p) => p.date === cur && p.strategy === "magic").sort((a, b) => a.rank - b.rank)
-    .map((p) => el("span", { className: "chip", textContent: p.ticker, title: p.company })));
-}
-
-// ----------------------------------------------------------- track record
-function renderChart(curve) {
-  const box = $("#chart"); box.replaceChildren();
-  const c = (curve || []).filter((r) => r.strategy === "composite" && (!RULES || !r.rules || r.rules === RULES)).map((r) => ({ date: r.date, p: +r.portfolio, b: +r.benchmark }));
-  if (c.length < 2) { box.append(el("p", { className: "muted", textContent: "The track record starts once a list has been held for a few sessions; check back after the next Monday." })); return; }
-  const w = box.clientWidth || 600, h = 240, ml = 40, mr = 10, mt = 10, mb = 24;
-  const lo = Math.min(...c.flatMap((r) => [r.p, r.b])), hi = Math.max(...c.flatMap((r) => [r.p, r.b]));
-  const pad = (hi - lo) * 0.1 || 2, y0 = lo - pad, y1 = hi + pad;
-  const x = (i) => ml + (i / (c.length - 1)) * (w - ml - mr), y = (v) => mt + (1 - (v - y0) / (y1 - y0)) * (h - mt - mb);
-  const s = svg("svg", { width: w, height: h, role: "img", "aria-label": "Shortlist portfolio vs BOVA11" });
-  for (const f of [0, 0.5, 1]) {
-    const v = y0 + f * (y1 - y0);
-    s.append(svg("line", { x1: ml, x2: w - mr, y1: y(v), y2: y(v), stroke: css("--grid") }));
-    const t = svg("text", { x: ml - 6, y: y(v) + 4, "text-anchor": "end", "font-size": 10, fill: css("--muted") }); t.textContent = v.toFixed(0); s.append(t);
-  }
-  for (const [k, color] of [["b", css("--axis")], ["p", css("--s1")]]) {
-    s.append(svg("path", { d: c.map((r, i) => `${i ? "L" : "M"}${x(i)},${y(r[k])}`).join(""), fill: "none", stroke: color, "stroke-width": 2, "stroke-linejoin": "round" }));
-  }
-  [0, c.length - 1].forEach((i) => { const t = svg("text", { x: x(i), y: h - 6, "text-anchor": i ? "end" : "start", "font-size": 10, fill: css("--muted") }); t.textContent = c[i].date; s.append(t); });
-  const hair = svg("line", { y1: mt, y2: h - mb, stroke: css("--ink2"), opacity: 0 }); s.append(hair);
-  const hit = svg("rect", { x: ml, y: 0, width: w - ml - mr, height: h, fill: "transparent" });
-  hit.addEventListener("pointermove", (ev) => {
-    const r = s.getBoundingClientRect(), i = Math.max(0, Math.min(c.length - 1, Math.round(((ev.clientX - r.left - ml) / (w - ml - mr)) * (c.length - 1))));
-    hair.setAttribute("x1", x(i)); hair.setAttribute("x2", x(i)); hair.setAttribute("opacity", 1);
-    showTip(ev, [el("b", { textContent: c[i].date }), tipRow(css("--s1"), c[i].p.toFixed(1), "shortlist"), tipRow(css("--axis"), c[i].b.toFixed(1), "BOVA11")]);
-  });
-  hit.addEventListener("pointerleave", () => { hair.setAttribute("opacity", 0); hideTip(); });
-  s.append(hit); box.append(s);
-  box.append(el("div", { className: "legend" }, el("span", {}, el("i", { style: `background:${css("--s1")}` }), "Shortlist (composite)"), el("span", {}, el("i", { style: `background:${css("--axis")}` }), "BOVA11")));
-}
-
-function renderCohorts(cohorts) {
-  const t = $("#cohorts");
-  const rows = (cohorts || []).filter((r) => r.strategy === "composite" && (!RULES || !r.rules || r.rules === RULES)).sort((a, b) => b.date.localeCompare(a.date));
-  t.replaceChildren(el("tr", {}, ...["List", "Return", "BOVA11", "Difference", "Picks up"].map((h, i) => el("th", { className: i ? "" : "l", textContent: h }))));
-  if (!rows.length) { t.append(el("tr", {}, el("td", { className: "l muted", colSpan: 5, textContent: "No lists yet." }))); return; }
-  for (const r of rows) {
-    const ret = num(r.return), b = num(r.benchmark);
-    t.append(el("tr", {}, el("td", { className: "l", textContent: r.date }), el("td", {}, signed(ret)), el("td", {}, signed(b)), el("td", {}, signed(ret - b)), el("td", { textContent: pct(num(r.hit_rate)) })));
-  }
-}
-
-// --------------------------------------------------------------- screener
-const COLS = [
-  ["rank", "#", "n"], ["ticker", "Ticker", "s"], ["company", "Company", "s"], ["sector", "Sector", "s"], ["score", "Score", "n"],
-  ["value_score", "V", "n"], ["quality_score", "Q", "n"], ["momentum_score", "M", "n"], ["income_score", "I", "n"], ["growth_score", "G", "n"],
-  ["pe", "P/E", "n"], ["ev_ebit", "EV/EBIT", "n"], ["roe", "ROE", "n"], ["roic", "ROIC", "n"], ["net_debt_ebit", "ND/EBIT", "n"],
-  ["momentum", "12–1m", "n"], ["dividend_yield", "Div. yield", "n"], ["market_cap", "Mkt cap", "n"], ["liquidity", "Daily vol.", "n"], ["excluded", "Excluded because", "s"],
-];
-const FMT = { score: (x) => f1(x, 0), value_score: (x) => f1(x, 0), quality_score: (x) => f1(x, 0), momentum_score: (x) => f1(x, 0), income_score: (x) => f1(x, 0), growth_score: (x) => f1(x, 0),
-  pe: f1, ev_ebit: f1, net_debt_ebit: f1, roe: (x) => pct(x), roic: (x) => pct(x), momentum: (x) => pct(x, 0, true), dividend_yield: (x) => pct(x, 1), market_cap: brl, liquidity: brl };
-let SCREEN = [], sortKey = "rank", sortAsc = true;
-function renderScreen() {
-  const q = $("#q").value.trim().toLowerCase(), sec = $("#sector").value, all = $("#showExcluded").checked;
-  const cols = COLS.filter(([k]) => all || k !== "excluded");
-  const rows = SCREEN.filter((r) => (all || !r.excluded) && (!sec || r.sector === sec) && (!q || r.ticker.toLowerCase().includes(q) || r.company.toLowerCase().includes(q) || r.tickers.toLowerCase().includes(q)));
-  const type = Object.fromEntries(COLS.map(([k, , t]) => [k, t]));
-  rows.sort((a, b) => {
-    const [x, y] = [a[sortKey], b[sortKey]];
-    if (type[sortKey] === "n") { const [u, v] = [num(x), num(y)]; if (!Number.isFinite(u)) return 1; if (!Number.isFinite(v)) return -1; return sortAsc ? u - v : v - u; }
-    return sortAsc ? String(x).localeCompare(String(y)) : String(y).localeCompare(String(x));
-  });
-  const t = $("#screen");
-  t.replaceChildren(el("tr", {}, ...cols.map(([k, label, ty]) => {
-    const th = el("th", { className: `sortable ${ty === "s" ? "l" : ""}`, textContent: label + (k === sortKey ? (sortAsc ? " ▲" : " ▼") : ""), tabIndex: 0 });
-    const go = () => { if (sortKey === k) sortAsc = !sortAsc; else { sortKey = k; sortAsc = ty === "s" || k === "rank"; } renderScreen(); };
-    th.addEventListener("click", go); th.addEventListener("keydown", (e) => (e.key === "Enter" || e.key === " ") && (e.preventDefault(), go()));
-    return th;
-  })));
-  for (const r of rows) {
-    expandable(t, OPEN_SCREEN, r.ticker, cols.map(([k, , ty]) => {
-      const v = r[k];
-      if (k === "ticker") return el("td", { className: "l" }, companyLink(v, r.tickers));
-      if (k === "momentum") return el("td", {}, signed(num(v), 0));
-      if (ty === "s") return el("td", { className: `l ${k === "company" ? "company" : ""} ${k === "excluded" ? "muted" : ""}`, textContent: v, title: v });
-      return el("td", { textContent: (FMT[k] || ((x) => (Number.isFinite(x) ? x : "–")))(num(v)) });
-    }), r, cols.length);
-  }
-}
-
-
-// --------------------------------------------------------------- backtest
-const BT_LABEL = { composite: "Score (top 10)", magic: "Magic Formula (top 10)", value: "Value only", quality: "Quality only",
-  momentum: "Momentum only", income: "Income only", eligible: "All eligible stocks", bova11: "BOVA11 (Ibovespa)", cdi: "CDI (cash)" };
-const BT_SHORT = { composite: "Score", magic: "Magic", value: "Value", quality: "Quality", momentum: "Mom.", income: "Income", eligible: "All elig.", bova11: "BOVA11", cdi: "CDI" };
-const BT_CHART = [["composite", "--s1"], ["bova11", "--s2"], ["cdi", "--s3"], ["eligible", "--other"]];
-
-function renderBtChart(curve) {
-  const box = $("#btChart"); box.replaceChildren();
-  if (!curve || !curve.length) return;
-  const by = {}; for (const r of curve) (by[r.series] ||= []).push({ date: r.date, v: +r.value });
-  const dates = [...new Set(curve.map((r) => r.date))].sort();
-  const val = Object.fromEntries(BT_CHART.map(([k]) => [k, new Map((by[k] || []).map((p) => [p.date, p.v]))]));
-  const w = box.clientWidth || 800, h = 320, ml = 48, mr = 150, mt = 10, mb = 24;
-  const all = BT_CHART.flatMap(([k]) => (by[k] || []).map((p) => p.v));
-  const lo = Math.log(Math.min(...all) * 0.9), hi = Math.log(Math.max(...all) * 1.1);
-  const x = (i) => ml + (i / (dates.length - 1)) * (w - ml - mr), y = (v) => mt + (1 - (Math.log(v) - lo) / (hi - lo)) * (h - mt - mb);
-  const s = svg("svg", { width: w, height: h, role: "img", "aria-label": "Growth of R$100, log scale" });
-  for (const v of [50, 100, 200, 400, 800, 1600, 3200]) {
-    if (Math.log(v) < lo || Math.log(v) > hi) continue;
-    s.append(svg("line", { x1: ml, x2: w - mr, y1: y(v), y2: y(v), stroke: css("--grid") }));
-    const t = svg("text", { x: ml - 6, y: y(v) + 4, "text-anchor": "end", "font-size": 10, fill: css("--muted") }); t.textContent = `R$${v}`; s.append(t);
-  }
-  const years = dates.map((d, i) => [d, i]).filter(([d], i, a) => i === 0 || d.slice(0, 4) !== a[i - 1][0].slice(0, 4));
-  for (const [d, i] of years) { if (+d.slice(0, 4) % 2) continue; const t = svg("text", { x: x(i), y: h - 6, "text-anchor": "middle", "font-size": 10, fill: css("--muted") }); t.textContent = d.slice(0, 4); s.append(t); }
-  const ends = [];
-  for (const [k, c] of [...BT_CHART].reverse()) {
-    const pts = dates.map((d, i) => [i, val[k].get(d)]).filter(([, v]) => Number.isFinite(v));
-    if (!pts.length) continue;
-    s.append(svg("path", { d: pts.map(([i, v], j) => `${j ? "L" : "M"}${x(i)},${y(v)}`).join(""), fill: "none", stroke: css(c), "stroke-width": k === "composite" ? 2.5 : 2, "stroke-linejoin": "round" }));
-    const [li, lv] = pts.at(-1); ends.push({ k, c, y: y(lv), v: lv, x: x(li) });
-  }
-  ends.sort((a, b) => a.y - b.y);
-  for (let i = 1; i < ends.length; i++) if (ends[i].y - ends[i - 1].y < 14) ends[i].y = ends[i - 1].y + 14;
-  for (const e of ends) {
-    const t = svg("text", { x: e.x + 8, y: e.y + 4, "font-size": 11, fill: css("--ink") }); t.textContent = `${BT_SHORT[e.k]} R$${e.v.toFixed(0)}`; s.append(t);
-  }
-  const hair = svg("line", { y1: mt, y2: h - mb, stroke: css("--ink2"), opacity: 0 }); s.append(hair);
-  const hit = svg("rect", { x: ml, y: 0, width: w - ml - mr, height: h, fill: "transparent" });
-  hit.addEventListener("pointermove", (ev) => {
-    const r = s.getBoundingClientRect(), i = Math.max(0, Math.min(dates.length - 1, Math.round(((ev.clientX - r.left - ml) / (w - ml - mr)) * (dates.length - 1))));
-    hair.setAttribute("x1", x(i)); hair.setAttribute("x2", x(i)); hair.setAttribute("opacity", 1);
-    showTip(ev, [el("b", { textContent: dates[i] }), ...BT_CHART.map(([k, c]) => tipRow(css(c), Number.isFinite(val[k].get(dates[i])) ? `R$ ${val[k].get(dates[i]).toFixed(0)}` : "–", BT_LABEL[k]))]);
-  });
-  hit.addEventListener("pointerleave", () => { hair.setAttribute("opacity", 0); hideTip(); });
-  s.append(hit); box.append(s);
-  box.append(el("div", { className: "legend" }, ...BT_CHART.map(([k, c]) => el("span", {}, el("i", { style: `background:${css(c)}` }), BT_LABEL[k])), el("span", { className: "muted", textContent: "· log scale, R$100 invested" })));
-}
-
-function renderBtSummary(summary) {
-  const t = $("#btSummary");
-  const head = ["", "R$100 became", "Per year", "Volatility", "Worst fall", "Best year", "Worst year", "Years beating BOVA11", "Per year vs CDI"];
-  t.replaceChildren(el("tr", {}, ...head.map((h, i) => el("th", { className: i ? "" : "l", textContent: h }))));
-  const order = ["composite", "magic", "value", "quality", "momentum", "income", "eligible", "bova11", "cdi"];
-  for (const k of order) {
-    const r = summary.find((x) => x.series === k); if (!r) continue;
-    const strong = k === "composite";
-    t.append(el("tr", {},
-      el("td", { className: "l", innerHTML: "" }, strong ? el("b", { textContent: BT_LABEL[k] }) : BT_LABEL[k]),
-      el("td", { textContent: `R$ ${(100 * (1 + num(r.total_return))).toFixed(0)}` }),
-      el("td", {}, signed(num(r.cagr))), el("td", { textContent: pct(num(r.volatility)) }),
-      el("td", {}, signed(num(r.max_drawdown), 0)), el("td", {}, signed(num(r.best_year), 0)), el("td", {}, signed(num(r.worst_year), 0)),
-      el("td", { textContent: r.years_beating_bova11 || "–" }), el("td", {}, signed(num(r.excess_over_cdi)))));
-  }
-}
-
-function renderBtYears(periods) {
-  const cols = ["composite", "magic", "value", "quality", "momentum", "income", "eligible", "bova11", "cdi"];
-  const starts = [...new Set(periods.map((p) => p.start))].sort().reverse();
-  const t = $("#btYears");
-  t.replaceChildren(el("tr", {}, el("th", { className: "l", textContent: "Held from" }), ...cols.map((c) => el("th", { textContent: BT_SHORT[c] }))));
-  for (const d of starts) {
-    const row = Object.fromEntries(periods.filter((p) => p.start === d).map((p) => [p.series, num(p.return)]));
-    const end = periods.find((p) => p.start === d).end;
-    t.append(el("tr", {}, el("td", { className: "l", textContent: d.slice(0, 7), title: `${d} → ${end}` }), ...cols.map((c) => el("td", {}, signed(row[c], 0)))));
-  }
-}
-
-function renderBtCohorts(cohorts) {
-  const t = $("#btCohorts");
-  const hs = [1, 3, 5];
-  t.replaceChildren(
-    el("tr", {}, el("th", {}), ...hs.map((h) => el("th", { colSpan: 3, textContent: `${h} year${h > 1 ? "s" : ""}`, style: "text-align:center" }))),
-    el("tr", {}, el("th", { className: "l", textContent: "Bought" }), ...hs.flatMap(() => ["List", "BOVA11", "CDI"].map((x) => el("th", { textContent: x })))));
-  const starts = [...new Set(cohorts.map((c) => c.start))].sort().reverse();
-  for (const d of starts) {
-    const cells = hs.flatMap((h) => {
-      const c = cohorts.find((r) => r.start === d && +r.horizon === h);
-      if (!c) return [el("td"), el("td"), el("td")];
-      const partial = c.complete === "False";
-      const mk = (v) => { const td = el("td", {}, signed(num(v), 0)); if (partial) { td.className = "muted"; td.append("*"); } return td; };
-      return [mk(c.composite), mk(c.bova11), mk(c.cdi)];
-    });
-    t.append(el("tr", {}, el("td", { className: "l", textContent: d.slice(0, 7) }), ...cells));
-  }
-}
-
-function renderBtHoldings(holdings) {
-  const box = $("#btHoldings"); box.replaceChildren();
-  const dates = [...new Set(holdings.map((h) => h.date))].sort().reverse();
-  dates.forEach((d, i) => {
-    const rows = holdings.filter((h) => h.date === d && h.strategy === "composite").sort((a, b) => a.rank - b.rank);
-    const avg = rows.map((r) => num(r.period_return)).filter(Number.isFinite);
-    const det = el("details", { open: i === 0 });
-    det.append(el("summary", { textContent: `${d}: ${rows.map((r) => r.ticker).join(", ")} (average ${pct(avg.reduce((a, b) => a + b, 0) / (avg.length || 1), 0, true)})` }));
-    const t = el("table");
-    t.append(el("tr", {}, ...["#", "Ticker", "Company", "Sector", "Score", "Return over the year"].map((h, j) => el("th", { className: j >= 1 && j <= 3 ? "l" : "", textContent: h }))));
-    for (const r of rows) t.append(el("tr", {}, el("td", { textContent: r.rank }), el("td", { className: "l" }, companyLink(r.ticker)),
-      el("td", { className: "l company", textContent: r.company }), el("td", { className: "l muted", textContent: r.sector }),
-      el("td", { textContent: f1(num(r.metric), 0) }), el("td", {}, signed(num(r.period_return), 0))));
-    det.append(el("div", { className: "scroll" }, t)); box.append(det);
-  });
-}
-
-function renderQuintiles(q, summary) {
-  const box = $("#quintiles"); box.replaceChildren();
-  if (!q || !q.length) return;
-  const elig = num((summary.find((r) => r.series === "eligible") || {}).cagr);
-  const names = { score: "Score", value: "Value", quality: "Quality", momentum: "Momentum", income: "Income", growth: "Growth (not scored)" };
-  const start = q.map((r) => r.first).filter(Boolean).sort()[0];
-  const all = q.map((r) => num(r.cagr));
-  const lo = Math.min(0, ...all, elig) - 0.02, hi = Math.max(...all, elig) + 0.03;
-  for (const f of Object.keys(names)) {
-    const rows = q.filter((r) => r.factor === f).sort((a, b) => a.quintile - b.quintile);
-    if (!rows.length) continue;
-    const w = 220, h = 170, ml = 4, mr = 4, mt = 14, mb = 18;
-    const y = (v) => mt + (1 - (v - lo) / (hi - lo)) * (h - mt - mb);
-    const bw = (w - ml - mr) / 5;
-    const s = svg("svg", { viewBox: `0 0 ${w} ${h}`, role: "img", "aria-label": `${names[f]}: return per year by fifth` });
-    s.append(svg("line", { x1: ml, x2: w - mr, y1: y(0), y2: y(0), stroke: css("--axis") }));
-    rows.forEach((r, i) => {
-      const v = num(r.cagr), x = ml + i * bw + 4, top = Math.min(y(v), y(0)), hgt = Math.abs(y(v) - y(0));
-      s.append(svg("rect", { x, y: top, width: bw - 8, height: Math.max(hgt, 1), rx: 3, fill: css("--s1") }));
-      const t = svg("text", { x: x + (bw - 8) / 2, y: v >= 0 ? top - 4 : top + hgt + 11, "text-anchor": "middle", "font-size": 10, fill: css("--ink") });
-      t.textContent = `${(v * 100).toFixed(1)}%`; s.append(t);
-      const lab = svg("text", { x: x + (bw - 8) / 2, y: h - 4, "text-anchor": "middle", "font-size": 10, fill: css("--muted") });
-      lab.textContent = `Q${r.quintile}`; s.append(lab);
-    });
-    if (Number.isFinite(elig)) s.append(svg("line", { x1: ml, x2: w - mr, y1: y(elig), y2: y(elig), stroke: css("--other"), "stroke-width": 1.5 }));
-    const spread = num(rows[0].cagr) - num(rows[4].cagr);
-    box.append(el("div", {}, el("h4", { textContent: names[f] }),
-      el("div", { className: "sub", textContent: `Q1 − Q5: ${spread >= 0 ? "+" : ""}${(spread * 100).toFixed(1)} pts/yr · Q1 beat Q5 in ${rows[0].top_beat_bottom} years` +
-        (rows[0].first && rows[0].first !== start ? ` · from ${rows[0].first.slice(0, 4)}` : "") }), s));
-  }
-}
-
-async function loadBacktest() {
-  const [meta, summary, curve, periods, cohorts, holdings, quintiles] = await Promise.all([get("backtest/meta.json", JSON.parse),
-    get("backtest/summary.csv"), get("backtest/curve.csv"), get("backtest/periods.csv"), get("backtest/cohorts.csv"), get("backtest/holdings.csv"),
-    get("backtest/quintiles.csv")]);
-  if (!summary) { $("#btNote").textContent = "The backtest has not been run yet."; return; }
-  const c = summary.find((r) => r.series === "composite"), b = summary.find((r) => r.series === "bova11"), d = summary.find((r) => r.series === "cdi");
-  $("#btNote").textContent = `${meta.first} to ${meta.last}: every May, the top ${meta.top_n} by score as the screen stood that day, equal weights, held a year, dividends reinvested, no costs or taxes. ` +
-    `R$100 became R$${(100 * (1 + num(c.total_return))).toFixed(0)} (${pct(num(c.cagr), 1)} a year), vs R$${(100 * (1 + num(b.total_return))).toFixed(0)} in BOVA11 and R$${(100 * (1 + num(d.total_return))).toFixed(0)} in the CDI.`;
-  renderBtChart(curve); renderBtSummary(summary); renderQuintiles(quintiles, summary); renderBtYears(periods); renderBtCohorts(cohorts); renderBtHoldings(holdings);
-  let lastW = 0;
-  new ResizeObserver(([e]) => { const w = Math.round(e.contentRect.width); if (w !== lastW) { lastW = w; renderBtChart(curve); } }).observe($("#btChart"));
-  matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => renderBtChart(curve));
-}
-
-(async () => {
-  const [status, screen, picks, curve, cohorts] = await Promise.all([
-    get("status.json", JSON.parse), get("screen/latest.csv"), get("picks/picks.csv"), get("picks/performance.csv"), get("picks/cohorts.csv")]);
-  if (!screen) { $("#status").textContent = "Could not load the data."; return; }
-  SCREEN = screen;
-  RULES = status?.rules || "";
-  $("#status").replaceChildren(status ? `Data as of the ${status.asof} session · ${status.eligible} of ${status.companies} listed companies pass the filters · updated every weekday · ` : "",
-    ...(RULES ? [el("a", { href: "https://github.com/mbottoni/b3-radar/blob/main/METHODOLOGY.md#scores", textContent: `scoring rules ${RULES}`,
-      title: "Fingerprint of every rule that decides eligibility and ranking. A change starts a new track record." })] : []));
-  const sectors = [...new Set(screen.filter((r) => !r.excluded).map((r) => r.sector))].filter(Boolean).sort();
-  $("#sector").append(...sectors.map((s) => el("option", { value: s, textContent: s })));
-  for (const id of ["#q", "#sector", "#showExcluded"]) $(id).addEventListener("input", renderScreen);
-  rerender = () => { renderList(picks || [], screen); renderScreen(); };
-  renderList(picks || [], screen); renderChart(curve); renderCohorts(cohorts); renderScreen();
-  loadBacktest();
-  let lastW = 0;
-  new ResizeObserver(([e]) => { const w = Math.round(e.contentRect.width); if (w !== lastW) { lastW = w; renderChart(curve); } }).observe($("#chart"));
-  matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => renderChart(curve));
-})();
-</script>
+<script src="assets/common.js"></script>
+<script src="assets/index.js"></script>
 </body>
 </html>

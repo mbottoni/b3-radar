@@ -10,7 +10,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from . import backtest, companies, cotahist, cvm, events, history, picks, report, screen
+from . import backtest, companies, cotahist, cvm, events, history, market, picks, report, screen, sparks
 
 REPO = Path(__file__).resolve().parent.parent
 
@@ -54,6 +54,7 @@ def backfill_cvm(data_dir: Path, cache: Path, first: int = 2010, last: int | Non
             fre = cvm.fetch_doc("FRE", y, cache)
             if fre is not None:
                 cvm.store_capital(cvm.capital_history(fre), data_dir)
+                cvm.store_share_counts(cvm.share_counts(fre), data_dir)
         print(f"[cvm] {y} done", file=sys.stderr)
 
 
@@ -91,10 +92,13 @@ def cmd_daily(a) -> int:
     refresh_cvm(a.data, a.cache, today.year)
     print(f"[events] {events.refresh(candidate_issuers(a.data), a.data)}", file=sys.stderr)
     history.update_cdi(a.data)
+    history.update_ipca(a.data)
     refresh_inferred(a.data)
     df = screen.build(a.data)
     screen.save(df, a.data)
     write_status(a.data, df)
+    market.today(df, a.data)
+    sparks.build(df, a.data)
     print(f"screen as of {df['asof'].iloc[0]}: {len(df)} companies, {(df.excluded == '').sum()} eligible", file=sys.stderr)
     return 0
 
@@ -109,6 +113,8 @@ def cmd_weekly(a) -> int:
     df = screen.build(a.data)
     screen.save(df, a.data)
     write_status(a.data, df)
+    mk = market.today(df, a.data)
+    sparks.build(df, a.data)
     asof = df["asof"].iloc[0]
     hist = a.data / "screen" / "history" / f"{asof}.csv"
     hist.parent.mkdir(parents=True, exist_ok=True)
@@ -119,7 +125,7 @@ def cmd_weekly(a) -> int:
     entered, left = picks.changes(log)
     curve, cohorts = picks.performance(a.data, asof)
     picks.save_performance(curve, cohorts, a.data)
-    subject, html_body, text = report.build(df, new, entered, left, cohorts, curve)
+    subject, html_body, text = report.build(df, new, entered, left, cohorts, curve, mk)
     report.send(subject, html_body, text, a.out)
     return 0
 
@@ -137,6 +143,13 @@ def cmd_companies(a) -> int:
     return 0
 
 
+def cmd_market(a) -> int:
+    hist = market.build(a.data, log=lambda m: print(m, file=sys.stderr))
+    market.save(hist, a.data)
+    print(f"[market] {len(hist)} months, {hist.date.iloc[0]} to {hist.date.iloc[-1]}", file=sys.stderr)
+    return 0
+
+
 def cmd_history(a) -> int:
     """One-time backfill of everything the backtest needs since 2010."""
     today = _today(a)
@@ -149,6 +162,7 @@ def cmd_history(a) -> int:
     print(f"[history] {history.backfill_dividends({r.issuer: r.name for r in iss.itertuples() if r.name}, px, a.data)}",
           file=sys.stderr)
     history.update_cdi(a.data)
+    history.update_ipca(a.data)
     refresh_inferred(a.data)
     return 0
 
@@ -162,6 +176,8 @@ def cmd_screen(a) -> int:
     df = screen.build(a.data, a.asof)
     screen.save(df, a.data)
     write_status(a.data, df)
+    market.today(df, a.data)
+    sparks.build(df, a.data)
     return 0
 
 
@@ -186,6 +202,9 @@ def main(argv: list[str] | None = None) -> int:
 
     c = sub.add_parser("companies", help="one JSON per company with its long history, for the company pages")
     c.set_defaults(fn=cmd_companies)
+
+    m = sub.add_parser("market", help="monthly history of the market's valuation against the CDI, point in time")
+    m.set_defaults(fn=cmd_market)
 
     h = sub.add_parser("history", help="one-time backfill of quotes, filings, events and dividends since 2010")
     h.add_argument("--first-year", type=int, default=2010)

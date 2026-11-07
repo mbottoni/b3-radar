@@ -191,6 +191,61 @@ def capital_history(fre_zip: Path) -> pd.DataFrame:
     return out.drop_duplicates(["cnpj", "date"], keep="last")
 
 
+FLOAT_MIN_PCT = 1.0   # a class with under 1% in free float gives too imprecise a total
+
+
+def share_counts(fre_zip: Path) -> pd.DataFrame:
+    """Shares per class from one year's Reference Forms: shares in free
+    float divided by the free float's percentage of the class (item 15.3).
+    ``date``: the day CVM received the version they come from (when it was
+    public); ``meeting``: the shareholders' meeting the position refers to.
+    Most forms give the count as of their receipt, some (Sabesp, received
+    after its 2013 3:1 split) still the one of the meeting: see
+    ``screen.date_share_counts``.
+
+    Unlike the capital timeline, each count carries its own date, so a
+    later form cannot rewrite an earlier count: Odontoprev's 2021 form lists
+    its 2010 capital entry with 2021's share count (after a 3:1 split in
+    2012), while its 2011 form gives the 2011 count. A class with no free
+    float (or under ``FLOAT_MIN_PCT``) has no count here."""
+    year = fre_zip.stem.split("_")[-1]
+    with zipfile.ZipFile(fre_zip) as z:
+        member = _member(z, f"_distribuicao_capital_{year}.csv")
+        if member is None:
+            return pd.DataFrame(columns=["cnpj", "date", "meeting", "shares_on", "shares_pn", "form"])
+        df = _csv(member)
+        received = _csv(_member(z, f"fre_cia_aberta_{year}.csv"), usecols=["ID_DOC", "DT_RECEB"])
+    # The detail tables keep only each company's latest version of the form,
+    # and its counts are as of that version: date them by its receipt.
+    df = df.merge(received.drop_duplicates("ID_DOC"), left_on="ID_Documento", right_on="ID_DOC", how="left")
+    num = lambda s: pd.to_numeric(s, errors="coerce")  # noqa: E731
+
+    def total(q, p):
+        q, p = num(q), num(p)
+        return (q / (p / 100)).where((q > 0) & (p >= FLOAT_MIN_PCT)).round()
+    received = df.DT_RECEB.fillna("")
+    meeting = df.Data_Ultima_Assembleia.fillna("")
+    out = pd.DataFrame({"cnpj": df.CNPJ_Companhia, "date": received,
+                        "meeting": meeting.where((meeting != "") & (meeting < received), received),
+                        "shares_on": total(df.Quantidade_Acoes_Ordinarias_Circulacao, df.Percentual_Acoes_Ordinarias_Circulacao),
+                        "shares_pn": total(df.Quantidade_Acoes_Preferenciais_Circulacao,
+                                           df.Percentual_Acoes_Preferenciais_Circulacao),
+                        "form": year})
+    out = out[(out.date != "") & (out.shares_on.notna() | out.shares_pn.notna())]
+    return out.drop_duplicates(["cnpj", "date"], keep="last")
+
+
+def store_share_counts(new: pd.DataFrame, data_dir: Path) -> None:
+    """Merge into data/cvm/shares_fre.csv; the same (company, meeting date)
+    reported by two forms keeps the later form's figures."""
+    path = data_dir / "cvm" / "shares_fre.csv"
+    if path.exists():
+        new = pd.concat([pd.read_csv(path, dtype={"cnpj": str, "date": str, "form": str}), new], ignore_index=True)
+    new = new.sort_values(["cnpj", "date", "form"], kind="stable").drop_duplicates(["cnpj", "date"], keep="last")
+    path.parent.mkdir(parents=True, exist_ok=True)
+    new.to_csv(path, index=False, lineterminator="\n", float_format="%.0f")
+
+
 def store_capital(new: pd.DataFrame, data_dir: Path) -> None:
     """Merge into data/cvm/capital.csv; for the same (company, date) the
     most recent form wins (later forms correct earlier ones)."""

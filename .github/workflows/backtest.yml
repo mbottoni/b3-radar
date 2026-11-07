@@ -29,10 +29,12 @@ jobs:
         run: uv run python -m b3radar backtest
       - name: Company pages (quarterly history since 2011)
         run: uv run python -m b3radar companies
+      - name: Market valuation against the CDI (monthly since 2011)
+        run: uv run python -m b3radar market
 
       - name: Commit the results
         run: |
-          git add data/backtest data/companies
+          git add data/backtest data/companies data/market
           if git diff --staged --quiet; then echo "No changes."; exit 0; fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"

@@ -5,299 +5,136 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Company · B3 Radar</title>
 <meta name="description" content="One company's long history from official open data: total return, score, valuation, business and dividends since 2010.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='6' fill='%232a78d6'/%3E%3Ccircle cx='12' cy='12' r='3.5' fill='none' stroke='white' stroke-width='2.2'/%3E%3Cpath d='M12 12l6-6' stroke='white' stroke-width='2.2' stroke-linecap='round'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="assets/app.css">
 <style>
-  :root {
-    color-scheme: light;
-    --page: #f9f9f7; --surface: #fcfcfb; --ink: #0b0b0b; --ink2: #52514e; --muted: #898781;
-    --grid: #e1e0d9; --axis: #c3c2b7; --border: rgba(11, 11, 11, 0.10);
-    --s1: #2a78d6; --s2: #eb6834; --other: #b5b4ad; --good: #006300; --bad: #d03b3b; --chip: #eef3fb;
-  }
-  @media (prefers-color-scheme: dark) {
-    :root:not([data-theme="light"]) {
-      color-scheme: dark;
-      --page: #0d0d0d; --surface: #1a1a19; --ink: #f0efec; --ink2: #c3c2b7; --muted: #898781;
-      --grid: #2c2c2a; --axis: #383835; --border: rgba(255, 255, 255, 0.10);
-      --s1: #3987e5; --s2: #d95926; --other: #5c5b57; --good: #0ca30c; --bad: #e66767; --chip: #1f2a3a;
-    }
-  }
-  :root[data-theme="dark"] {
-    color-scheme: dark;
-    --page: #0d0d0d; --surface: #1a1a19; --ink: #f0efec; --ink2: #c3c2b7; --muted: #898781;
-    --grid: #2c2c2a; --axis: #383835; --border: rgba(255, 255, 255, 0.10);
-    --s1: #3987e5; --s2: #d95926; --other: #5c5b57; --good: #0ca30c; --bad: #e66767; --chip: #1f2a3a;
-  }
-  * { box-sizing: border-box; }
-  body { margin: 0; background: var(--page); color: var(--ink); font: 14px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif; }
-  main { max-width: 1240px; margin: 0 auto; padding: 20px 16px 48px; }
-  a { color: var(--s1); }
-  .back { font-size: 13px; }
-  h1 { font-size: 22px; margin: 8px 0 2px; }
-  h2 { font-size: 16px; margin: 0 0 4px; }
-  h4 { font-size: 13px; margin: 0; }
-  .sub { color: var(--ink2); margin: 0 0 12px; }
-  .chips { display: flex; gap: 8px; flex-wrap: wrap; margin: 6px 0 16px; }
-  .chip { background: var(--chip); border-radius: 999px; padding: 3px 10px; font-size: 12px; font-weight: 600; }
+  .crumb { font-size: 13px; color: var(--muted); margin: 0 0 4px; }
+  .crumb a { color: var(--muted); }
+  .chips { margin: 8px 0 14px; }
   .chip.warn { background: transparent; border: 1px solid var(--border); color: var(--ink2); font-weight: 500; }
-  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 16px; margin-bottom: 14px; }
-  .note { color: var(--muted); font-size: 12px; margin: 0 0 10px; }
-  .grid3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
-  .grid4 { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
-  .grid5 { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 16px; }
-  .mini .val { font-size: 12px; color: var(--muted); margin-bottom: 2px; }
-  svg { display: block; width: 100%; }
-  table { border-collapse: collapse; width: 100%; font-size: 13px; font-variant-numeric: tabular-nums; }
-  th, td { padding: 6px 8px; border-bottom: 1px solid var(--grid); text-align: right; white-space: nowrap; }
-  th { color: var(--ink2); font-weight: 600; font-size: 12px; }
-  th.l, td.l { text-align: left; }
-  .pos { color: var(--good); } .neg { color: var(--bad); } .muted { color: var(--muted); }
-  .bd { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 18px; }
-  .bd .off { color: var(--muted); font-size: 12px; margin: -6px 0 8px; }
-  .bd h4 { margin: 0 0 8px; }
-  .bd .m { display: grid; grid-template-columns: 1fr auto; gap: 3px 8px; font-size: 12px; margin-bottom: 10px; }
-  .bar { grid-column: 1 / -1; height: 6px; border-radius: 3px; background: var(--grid); overflow: hidden; }
-  .bar i { display: block; height: 100%; background: var(--s1); border-radius: 3px; }
-  .pctl { grid-column: 1 / -1; color: var(--muted); }
-  .legend { display: flex; gap: 14px; font-size: 12px; color: var(--ink2); margin-top: 6px; flex-wrap: wrap; }
-  .legend i { display: inline-block; width: 14px; height: 2px; vertical-align: middle; margin-right: 6px; }
-  #tip { position: fixed; pointer-events: none; z-index: 10; display: none; background: var(--surface); color: var(--ink);
-    border: 1px solid var(--border); border-radius: 8px; padding: 8px 10px; font-size: 12px; box-shadow: 0 4px 16px rgba(0,0,0,.12); }
-  #tip b { display: block; font-size: 13px; }
-  #tip .row { display: flex; gap: 6px; align-items: center; color: var(--ink2); }
-  #tip .row strong { color: var(--ink); font-variant-numeric: tabular-nums; }
-  #tip .key { width: 12px; height: 2px; display: inline-block; }
-  footer { color: var(--muted); font-size: 12px; margin-top: 18px; }
-  @media (max-width: 900px) { .grid3, .grid4, .grid5, .bd { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-  @media (max-width: 520px) { .grid3, .grid4, .grid5, .bd { grid-template-columns: 1fr; } }
 </style>
 </head>
 <body>
+<header id="top"></header>
 <main>
-  <a class="back" href="./">← B3 Radar</a>
-  <h1 id="name">Loading…</h1>
-  <p class="sub" id="meta"></p>
+  <p class="crumb"><a href="./#/screener">Screener</a> / <span id="crumbT">…</span></p>
+  <div class="pagehead" style="margin-bottom:4px">
+    <h1 id="name">Loading…</h1>
+    <p class="meta" id="meta"></p>
+  </div>
   <div class="chips" id="chips"></div>
+  <div class="cards" id="cards"></div>
 
   <section class="card">
-    <h2>Why it scores what it does today</h2>
+    <p class="eyebrow">Why it scores what it does today</p>
     <p class="note" id="whyNote"></p>
     <div id="why"></div>
   </section>
 
   <section class="card">
-    <h2>R$100 invested, dividends reinvested</h2>
+    <p class="eyebrow">R$100 invested, dividends reinvested</p>
     <p class="note">Monthly total return of the main ticker against BOVA11 (the Ibovespa), log scale.</p>
     <div id="price"></div>
   </section>
 
   <section class="card">
-    <h2>The score over time</h2>
+    <p class="eyebrow">The score over time</p>
     <p class="note">The screen as it stood each quarter (point in time: only what was public then). Gaps: the company was not eligible (illiquid, too new, or failing a filter).</p>
     <div id="score"></div>
     <div class="grid5" id="pillars" style="margin-top:12px"></div>
   </section>
 
   <section class="card">
-    <h2>Cheap or expensive against its own history?</h2>
+    <p class="eyebrow">Cheap or expensive against its own history?</p>
     <p class="note">Each quarter's valuation; the gray line is the company's own median since 2011.</p>
     <div class="grid3" id="valuation"></div>
   </section>
 
   <section class="card">
-    <h2>The business</h2>
+    <p class="eyebrow">The business</p>
     <p class="note">Trailing twelve months at every filing with CVM (consolidated statements when filed), and returns on capital each quarter.</p>
     <div class="grid4" id="business"></div>
   </section>
 
-  <section class="card">
-    <h2>Dividends and JCP per share, by year</h2>
-    <p class="note">By the year the stock went ex; per share as it trades today (earlier years divided through later splits). Capital returns excluded.</p>
-    <div id="dividends"></div>
-  </section>
-
-  <section class="card">
-    <h2>In the backtest</h2>
-    <p class="note">Years it was in the top 10 bought each May, and how it did over the following year.</p>
-    <div id="backtest"></div>
-  </section>
+  <div class="half">
+    <section class="card">
+      <p class="eyebrow">Dividends and JCP per share, by year</p>
+      <p class="note">By the year the stock went ex; per share as it trades today (earlier years divided through later splits). Capital returns excluded.</p>
+      <div id="dividends"></div>
+    </section>
+    <section class="card">
+      <p class="eyebrow">In the backtest</p>
+      <p class="note">Years it was in the top 10 bought each May, and how it did over the following year.</p>
+      <div id="backtest"></div>
+    </section>
+  </div>
 
   <footer>A rules-based screen of public data (B3, CVM), not investment advice. How every number is made:
     <a href="https://github.com/mbottoni/b3-radar/blob/main/METHODOLOGY.md">METHODOLOGY.md</a></footer>
 </main>
 <div id="tip" role="tooltip"></div>
-
+<script src="assets/common.js"></script>
 <script>
-const LOCAL = ["localhost", "127.0.0.1"].includes(location.hostname);
-const DATA = LOCAL ? "../data/" : "https://raw.githubusercontent.com/mbottoni/b3-radar/main/data/";
-const $ = (s) => document.querySelector(s);
-const css = (v) => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
-const el = (tag, props = {}, ...kids) => { const e = document.createElement(tag); Object.assign(e, props); e.append(...kids); return e; };
-const svg = (tag, attrs = {}) => { const e = document.createElementNS("http://www.w3.org/2000/svg", tag); for (const [k, v] of Object.entries(attrs)) e.setAttribute(k, v); return e; };
-const num = (x) => (x === "" || x == null ? NaN : +x);
-const f1 = (x, d = 1) => (Number.isFinite(x) ? x.toFixed(d) : "–");
-const pct = (x, d = 0, sign = false) => (Number.isFinite(x) ? `${sign && x > 0 ? "+" : ""}${(x * 100).toFixed(d)}%` : "–");
-const brl = (x) => !Number.isFinite(x) ? "–" : Math.abs(x) >= 1e9 ? `R$ ${(x / 1e9).toFixed(1)}bn` : `R$ ${(x / 1e6).toFixed(0)}m`;
-const signed = (x, d = 0) => el("span", { className: x > 0 ? "pos" : x < 0 ? "neg" : "", textContent: pct(x, d, true) });
-
-function showTip(ev, kids) {
-  const t = $("#tip"); t.replaceChildren(...kids); t.style.display = "block";
-  const r = t.getBoundingClientRect();
-  let x = ev.clientX + 14, y = ev.clientY + 14;
-  if (x + r.width > innerWidth - 8) x = ev.clientX - r.width - 14;
-  if (y + r.height > innerHeight - 8) y = ev.clientY - r.height - 14;
-  t.style.left = `${x}px`; t.style.top = `${y}px`;
-}
-const hideTip = () => ($("#tip").style.display = "none");
-const tipRow = (color, value, label) => el("div", { className: "row" }, el("span", { className: "key", style: `background:${color}` }), el("strong", { textContent: value }), label);
-
-// A line chart with a crosshair. series: [{values, color, label, width}];
-// opts: {log, h, fmt, ref (gray reference value), refLabel, yMin, yMax, labels (direct end labels)}
-function lineChart(box, dates, series, opts = {}) {
-  box.replaceChildren();
-  const vals = series.flatMap((s) => s.values).filter(Number.isFinite).filter((v) => !opts.log || v > 0);
-  if (dates.length < 2 || !vals.length) { box.append(el("p", { className: "muted", textContent: "Not enough history." })); return; }
-  const w = box.clientWidth || 600, h = opts.h || 200, ml = opts.ml || 46, mr = opts.labels ? 110 : 8, mt = 10, mb = 20;
-  const T = (v) => (opts.log ? Math.log(v) : v);
-  let lo = Math.min(...vals, opts.ref ?? Infinity), hi = Math.max(...vals, opts.ref ?? -Infinity);
-  if (opts.yMin !== undefined) lo = Math.min(lo, opts.yMin);
-  if (opts.yMax !== undefined) hi = Math.max(hi, opts.yMax);
-  if (Number.isFinite(opts.clipHi)) hi = Math.min(hi, opts.clipHi);
-  const pad = opts.fixed ? 0 : (T(hi) - T(lo)) * 0.08 || 1;
-  const a = opts.fixed ? T(opts.yMin) : T(lo) - pad, b = opts.fixed ? T(opts.yMax) : T(hi) + pad;
-  const clip = (v) => (Number.isFinite(opts.clipHi) && v > opts.clipHi ? opts.clipHi : v);
-  const x = (i) => ml + (i / (dates.length - 1)) * (w - ml - mr), y = (v) => mt + (1 - (T(v) - a) / (b - a)) * (h - mt - mb);
-  const s = svg("svg", { width: w, height: h, role: "img" });
-  const ticks = opts.log ? [25, 50, 100, 200, 400, 800, 1600, 3200].filter((v) => T(v) >= a && T(v) <= b) : [0, 0.5, 1].map((f) => (a + f * (b - a)));
-  for (const t of ticks) {
-    const v = opts.log ? t : t, yy = opts.log ? y(t) : mt + (1 - (t - a) / (b - a)) * (h - mt - mb);
-    s.append(svg("line", { x1: ml, x2: w - mr, y1: yy, y2: yy, stroke: css("--grid") }));
-    const tx = svg("text", { x: ml - 6, y: yy + 4, "text-anchor": "end", "font-size": 10, fill: css("--muted") });
-    tx.textContent = (opts.fmt || ((z) => z.toFixed(0)))(opts.log ? v : t); s.append(tx);
-  }
-  if (Number.isFinite(opts.ref)) s.append(svg("line", { x1: ml, x2: w - mr, y1: y(opts.ref), y2: y(opts.ref), stroke: css("--other"), "stroke-width": 1.5 }));
-  const yrs = dates.map((d, i) => [d, i]).filter(([d], i, arr) => i === 0 || d.slice(0, 4) !== arr[i - 1][0].slice(0, 4));
-  const step = Math.ceil(yrs.length / 8);
-  yrs.forEach(([d, i], j) => { if (j % step) return; const t = svg("text", { x: x(i), y: h - 4, "text-anchor": "middle", "font-size": 10, fill: css("--muted") }); t.textContent = d.slice(0, 4); s.append(t); });
-  for (const se of series) {
-    let d = "", pen = false;
-    se.values.forEach((v, i) => {
-      if (!Number.isFinite(v) || (opts.log && v <= 0)) { pen = false; return; }
-      d += `${pen ? "L" : "M"}${x(i).toFixed(1)},${y(clip(v)).toFixed(1)}`; pen = true;
-      const solo = (i === 0 || !Number.isFinite(se.values[i - 1])) && (i === se.values.length - 1 || !Number.isFinite(se.values[i + 1]));
-      if (solo) s.append(svg("circle", { cx: x(i), cy: y(clip(v)), r: 2.5, fill: css(se.color) }));
-    });
-    s.append(svg("path", { d, fill: "none", stroke: css(se.color), "stroke-width": se.width || 2, "stroke-linejoin": "round" }));
-    if (opts.labels) {
-      const lastI = se.values.map((v, i) => [v, i]).filter(([v]) => Number.isFinite(v)).at(-1);
-      if (lastI) { const t = svg("text", { x: x(lastI[1]) + 6, y: y(lastI[0]) + 4, "font-size": 11, fill: css("--ink") }); t.textContent = se.endLabel ? se.endLabel(lastI[0]) : se.label; s.append(t); }
-    }
-  }
-  const hair = svg("line", { y1: mt, y2: h - mb, stroke: css("--ink2"), opacity: 0 }); s.append(hair);
-  const hit = svg("rect", { x: ml, y: 0, width: w - ml - mr, height: h, fill: "transparent" });
-  hit.addEventListener("pointermove", (ev) => {
-    const r = s.getBoundingClientRect(), i = Math.max(0, Math.min(dates.length - 1, Math.round(((ev.clientX - r.left - ml) / (w - ml - mr)) * (dates.length - 1))));
-    hair.setAttribute("x1", x(i)); hair.setAttribute("x2", x(i)); hair.setAttribute("opacity", 1);
-    showTip(ev, [el("b", { textContent: dates[i] }), ...series.map((se) => tipRow(css(se.color), (opts.fmt || ((z) => z.toFixed(1)))(se.values[i]), se.label)),
-      ...(Number.isFinite(opts.ref) ? [tipRow(css("--other"), (opts.fmt || ((z) => z.toFixed(1)))(opts.ref), opts.refLabel || "median")] : [])]);
-  });
-  hit.addEventListener("pointerleave", () => { hair.setAttribute("opacity", 0); hideTip(); });
-  s.append(hit); box.append(s);
+"use strict";
+function card({ k, sub, value, d, spark, ref, foot = [] }) {
+  const box = el("div", { className: "spark" });
+  const c = el("div", { className: "scard" },
+    el("div", { className: "row1" }, el("span", { className: "k", textContent: k }), d ? el("span", { className: "d" }, ...[].concat(d)) : null),
+    el("div", { className: "sub", textContent: sub }), el("div", { className: "card-v", textContent: value }), box,
+    el("div", { className: "foot" }, ...foot.map((f) => el("span", {}, ...[].concat(f)))));
+  c._spark = () => fillSpark(box, spark || [], { h: 42, ref });
+  return c;
 }
 
-function barChart(box, labels, values, fmt) {
-  box.replaceChildren();
-  if (!values.some(Number.isFinite)) { box.append(el("p", { className: "muted", textContent: "No payments on file." })); return; }
-  const w = box.clientWidth || 600, h = 170, ml = 8, mr = 8, mt = 16, mb = 18;
-  const hi = Math.max(...values.filter(Number.isFinite)) * 1.12, bw = (w - ml - mr) / labels.length;
-  const y = (v) => mt + (1 - v / hi) * (h - mt - mb);
-  const s = svg("svg", { width: w, height: h, role: "img", "aria-label": "Dividends per share by year" });
-  s.append(svg("line", { x1: ml, x2: w - mr, y1: y(0), y2: y(0), stroke: css("--axis") }));
-  labels.forEach((lab, i) => {
-    const v = values[i], bx = ml + i * bw + Math.min(4, bw * 0.15), bwid = Math.max(bw - 2 * Math.min(4, bw * 0.15), 2);
-    if (Number.isFinite(v) && v > 0) {
-      const r = svg("rect", { x: bx, y: y(v), width: bwid, height: y(0) - y(v), rx: 3, fill: css("--s1") });
-      r.addEventListener("pointermove", (ev) => showTip(ev, [el("b", { textContent: lab }), el("div", { className: "row" }, el("strong", { textContent: fmt(v) }), "per share")]));
-      r.addEventListener("pointerleave", hideTip); s.append(r);
-      if (bw > 30) { const t = svg("text", { x: bx + bwid / 2, y: y(v) - 4, "text-anchor": "middle", "font-size": 10, fill: css("--ink") }); t.textContent = fmt(v); s.append(t); }
-    }
-    if (bw > 22 || i % 2 === 0) { const t = svg("text", { x: bx + bwid / 2, y: h - 4, "text-anchor": "middle", "font-size": 10, fill: css("--muted") }); t.textContent = lab.slice(2); s.append(t); }
-  });
-  box.append(s);
-}
-
-const METRICS = {
-  value: [["earnings_yield", "Earnings yield (EBIT / EV)", (x) => pct(x, 1)], ["book_to_market", "Book / market value", (x) => f1(x, 2)]],
-  quality: [["roic", "Return on invested capital", (x) => pct(x)], ["roe", "Return on equity", (x) => pct(x)], ["net_debt_ebit", "Net debt / EBIT (lower is better)", (x) => f1(x)]],
-  momentum: [["momentum", "12-month return, last month left out", (x) => pct(x, 0, true)]],
-  income: [["dividend_yield", "Dividends of the last 12 months / price", (x) => pct(x, 1)]],
-  growth: [["revenue_growth", "Revenue growth per year, 3 years", (x) => pct(x, 1, true)],
-           ["earnings_growth", "Net income growth per year, 3 years", (x, p) => (Number.isFinite(x) ? pct(x, 1, true) : Number.isFinite(p) ? "loss now" : "–")],
-           ["growth_consistency", "Quarters with revenue above a year before", (x) => pct(x, 0)]],
-};
-const PILLAR = { value: "Value", quality: "Quality", momentum: "Momentum", income: "Income", growth: "Growth" };
-const UNSCORED = { growth: "Not in the score: in the backtest the fastest growers did worst." };
-
-function parseCSV(text) {
-  const rows = []; let row = [], field = "", q = false;
-  for (let i = 0; i < text.length; i++) {
-    const c = text[i];
-    if (q) { if (c === '"') { if (text[i + 1] === '"') { field += '"'; i++; } else q = false; } else field += c; }
-    else if (c === '"') q = true;
-    else if (c === ",") { row.push(field); field = ""; }
-    else if (c === "\n") { row.push(field); rows.push(row); row = []; field = ""; }
-    else if (c !== "\r") field += c;
-  }
-  if (field !== "" || row.length) { row.push(field); rows.push(row); }
-  const [h, ...b] = rows;
-  return h ? b.map((r) => Object.fromEntries(h.map((k, j) => [k, r[j] ?? ""]))) : [];
-}
-
-function median(xs) { const v = xs.filter(Number.isFinite).sort((a, b) => a - b); return v.length ? v[Math.floor(v.length / 2)] : NaN; }
-
-function render(d) {
-  const n = d.now;
+function render(d, sp) {
+  const n = d.now, H = d.history;
   document.title = `${d.ticker} · ${d.company} · B3 Radar`;
+  $("#crumbT").textContent = d.ticker;
   $("#name").textContent = `${d.ticker} · ${d.company}`;
   $("#meta").textContent = `${d.sector} · tickers ${d.tickers} · CNPJ ${d.cnpj}`;
   const chips = $("#chips"); chips.replaceChildren();
   if (n.excluded) chips.append(el("span", { className: "chip warn", textContent: `Not ranked today: ${n.excluded}` }));
-  else chips.append(el("span", { className: "chip", textContent: `Rank #${n.rank} · score ${f1(num(n.score), 0)}` }));
-  chips.append(el("span", { className: "chip warn", textContent: `P/E ${f1(num(n.pe))} · EV/EBIT ${f1(num(n.ev_ebit))} · div. yield ${pct(num(n.dividend_yield), 1)}` }),
-    el("span", { className: "chip warn", textContent: `market cap ${brl(num(n.market_cap))} · trades ${brl(num(n.liquidity))}/day` }));
+  else chips.append(el("span", { className: "chip", textContent: `Rank #${n.rank} of today's eligible` }));
+  chips.append(el("span", { className: "chip warn", textContent: `EV/EBIT ${f1(num(n.ev_ebit))} · ROE ${pct(num(n.roe))} · trades ${brl(num(n.liquidity))}/day` }));
 
-  // Why this score
-  const why = $("#why"); why.replaceChildren();
+  // Snapshot cards: today's figures, each over its own history.
+  const hist = (k) => [...H[k].map(num), num(n[k])];
+  const medPE = median(H.pe.map(num).filter((x) => x > 0 && x < 100)), medDY = median(H.dividend_yield.map(num));
+  const cards = [];
+  if (sp) cards.push(card({ k: "Price", sub: `${d.ticker} · last 12 months, total return`, value: `R$ ${f1(num(n.price), 2)}`, d: ["1D ", change(sp.r1d)],
+    spark: sp.w, foot: [["1M ", change(sp.r1m)], ["1Y ", change(sp.r1y)]] }));
+  cards.push(card({ k: "Score", sub: "0–100, each quarter since 2011", value: n.excluded ? "not ranked" : `${f1(num(n.score), 0)} · #${n.rank}`, spark: hist("score"), ref: 50,
+    foot: [`V ${f1(num(n.value_score), 0)} · Q ${f1(num(n.quality_score), 0)}`, `M ${f1(num(n.momentum_score), 0)} · I ${f1(num(n.income_score), 0)}`] }));
+  cards.push(card({ k: "P/E", sub: "price / trailing earnings", value: f1(num(n.pe)), d: `median ${f1(medPE)}`,
+    spark: hist("pe").map((x) => (x > 0 && x < 100 ? x : NaN)), ref: medPE, foot: [`EV/EBIT ${f1(num(n.ev_ebit))}`] }));
+  cards.push(card({ k: "Dividend yield", sub: "last 12 months / price", value: pct(num(n.dividend_yield), 1), d: `median ${pct(medDY, 1)}`,
+    spark: hist("dividend_yield"), ref: medDY }));
+  cards.push(card({ k: "Market cap", sub: "all share classes", value: brl(num(n.market_cap)), spark: hist("market_cap"),
+    foot: [`statements ${n.fundamentals_date || "–"}`] }));
+  $("#cards").replaceChildren(...cards);
+
   $("#whyNote").textContent = `Percentiles among today's eligible companies (0–100). Statements up to ${n.fundamentals_date || "–"}, filed with CVM ${n.filed || "–"}` + (n.growth_base ? `; growth measured from ${n.growth_base}.` : ".");
-  const bd = el("div", { className: "bd" });
-  for (const [k, ms] of Object.entries(METRICS)) {
-    const col = el("div", {}, el("h4", { textContent: `${PILLAR[k]}: ${f1(num(n[k + "_score"]), 0)} / 100` }));
-    if (UNSCORED[k]) col.append(el("div", { className: "off", textContent: UNSCORED[k] }));
-    for (const [m, label, fmt] of ms) {
-      const p = num(n["p_" + m]);
-      col.append(el("div", { className: "m" }, el("span", { textContent: label }), el("strong", { textContent: fmt(num(n[m]), p) }),
-        el("div", { className: "bar" }, el("i", { style: `width:${Number.isFinite(p) ? p : 0}%` })),
-        el("span", { className: "pctl", textContent: Number.isFinite(p) ? `percentile ${f1(p, 0)}` : "not scored" })));
-    }
-    bd.append(col);
-  }
-  why.append(bd);
+  $("#why").replaceChildren(breakdown(n, { meta: false, among: "" }));
 
   // Total return vs BOVA11, both rebased to 100 at the first common month.
-  const P = d.price, i0 = P.adj.findIndex((v, i) => Number.isFinite(v) && Number.isFinite(P.bova[i]));
-  const base = (arr) => arr.map((v) => (Number.isFinite(v) && i0 >= 0 ? (100 * v) / arr[i0] : NaN));
+  const P = d.price, i0 = Math.max(0, P.adj.findIndex((v, i) => Number.isFinite(v) && Number.isFinite(P.bova[i])));
+  const base = (arr) => arr.map((v) => (Number.isFinite(v) ? (100 * v) / arr[i0] : NaN));
   const comp = base(P.adj), bova = base(P.bova);
   const draw = () => {
-    lineChart($("#price"), P.dates.slice(Math.max(i0, 0)), [
-      { values: comp.slice(Math.max(i0, 0)), color: "--s1", label: d.ticker, width: 2.5, endLabel: (v) => `${d.ticker} R$${v.toFixed(0)}` },
-      { values: bova.slice(Math.max(i0, 0)), color: "--s2", label: "BOVA11", endLabel: (v) => `BOVA11 R$${v.toFixed(0)}` }],
-      { log: true, h: 280, labels: true, fmt: (v) => (Number.isFinite(v) ? `R$${v.toFixed(0)}` : "–") });
+    for (const c of $("#cards").children) c._spark?.();
+    lineChart($("#price"), P.dates.slice(i0), [
+      { values: comp.slice(i0), color: "--s1", label: d.ticker, width: 2.5, endLabel: (v) => `${d.ticker} R$${v.toFixed(0)}` },
+      { values: bova.slice(i0), color: "--s2", label: "BOVA11", endLabel: (v) => `BOVA11 R$${v.toFixed(0)}` }],
+      { log: true, h: 280, labels: true, legend: true, fmt: (v) => (Number.isFinite(v) ? `R$${v.toFixed(0)}` : "–"), aria: `${d.ticker} total return against BOVA11` });
 
-    const H = d.history, fmtS = (v) => (Number.isFinite(v) ? v.toFixed(0) : "–");
-    lineChart($("#score"), H.dates, [{ values: H.score.map(num), color: "--s1", label: "score", width: 2.5 }], { h: 200, fmt: fmtS, yMin: 0, yMax: 100, fixed: true });
+    const fmtS = (v) => (Number.isFinite(v) ? v.toFixed(0) : "–");
+    lineChart($("#score"), H.dates, [{ values: H.score.map(num), color: "--s1", label: "score", width: 2.5 }],
+      { h: 200, fmt: fmtS, yMin: 0, yMax: 100, fixed: true, ticks: [0, 25, 50, 75, 100], aria: "Score each quarter" });
     const pill = $("#pillars"); pill.replaceChildren();
     for (const [k, key] of [["Value", "value_score"], ["Quality", "quality_score"], ["Momentum", "momentum_score"], ["Income", "income_score"], ["Growth (not scored)", "growth_score"]]) {
       const cell = el("div", { className: "mini" }, el("h4", { textContent: k }), el("div", { className: "val", textContent: `now ${fmtS(num(n[key]))}` }), el("div"));
       pill.append(cell);
-      lineChart(cell.lastChild, H.dates, [{ values: (H[key] || []).map(num), color: "--s1", label: k }], { h: 110, fmt: fmtS, yMin: 0, yMax: 100, fixed: true });
+      lineChart(cell.lastChild, H.dates, [{ values: (H[key] || []).map(num), color: "--s1", label: k }], { h: 110, fmt: fmtS, yMin: 0, yMax: 100, fixed: true, ticks: [0, 50, 100] });
     }
 
     const val = $("#valuation"); val.replaceChildren();
@@ -323,35 +160,33 @@ function render(d) {
       lineChart(cell.lastChild, dates, [{ values, color: "--s1", label }], { h: 140, fmt, ref: label.startsWith("Net") ? 0 : undefined, refLabel: "zero",
         ml: fmt === brl ? 70 : 46 });
     }
-    barChart($("#dividends"), d.dividends.years, d.dividends.per_share.map(num), (v) => `R$ ${v.toFixed(2)}`);
+    barChart($("#dividends"), d.dividends.years, d.dividends.per_share.map(num), (v) => `R$ ${v.toFixed(2)}`, { aria: "Dividends per share by year" });
   };
   draw();
-  let lastW = 0;
-  new ResizeObserver(([e]) => { const w = Math.round(e.contentRect.width); if (w !== lastW) { lastW = w; draw(); } }).observe($("main"));
-  matchMedia("(prefers-color-scheme: dark)").addEventListener("change", draw);
+  REDRAW.add(draw);
+  onResize($("main"), draw);
 
   const bt = $("#backtest"); bt.replaceChildren();
   if (!d.backtest.length) bt.append(el("p", { className: "muted", textContent: "Never in the yearly top 10 since 2012." }));
   else {
     const t = el("table");
     t.append(el("tr", {}, ...["Bought", "Rank", "Return over the year"].map((h, i) => el("th", { className: i ? "" : "l", textContent: h }))));
-    for (const b of d.backtest) t.append(el("tr", {}, el("td", { className: "l", textContent: b.date }), el("td", { textContent: `#${b.rank}` }), el("td", {}, signed(num(b.return)))));
+    for (const b of d.backtest) t.append(el("tr", {}, el("td", { className: "l", textContent: b.date }), el("td", { textContent: `#${b.rank}` }), retCell(num(b.return))));
     bt.append(t);
   }
 }
 
 (async () => {
+  shell(null, null);
   const t = (new URLSearchParams(location.search).get("t") || "").toUpperCase();
   if (!/^[A-Z0-9]{4,6}$/.test(t)) { $("#name").textContent = "Pick a company from the screener"; return; }
-  const [r, latest] = await Promise.all([fetch(`${DATA}companies/${t}.json`), fetch(`${DATA}screen/latest.csv`)]);
-  if (!r.ok) { $("#name").textContent = `${t}: no page (only companies in today's screen have one)`; return; }
-  const doc = await r.json();
+  const [doc, latest, status, sparks] = await Promise.all([getJSON(`companies/${t}.json`), get("screen/latest.csv"), getJSON("status.json"), getJSON("screen/sparks.json")]);
+  setStatus(status);
+  if (!doc) { $("#name").textContent = `${t}: no page (only companies in today's screen have one)`; return; }
   // History is rebuilt monthly; today's numbers come from the daily screen.
-  if (latest.ok) {
-    const row = parseCSV(await latest.text()).find((x) => x.ticker === t);
-    if (row) doc.now = row;
-  }
-  render(doc);
+  const row = (latest || []).find((x) => x.ticker === t);
+  if (row) doc.now = row;
+  render(doc, sparks?.tickers?.[t]);
 })();
 </script>
 </body>

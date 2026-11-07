@@ -161,8 +161,11 @@ def growth(hist: pd.DataFrame, asof: str) -> pd.DataFrame:
     return g[GROWTH_COLUMNS]
 
 
+THOUSANDS_MAX = 1e8   # a count read as thousands must stay plausible (the largest have ~15 billion shares)
+
+
 def outstanding(total: float, treasury: float, b3_total: float | None = None,
-                tol: tuple[float, float] = (0.8, 1.25)) -> tuple[float, str]:
+                tol: tuple[float, float] = (0.8, 1.25), trust_b3: bool = True) -> tuple[float, str]:
     """Shares outstanding for one class, and where the number came from.
 
     ``total``/``treasury`` are CVM's raw capital-composition counts, already
@@ -172,9 +175,16 @@ def outstanding(total: float, treasury: float, b3_total: float | None = None,
     B3's current count per class settles it:
 
     - CVM within ``tol`` (0.8-1.25x) of B3: CVM, in units;
-    - B3 within 1000 x ``tol`` of CVM: CVM, in thousands;
+    - B3 within 1000 x ``tol`` of CVM, and CVM under 100 million: CVM, in
+      thousands (Gafisa's 433 million shares in 2012 are not thousands,
+      even though B3's count carried back through two later reverse splits
+      is 700 times larger);
     - anything else (LAVV filed an extra digit; OPCT issued shares since its
-      filing): B3's count.
+      filing): B3's count, if ``trust_b3``. The backtest passes False: there
+      B3's count is today's carried back through later splits, which knows
+      nothing of shares issued since (PDG went from 1.3 billion shares in
+      2012 to 27 million after five reverse splits and a restructuring), so
+      the count filed at the time is kept.
 
     Without a B3 count, under 2 million shares is read as thousands (no
     listed company is that small). A treasury over 25% of the total is read
@@ -187,10 +197,12 @@ def outstanding(total: float, treasury: float, b3_total: float | None = None,
         r = b3_total / total
         if tol[0] <= r <= tol[1]:
             scale = 1.0
-        elif 1000 * tol[0] <= r <= 1000 * tol[1]:
+        elif 1000 * tol[0] <= r <= 1000 * tol[1] and total < THOUSANDS_MAX:
             scale = 1000.0
-        else:
+        elif trust_b3:
             return b3_total, "b3"
+        else:
+            scale = 1000.0 if total < 2e6 else 1.0
     else:
         scale = 1000.0 if total < 2e6 else 1.0
     tot = total * scale
@@ -241,6 +253,7 @@ class Inputs:
     b3_shares: dict
     isins: dict          # ticker -> every ISIN it has traded under
     ttm_hist: pd.DataFrame | None = None   # ttm_history(filings), for growth
+    fre_shares: pd.DataFrame | None = None  # cvm.share_counts, dated (2010-2021)
 
 
 def load_inputs(data_dir: Path, since: str | None = None) -> Inputs:
@@ -256,21 +269,77 @@ def load_inputs(data_dir: Path, since: str | None = None) -> Inputs:
     b3_shares = {r.issuer: (float(r.shares_on or "nan"), float(r.shares_pn or "nan"))
                  for r in issuers.itertuples()} if len(issuers) else {}
     isins = {t: set(g) for t, g in px.groupby("ticker")["isin"]}
-    return Inputs(px, filings, capital, companies, ticker_map(px, _load(data_dir, "tickers.csv"), companies, issuers),
-                  cash, stock, b3_shares, isins, ttm_history(filings))
+    fre_path = data_dir / "cvm" / "shares_fre.csv"
+    fre = pd.read_csv(fre_path, dtype={"cnpj": str, "date": str, "meeting": str, "form": str}) \
+        .sort_values(["cnpj", "date"], kind="stable").reset_index(drop=True) \
+        if fre_path.exists() else pd.DataFrame(columns=["cnpj", "date", "shares_on", "shares_pn"])
+    tmap = ticker_map(px, _load(data_dir, "tickers.csv"), companies, issuers)
+    cnpj_isins = {}
+    for t, c in tmap.items():
+        cnpj_isins.setdefault(c, set()).update(isins.get(t, ()))
+    fre = date_share_counts(fre, stock, cnpj_isins)
+    return Inputs(px, filings, capital, companies, tmap, cash, stock, b3_shares, isins, ttm_history(filings), fre)
 
 
-def _shares_filed(f, capital: pd.DataFrame, cnpj: str, asof: str):
-    """(on, pn, treasury_on, treasury_pn, as-of date) of the latest share
-    count public by ``asof``: the filing's own (DFP/ITR, 2020 on), else the
-    FRE capital timeline (2010-2019)."""
+def date_share_counts(fre: pd.DataFrame, stock: pd.DataFrame, cnpj_isins: dict) -> pd.DataFrame:
+    """The date each Reference Form count is as of, for carrying it through
+    later splits (``as_of``). Most forms give the count at their receipt;
+    some, received after a split, still give the one of their shareholders'
+    meeting before it (Sabesp 2013, Totvs 2011). When a split falls between
+    the two dates, the next form decides: if its count is about the split
+    larger, this one was taken before the split (dated at the meeting);
+    otherwise at receipt."""
+    fre = fre.copy()
+    fre["as_of"] = fre.date
+    if "meeting" not in fre or stock.empty:
+        return fre
+    ev = stock[(stock.mult - 1).abs() > 0.15].drop_duplicates(["isin", "label", "last_date_prior"])
+    for cnpj, g in fre.groupby("cnpj", sort=False):
+        e = ev[ev["isin"].isin(cnpj_isins.get(cnpj, ()))].drop_duplicates(["label", "last_date_prior"])
+        if e.empty:
+            continue
+        idx = list(g.index)
+        for i, j in zip(idx, idx[1:]):
+            a, b = fre.loc[i], fre.loc[j]
+            lag = e[(e.last_date_prior >= a.meeting) & (e.last_date_prior < a.date)]
+            if lag.empty or len(e[(e.last_date_prior >= a.date) & (e.last_date_prior < b.date)]):
+                continue
+            m = float(np.prod(lag.mult))
+            k = "shares_on" if a.shares_on > 0 and b.shares_on > 0 else "shares_pn"
+            if a[k] > 0 and b[k] > 0 and abs(np.log(b[k] / a[k] / m)) < abs(np.log(b[k] / a[k])):
+                fre.loc[i, "as_of"] = a.meeting
+    return fre
+
+
+def _shares_filed(f, capital: pd.DataFrame, cnpj: str, asof: str, fre: pd.DataFrame | None = None):
+    """(on, pn, treasury_on, treasury_pn, on as of, pn as of) of the latest
+    share count public by ``asof``, per class:
+
+    1. the statement's own (DFP/ITR, 2020 on);
+    2. the Reference Form's free float / its percentage, dated by the form
+       version's receipt (2010-2021; ``cvm.share_counts``);
+    3. the FRE capital timeline, only for a class with no free float (Gol's
+       ON shares, all held by its controller). Its later forms rewrite
+       earlier entries in later share terms, so it is the last resort."""
     if np.isfinite(f.shares_on) or np.isfinite(f.shares_pn):
-        return f.shares_on, f.shares_pn, f.treasury_on, f.treasury_pn, f.dt_refer
-    c = capital[(capital.cnpj == cnpj) & (capital.date <= asof)]
-    if c.empty:
-        return np.nan, np.nan, np.nan, np.nan, ""
-    last = c.sort_values("date").iloc[-1]
-    return last.shares_on, last.shares_pn, np.nan, np.nan, last.date
+        return f.shares_on, f.shares_pn, f.treasury_on, f.treasury_pn, f.dt_refer, f.dt_refer
+    out = {"on": (np.nan, ""), "pn": (np.nan, "")}
+    if fre is not None and len(fre):
+        r = fre[(fre.cnpj == cnpj) & (fre.date <= asof)]
+        if len(r):
+            last = r.iloc[-1]
+            for k in out:
+                if np.isfinite(last[f"shares_{k}"]):
+                    out[k] = (last[f"shares_{k}"], last.get("as_of") or last.date)
+    if any(not np.isfinite(v) for v, _ in out.values()):
+        c = capital[(capital.cnpj == cnpj) & (capital.date <= asof)]
+        if len(c):
+            last = c.sort_values("date").iloc[-1]
+            for k in out:
+                if not np.isfinite(out[k][0]) and last[f"shares_{k}"] > 0:
+                    out[k] = (last[f"shares_{k}"], last.date)
+    (on, d_on), (pn, d_pn) = out["on"], out["pn"]
+    return on, pn, np.nan, np.nan, d_on, d_pn
 
 
 def compute(inp: Inputs, asof: str, pit: bool = False) -> pd.DataFrame:
@@ -322,20 +391,23 @@ def compute(inp: Inputs, asof: str, pit: bool = False) -> pd.DataFrame:
              "isin": g["isin"].iloc[0], "bdi": g.bdi.iloc[0]}
         if cnpj in fund.index:
             f = fund.loc[cnpj]
-            s_on, s_pn, t_on, t_pn, when = _shares_filed(f, inp.capital, cnpj, asof)
+            s_on, s_pn, t_on, t_pn, when_on, when_pn = _shares_filed(f, inp.capital, cnpj, asof, inp.fre_shares)
             # Filed counts carried through any split / reverse split / bonus
             # since they were filed; B3's current count carried back through
             # any since ``asof``: both are then counts at ``asof`` (ORVR: a
             # 1:4 split after its June filing; history: decades of splits).
             on_isins = set().union(*(isins.get(t, set()) for t in on.index)) if len(on) else set()
             pn_isins = set().union(*(isins.get(t, set()) for t in pn.index)) if len(pn) else set()
-            m_on = mult(on_isins, when, asof) if len(on) and when else 1.0
-            m_pn = mult(pn_isins, when, asof) if len(pn) and when else 1.0
+            m_on = mult(on_isins, when_on, asof) if len(on) and when_on else 1.0
+            m_pn = mult(pn_isins, when_pn, asof) if len(pn) and when_pn else 1.0
             b3_on, b3_pn = inp.b3_shares.get(main[:4], (np.nan, np.nan))
             ref_on = b3_on / mult(on_isins, asof, "9999") if b3_on > 0 and len(on) else (b3_on if b3_on > 0 else None)
             ref_pn = b3_pn / mult(pn_isins, asof, "9999") if b3_pn > 0 and len(pn) else (b3_pn if b3_pn > 0 else None)
-            sh_on, src_on = outstanding(s_on * m_on, t_on * m_on, ref_on, tol)
-            sh_pn, src_pn = outstanding(s_pn * m_pn, t_pn * m_pn, ref_pn, tol)
+            if pit:   # carried back through later splits, B3's count is no reference (Gafisa: two reverse splits since 2017)
+                ref_on = ref_on if ref_on and mult(on_isins, asof, "9999") == 1.0 else None
+                ref_pn = ref_pn if ref_pn and mult(pn_isins, asof, "9999") == 1.0 else None
+            sh_on, src_on = outstanding(s_on * m_on, t_on * m_on, ref_on, tol, trust_b3=not pit)
+            sh_pn, src_pn = outstanding(s_pn * m_pn, t_pn * m_pn, ref_pn, tol, trust_b3=not pit)
             r["shares_source"] = "/".join(x for x in (src_on, src_pn) if x)
             mcap = np.nansum([sh_on * on_px if sh_on > 0 else np.nan, sh_pn * pn_px if sh_pn > 0 else np.nan])
             debt = np.nansum([f.st_debt, f.lt_debt])

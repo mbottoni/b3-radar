@@ -183,3 +183,24 @@ def test_a_loss_ranks_last_on_earnings_growth_and_growth_does_not_move_the_score
     flat = df.assign(revenue_growth=0.0, earnings_growth=0.0, growth_consistency=0.0)
     again = screen._metrics(flat, empty, cash, stock, "2026-11-06", pit=True).set_index("cnpj")
     assert (out.score == again.score).all()                 # weight 0: shown, not scored
+
+
+def test_backtest_keeps_the_filed_count_when_b3_carried_back_disagrees():
+    # PDG 2012: 1.34 billion shares filed; B3's count today carried back through five
+    # reverse splits is absurd. Live, B3's current count still wins (LAVV, OPCT).
+    assert screen.outstanding(1.34e9, np.nan, 3e16, (0.6, 1.6), trust_b3=False) == (1.34e9, "cvm")
+    assert screen.outstanding(1.34e9, np.nan, 3e16)[1] == "b3"
+    # Gafisa 2012: 433 million is a count in units, even if B3 is ~1000x larger
+    assert screen.outstanding(4.33e8, np.nan, 3.02e11, (0.6, 1.6), trust_b3=False)[0] == 4.33e8
+    assert screen.outstanding(4.3e6, np.nan, 3.95e9, (0.6, 1.6), trust_b3=False)[0] == 4.3e9   # real thousands
+
+
+def test_a_form_count_taken_before_a_split_is_dated_at_its_meeting():
+    fre = pd.DataFrame({"cnpj": "S", "date": ["2012-04-27", "2013-04-30", "2014-05-07"],
+                        "meeting": ["2012-04-01", "2013-04-01", "2014-04-01"],
+                        "shares_on": [227.8e6, 227.8e6, 683.5e6], "shares_pn": np.nan})
+    stock = pd.DataFrame({"isin": ["X"], "label": ["DESDOBRAMENTO"], "mult": [3.0], "last_date_prior": ["2013-04-22"]})
+    out = screen.date_share_counts(fre, stock, {"S": {"X"}})
+    assert list(out.as_of) == ["2012-04-27", "2013-04-01", "2014-05-07"]   # the 2013 form lagged the split
+    fresh = fre.assign(shares_on=[227.8e6, 683.4e6, 683.5e6])                  # this form had it already
+    assert list(screen.date_share_counts(fresh, stock, {"S": {"X"}}).as_of) == list(fre.date)

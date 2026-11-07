@@ -1,6 +1,6 @@
-"""Long history for the backtest: dividend history per share class (B3) and
-the CDI (Banco Central). Both are merged into data/ once and then kept up
-to date by the daily job.
+"""Long history for the backtest: dividend history per share class (B3), the
+CDI and the IPCA (Banco Central). All are merged into data/ once and then
+kept up to date by the daily job.
 
 B3's ``GetListedCashDividends`` lists every cash event since the 1990s, per
 share class (ON, PN, PNA...), paged 120 at a time, keyed by trading name.
@@ -23,7 +23,8 @@ from . import events
 from .fetch import get_json
 
 DIVIDENDS = "https://sistemaswebb3-listados.b3.com.br/listedCompaniesProxy/CompanyCall/GetListedCashDividends/"
-CDI = "https://api.bcb.gov.br/dados/serie/bcdata.sgs.12/dados?formato=json&dataInicial={}&dataFinal={}"
+SGS = "https://api.bcb.gov.br/dados/serie/bcdata.sgs.{}/dados?formato=json&dataInicial={}&dataFinal={}"
+CDI, IPCA = 12, 433       # CDI: % per day; IPCA (consumer prices, the inflation target): % per month
 CLASS_KIND = {"ON": "ON", "PN": "PN", "PNA": "PNA", "PNB": "PNB", "PNC": "PNC", "PND": "PND", "UNT": "UNIT",
               "UNIT": "UNIT"}
 
@@ -83,16 +84,25 @@ def backfill_dividends(issuers: dict[str, str], prices: pd.DataFrame, data_dir: 
 
 
 def update_cdi(data_dir: Path, start: str = "2010-01-01") -> int:
-    """Daily CDI (% per day) into data/macro/cdi.csv. BCB serves at most
-    ten years of a daily series per request."""
-    path = data_dir / "macro" / "cdi.csv"
+    """Daily CDI (% per day) into data/macro/cdi.csv."""
+    return update_sgs(CDI, data_dir / "macro" / "cdi.csv", start)
+
+
+def update_ipca(data_dir: Path, start: str = "2009-01-01") -> int:
+    """Monthly IPCA (% in the month, dated the 1st) into data/macro/ipca.csv."""
+    return update_sgs(IPCA, data_dir / "macro" / "ipca.csv", start)
+
+
+def update_sgs(code: int, path: Path, start: str) -> int:
+    """Append a Banco Central SGS series from the day after the last stored
+    date. BCB serves at most ten years of a daily series per request."""
     old = pd.read_csv(path, dtype={"date": str}) if path.exists() else pd.DataFrame(columns=["date", "rate"])
     begin = pd.Timestamp(old.date.max()) + pd.Timedelta(days=1) if len(old) else pd.Timestamp(start)
     end = pd.Timestamp.now(tz="UTC").tz_localize(None).normalize()
     rows = []
     while begin <= end:
         stop = min(begin + pd.DateOffset(years=9), end)
-        data = get_json(CDI.format(begin.strftime("%d/%m/%Y"), stop.strftime("%d/%m/%Y"))) or []
+        data = get_json(SGS.format(code, begin.strftime("%d/%m/%Y"), stop.strftime("%d/%m/%Y"))) or []
         rows += [(f"{x['data'][6:]}-{x['data'][3:5]}-{x['data'][:2]}", float(x["valor"])) for x in data]
         begin = stop + pd.Timedelta(days=1)
     new = pd.concat([old, pd.DataFrame(rows, columns=["date", "rate"])]).drop_duplicates("date", keep="last")

@@ -61,3 +61,35 @@ def test_company_snapshots_follow_the_filing_calendar():
     from b3radar import companies
     sessions = np.array(["2011-04-01", "2011-06-01", "2011-09-01", "2011-12-01", "2012-04-02", "2012-05-02"])
     assert companies.snapshot_dates(sessions, 2011) == ["2011-04-01", "2011-06-01", "2011-09-01", "2011-12-01", "2012-04-02"]
+
+
+def test_market_rates_use_only_what_was_published():
+    from b3radar import market
+    cdi = pd.DataFrame({"date": ["2026-10-30", "2026-11-03"], "rate": [0.05, 0.06]})
+    assert market.cdi_annual(cdi, "2026-11-02") == pytest.approx(1.0005 ** 252 - 1)    # the rate in force that day
+    months = pd.date_range("2025-09-01", "2026-09-01", freq="MS").strftime("%Y-%m-%d")
+    ipca = pd.DataFrame({"date": months, "rate": [1.0] + [0.5] * 12})
+    # Sep 2026's IPCA comes out around Oct 10: on Oct 5 the last twelve are Sep 2025 - Aug 2026
+    assert market.ipca_12m(ipca, "2026-10-05") == pytest.approx(1.01 * 1.005 ** 11 - 1)
+    assert market.ipca_12m(ipca, "2026-10-20") == pytest.approx(1.005 ** 12 - 1)
+    assert np.isnan(market.ipca_12m(ipca.tail(5), "2026-10-20"))                         # under a year known
+
+
+def test_market_snapshot_sums_the_eligible_universe_only():
+    from b3radar import market
+    df = pd.DataFrame({"excluded": ["", "", "", "illiquid"], "earnings_yield": [0.10, 0.20, 0.05, 0.90],
+                       "ebit": [10.0, 40.0, 5.0, 900.0], "ev": [100.0, 200.0, 100.0, 1000.0],
+                       "market_cap": [80.0, 150.0, 100.0, 1000.0], "net_income": [8.0, 30.0, -3.0, 500.0],
+                       "dividend_yield": [0.04, np.nan, 0.02, 0.5]})
+    cdi = pd.DataFrame({"date": ["2026-11-06"], "rate": [0.05]})
+    s = market.snapshot(df, "2026-11-06", cdi, pd.DataFrame(columns=["date", "rate"]))
+    assert s["eligible"] == 3 and s["earnings_yield"] == pytest.approx(0.10)              # median, not the outlier
+    assert s["earnings_yield_agg"] == pytest.approx(55 / 400) and s["pe_agg"] == pytest.approx(330 / 35)
+    assert s["dividend_yield_agg"] == pytest.approx((0.04 * 80 + 0.02 * 100) / 330)      # no dividend counts as 0
+    assert np.isnan(s["real_cdi"])                                                       # no inflation known
+
+
+def test_market_history_skips_the_month_in_progress():
+    from b3radar import market
+    sessions = np.array(["2011-04-29", "2011-05-30", "2011-05-31", "2011-06-01", "2011-06-02"])
+    assert market.month_ends(sessions) == ["2011-05-31"]

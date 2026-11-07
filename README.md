@@ -10,9 +10,18 @@ record of every shortlist against BOVA11, losers included.
   are committed to `data/`; the screen is rebuilt.
 - **Weekly** (Mon, 07:30 Brasília): the top 10 is logged, the track record
   updated, and the email sent.
+- **The page** has four tabs: **Overview** (BOVA11, the CDI, inflation and
+  the typical stock's earnings yield, a gauge of how cheap the market is
+  against its own history and against cash, and this week's shortlist),
+  **Screener** (every company with presets, 1-year sparklines and
+  heat-shaded scores), **Backtest** and **Track record**.
 - **Backtest** (monthly): the yearly list since 2012, bought each May and
   held, point in time, against BOVA11, the CDI and all eligible stocks; also
   each list held untouched for 1, 3 and 5 years.
+- **The market against cash** (monthly): the typical stock's earnings yield
+  at every month end since 2011 against the CDI, before and after
+  inflation, and what stocks paid over cash in the three years that
+  followed.
 - **Company pages** (`company.html?t=PETR4`, linked from every ticker):
   total return vs BOVA11 since 2010, the score each quarter since 2011
   (point in time), valuation against the company's own history, TTM
