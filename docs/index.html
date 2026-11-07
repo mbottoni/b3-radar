@@ -66,6 +66,8 @@
   th.sortable:hover, th.sortable:focus-visible { color: var(--ink); outline: none; }
   td.company { max-width: 240px; overflow: hidden; text-overflow: ellipsis; }
   .tk { font-weight: 650; }
+  a.tk { color: inherit; text-decoration: underline; text-decoration-color: var(--axis); text-underline-offset: 3px; }
+  a.tk:hover { text-decoration-color: currentColor; }
   .new { color: var(--s1); font-size: 10px; font-weight: 700; margin-left: 4px; }
   .pos { color: var(--good); } .neg { color: var(--bad); }
   .muted { color: var(--muted); }
@@ -263,6 +265,13 @@ function expandable(table, open, key, cells, row, span) {
   if (open.has(key)) table.append(el("tr", { className: "detail" }, el("td", { colSpan: span }, breakdown(row))));
 }
 const OPEN_LIST = new Set(), OPEN_SCREEN = new Set();
+// Ticker -> its company page; the click must not also expand the row.
+function companyLink(ticker, title) {
+  const a = el("a", { className: "tk", href: `company.html?t=${encodeURIComponent(ticker)}`, textContent: ticker, title: title || `${ticker}: history, valuation, dividends` });
+  a.addEventListener("click", (e) => e.stopPropagation());
+  a.addEventListener("keydown", (e) => e.stopPropagation());
+  return a;
+}
 let rerender = () => {};
 
 // ------------------------------------------------------------ shortlist
@@ -280,7 +289,7 @@ function renderList(picks, screen) {
     const why = ["value_score", "quality_score", "momentum_score", "income_score"].map((k) => f1(num(s[k]), 0)).join(" · ");
     expandable(t, OPEN_LIST, p.ticker, [
       el("td", { textContent: p.rank }),
-      el("td", { className: "l" }, el("span", { className: "tk", textContent: p.ticker }), ...(prev && !before.has(p.ticker) ? [el("span", { className: "new", textContent: "NEW" })] : [])),
+      el("td", { className: "l" }, companyLink(p.ticker), ...(prev && !before.has(p.ticker) ? [el("span", { className: "new", textContent: "NEW" })] : [])),
       el("td", { className: "l company", textContent: p.company, title: p.company }),
       el("td", { textContent: f1(num(p.score), 0) }),
       el("td", { className: "l muted", textContent: why }),
@@ -365,7 +374,7 @@ function renderScreen() {
   for (const r of rows) {
     expandable(t, OPEN_SCREEN, r.ticker, cols.map(([k, , ty]) => {
       const v = r[k];
-      if (k === "ticker") return el("td", { className: "l" }, el("span", { className: "tk", textContent: v, title: r.tickers }));
+      if (k === "ticker") return el("td", { className: "l" }, companyLink(v, r.tickers));
       if (k === "momentum") return el("td", {}, signed(num(v), 0));
       if (ty === "s") return el("td", { className: `l ${k === "company" ? "company" : ""} ${k === "excluded" ? "muted" : ""}`, textContent: v, title: v });
       return el("td", { textContent: (FMT[k] || ((x) => (Number.isFinite(x) ? x : "–")))(num(v)) });
@@ -480,7 +489,7 @@ function renderBtHoldings(holdings) {
     det.append(el("summary", { textContent: `${d}: ${rows.map((r) => r.ticker).join(", ")} (average ${pct(avg.reduce((a, b) => a + b, 0) / (avg.length || 1), 0, true)})` }));
     const t = el("table");
     t.append(el("tr", {}, ...["#", "Ticker", "Company", "Sector", "Score", "Return over the year"].map((h, j) => el("th", { className: j >= 1 && j <= 3 ? "l" : "", textContent: h }))));
-    for (const r of rows) t.append(el("tr", {}, el("td", { textContent: r.rank }), el("td", { className: "l tk", textContent: r.ticker }),
+    for (const r of rows) t.append(el("tr", {}, el("td", { textContent: r.rank }), el("td", { className: "l" }, companyLink(r.ticker)),
       el("td", { className: "l company", textContent: r.company }), el("td", { className: "l muted", textContent: r.sector }),
       el("td", { textContent: f1(num(r.metric), 0) }), el("td", {}, signed(num(r.period_return), 0))));
     det.append(el("div", { className: "scroll" }, t)); box.append(det);

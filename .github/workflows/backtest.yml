@@ -17,7 +17,7 @@ concurrency:
 jobs:
   backtest:
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 90
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v5
@@ -27,9 +27,12 @@ jobs:
       - run: uv run pytest -q
       - name: Backtest (point in time, from the committed data)
         run: uv run python -m b3radar backtest
+      - name: Company pages (quarterly history since 2011)
+        run: uv run python -m b3radar companies
+
       - name: Commit the results
         run: |
-          git add data/backtest
+          git add data/backtest data/companies
           if git diff --staged --quiet; then echo "No changes."; exit 0; fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"

@@ -36,3 +36,28 @@ def test_buy_and_hold_return_includes_dividends_and_keeps_dead_stocks():
 def test_cdi_return_compounds_daily_rates():
     idx = (1 + pd.Series([0.05, 0.05, 0.05], index=["2020-01-02", "2020-01-03", "2020-01-06"]) / 100).cumprod()
     assert backtest._cdi_ret(idx, "2020-01-02", "2020-01-06") == pytest.approx(1.0005 ** 2 - 1)
+
+
+def test_company_ttm_series_follows_the_screen_rule():
+    from b3radar import companies
+    f = pd.DataFrame([
+        {"kind": "DFP", "dt_refer": "2024-12-31", "revenue": 100.0, "ebit": 20.0, "net_income": 10.0,
+         "revenue_prev": np.nan, "ebit_prev": np.nan, "net_income_prev": np.nan,
+         "equity": 50.0, "st_debt": 5.0, "lt_debt": 15.0, "cash": 8.0, "short_investments": 2.0},
+        {"kind": "ITR", "dt_refer": "2025-06-30", "revenue": 60.0, "ebit": 14.0, "net_income": 7.0,
+         "revenue_prev": 50.0, "ebit_prev": 10.0, "net_income_prev": 5.0,
+         "equity": 55.0, "st_debt": 5.0, "lt_debt": 15.0, "cash": 10.0, "short_investments": 0.0},
+        {"kind": "ITR", "dt_refer": "2026-09-30", "revenue": 1.0, "ebit": 1.0, "net_income": 1.0,   # no annual right before it
+         "revenue_prev": 1.0, "ebit_prev": 1.0, "net_income_prev": 1.0,
+         "equity": 1.0, "st_debt": 0.0, "lt_debt": 0.0, "cash": 0.0, "short_investments": 0.0},
+    ])
+    s = companies.ttm_series(f).set_index("dt_refer")
+    assert list(s.index) == ["2024-12-31", "2025-06-30"]
+    assert s.loc["2025-06-30", "revenue"] == 110.0 and s.loc["2025-06-30", "ebit"] == 24.0
+    assert s.loc["2024-12-31", "net_debt"] == 10.0
+
+
+def test_company_snapshots_follow_the_filing_calendar():
+    from b3radar import companies
+    sessions = np.array(["2011-04-01", "2011-06-01", "2011-09-01", "2011-12-01", "2012-04-02", "2012-05-02"])
+    assert companies.snapshot_dates(sessions, 2011) == ["2011-04-01", "2011-06-01", "2011-09-01", "2011-12-01", "2012-04-02"]

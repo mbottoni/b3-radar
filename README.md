@@ -13,6 +13,11 @@ record of every shortlist against BOVA11, losers included.
 - **Backtest** (monthly): the yearly list since 2012, bought each May and
   held, point in time, against BOVA11, the CDI and all eligible stocks; also
   each list held untouched for 1, 3 and 5 years.
+- **Company pages** (`company.html?t=PETR4`, linked from every ticker):
+  total return vs BOVA11 since 2010, the score each quarter since 2011
+  (point in time), valuation against the company's own history, TTM
+  revenue and earnings at every filing, dividends per share by year, and
+  its years in the backtest.
 - **[METHODOLOGY.md](METHODOLOGY.md)**: every rule, and every problem found in
   the data with how it is handled.
 
@@ -47,7 +52,8 @@ data/events/                  dividends, JCP, splits; B3 share counts
 data/screen/latest.csv        today's metrics, scores and exclusions
 data/screen/history/          the screen behind each weekly list
 data/picks/                   every list, the track record, per-list returns
-data/backtest/                yearly buy-and-hold backtest since 2012
+data/backtest/                yearly buy-and-hold backtest since 2012, and by score fifth
+data/companies/<TICKER>.json  each company's long history (monthly rebuild)
 data/macro/cdi.csv            daily CDI since 2010
 ```
 

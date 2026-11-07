@@ -10,7 +10,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from . import backtest, cotahist, cvm, events, history, picks, report, screen
+from . import backtest, companies, cotahist, cvm, events, history, picks, report, screen
 
 REPO = Path(__file__).resolve().parent.parent
 
@@ -131,6 +131,12 @@ def cmd_backtest(a) -> int:
     return 0
 
 
+def cmd_companies(a) -> int:
+    n = companies.build(a.data, log=lambda m: print(m, file=sys.stderr))
+    print(f"[companies] wrote {n} company files", file=sys.stderr)
+    return 0
+
+
 def cmd_history(a) -> int:
     """One-time backfill of everything the backtest needs since 2010."""
     today = _today(a)
@@ -177,6 +183,9 @@ def main(argv: list[str] | None = None) -> int:
     t = sub.add_parser("backtest", help="yearly buy-and-hold backtest of the screen, point in time")
     t.add_argument("--first-year", type=int, default=backtest.FIRST_YEAR)
     t.set_defaults(fn=cmd_backtest)
+
+    c = sub.add_parser("companies", help="one JSON per company with its long history, for the company pages")
+    c.set_defaults(fn=cmd_companies)
 
     h = sub.add_parser("history", help="one-time backfill of quotes, filings, events and dividends since 2010")
     h.add_argument("--first-year", type=int, default=2010)
