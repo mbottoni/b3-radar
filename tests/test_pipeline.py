@@ -195,3 +195,14 @@ def test_email_embeds_its_charts_as_inline_images(tmp_path):
     parts = {p.get_content_type(): p for p in msg.walk()}
     assert "multipart/related" in parts and parts["image/png"]["Content-ID"] == "<spark@b3radar>"
     assert (tmp_path / "spark.png").exists() and 'src="spark.png"' in (tmp_path / "email.html").read_text()
+
+
+def test_select_takes_the_top_of_each_strategy_and_stamps_the_rules():
+    from b3radar import screen
+    df = pd.DataFrame({"asof": "2026-11-06", "ticker": ["AAA3", "BBB3", "CCC3"], "rank": [2, 1, np.nan],
+                       "magic_rank": [1, np.nan, 2], "company": "", "sector": "", "score": [70.0, 80.0, np.nan],
+                       "price": [10.0, 20.0, 30.0]})
+    out = picks.select(df, n=2)
+    assert list(out[out.strategy == "composite"].ticker) == ["BBB3", "AAA3"]
+    assert list(out[out.strategy == "magic"].ticker) == ["AAA3", "CCC3"]
+    assert set(out.rules) == {screen.rules_hash()}

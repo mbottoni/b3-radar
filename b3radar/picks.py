@@ -22,10 +22,11 @@ BENCHMARK = cotahist.BENCHMARK
 PICK_COLUMNS = ["date", "strategy", "rank", "ticker", "company", "sector", "score", "price", "rules"]
 
 
-def select(screen: pd.DataFrame, n: int = TOP_N) -> pd.DataFrame:
+def select(df: pd.DataFrame, n: int = TOP_N) -> pd.DataFrame:
+    """The top ``n`` of today's screen per strategy, stamped with the rules' fingerprint."""
     out = []
     for strategy, col in STRATEGIES.items():
-        top = screen[screen[col].notna()].sort_values([col, "ticker"], kind="stable").head(n)
+        top = df[df[col].notna()].sort_values([col, "ticker"], kind="stable").head(n)
         out.append(pd.DataFrame({
             "date": top["asof"], "strategy": strategy, "rank": top[col].astype(int), "ticker": top.ticker,
             "company": top.company, "sector": top.sector, "score": top.score.round(2), "price": top.price,
