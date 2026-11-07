@@ -1,21 +1,21 @@
-date,strategy,rank,ticker,company,sector,score,price
-2026-11-06,composite,1,JHSF3,JHSF,"Emp. Adm. Part. - Const. Civil, Mat. Const. e Decoração",84.23,10.0
-2026-11-06,composite,2,PETR4,PETROBRAS,Petróleo e Gás,75.53,45.36
-2026-11-06,composite,3,TEND3,CONSTRUTORA TENDA S/A,"Construção Civil, Mat. Constr. e Decoração",75.3,16.92
-2026-11-06,composite,4,LOGG3,LOG COMMERCIAL PROPERTIES E PARTICIPAÇÕES S.A.,"Construção Civil, Mat. Constr. e Decoração",75.13,20.65
-2026-11-06,composite,5,ALOS3,ALLOS S.A.,Emp. Adm. Part. - Comércio (Atacado e Varejo),74.74,26.46
-2026-11-06,composite,6,CYRE3,CYRELA BRAZIL REALTY S.A.,"Construção Civil, Mat. Constr. e Decoração",74.67,19.3
-2026-11-06,composite,7,MOVI3,MOVIDA PARTICIPAÇÕES S.A.,Serviços Transporte e Logística,74.31,6.36
-2026-11-06,composite,8,PGMN3,EMPREENDIMENTOS PAGUE MENOS SA,Comércio (Atacado e Varejo),72.95,2.51
-2026-11-06,composite,9,MDNE3,MOURA DUBEUX,"Construção Civil, Mat. Constr. e Decoração",72.85,18.05
-2026-11-06,composite,10,INTB3,INTELBRAS S.A.,Comércio (Atacado e Varejo),71.92,14.44
-2026-11-06,magic,1,CVCB3,CVC BRASIL OPERADORA E AGÊNCIA DE VIAGENS SA,Hospedagem e Turismo,40.41,0.84
-2026-11-06,magic,2,TEND3,CONSTRUTORA TENDA S/A,"Construção Civil, Mat. Constr. e Decoração",75.3,16.92
-2026-11-06,magic,3,ALLD3,ALLIED TECNOLOGIA S.A.,Comércio (Atacado e Varejo),71.49,5.6
-2026-11-06,magic,4,PLPL3,PLANO & PLANO DESENVOLVIMENTO IMOBILIÁRIO S.A.,"Construção Civil, Mat. Constr. e Decoração",65.31,4.64
-2026-11-06,magic,5,JHSF3,JHSF,"Emp. Adm. Part. - Const. Civil, Mat. Const. e Decoração",84.23,10.0
-2026-11-06,magic,6,DIRR3,DIRECIONAL ENGENHARIA SA,"Construção Civil, Mat. Constr. e Decoração",63.1,8.79
-2026-11-06,magic,7,CEAB3,C&A MODAS LTDA,Têxtil e Vestuário,59.92,8.11
-2026-11-06,magic,8,CURY3,CURY CONSTRUTORA E INCORPORADORA S.A.,"Construção Civil, Mat. Constr. e Decoração",65.38,27.1
-2026-11-06,magic,9,SEER3,SER EDUCACIONAL S.A.,Educação,70.93,11.36
-2026-11-06,magic,10,LEVE3,MAHLE METAL LEVE,"Máquinas, Equipamentos, Veículos e Peças",68.22,31.45
+date,strategy,rank,ticker,company,sector,score,price,rules
+2026-11-06,composite,1,JHSF3,JHSF,"Emp. Adm. Part. - Const. Civil, Mat. Const. e Decoração",84.23,10.0,876ebe1a
+2026-11-06,composite,2,PETR4,PETROBRAS,Petróleo e Gás,75.53,45.36,876ebe1a
+2026-11-06,composite,3,TEND3,CONSTRUTORA TENDA S/A,"Construção Civil, Mat. Constr. e Decoração",75.3,16.92,876ebe1a
+2026-11-06,composite,4,LOGG3,LOG COMMERCIAL PROPERTIES E PARTICIPAÇÕES S.A.,"Construção Civil, Mat. Constr. e Decoração",75.13,20.65,876ebe1a
+2026-11-06,composite,5,ALOS3,ALLOS S.A.,Emp. Adm. Part. - Comércio (Atacado e Varejo),74.74,26.46,876ebe1a
+2026-11-06,composite,6,CYRE3,CYRELA BRAZIL REALTY S.A.,"Construção Civil, Mat. Constr. e Decoração",74.67,19.3,876ebe1a
+2026-11-06,composite,7,MOVI3,MOVIDA PARTICIPAÇÕES S.A.,Serviços Transporte e Logística,74.31,6.36,876ebe1a
+2026-11-06,composite,8,PGMN3,EMPREENDIMENTOS PAGUE MENOS SA,Comércio (Atacado e Varejo),72.95,2.51,876ebe1a
+2026-11-06,composite,9,MDNE3,MOURA DUBEUX,"Construção Civil, Mat. Constr. e Decoração",72.85,18.05,876ebe1a
+2026-11-06,composite,10,INTB3,INTELBRAS S.A.,Comércio (Atacado e Varejo),71.92,14.44,876ebe1a
+2026-11-06,magic,1,CVCB3,CVC BRASIL OPERADORA E AGÊNCIA DE VIAGENS SA,Hospedagem e Turismo,40.41,0.84,876ebe1a
+2026-11-06,magic,2,TEND3,CONSTRUTORA TENDA S/A,"Construção Civil, Mat. Constr. e Decoração",75.3,16.92,876ebe1a
+2026-11-06,magic,3,ALLD3,ALLIED TECNOLOGIA S.A.,Comércio (Atacado e Varejo),71.49,5.6,876ebe1a
+2026-11-06,magic,4,PLPL3,PLANO & PLANO DESENVOLVIMENTO IMOBILIÁRIO S.A.,"Construção Civil, Mat. Constr. e Decoração",65.31,4.64,876ebe1a
+2026-11-06,magic,5,JHSF3,JHSF,"Emp. Adm. Part. - Const. Civil, Mat. Const. e Decoração",84.23,10.0,876ebe1a
+2026-11-06,magic,6,DIRR3,DIRECIONAL ENGENHARIA SA,"Construção Civil, Mat. Constr. e Decoração",63.1,8.79,876ebe1a
+2026-11-06,magic,7,CEAB3,C&A MODAS LTDA,Têxtil e Vestuário,59.92,8.11,876ebe1a
+2026-11-06,magic,8,CURY3,CURY CONSTRUTORA E INCORPORADORA S.A.,"Construção Civil, Mat. Constr. e Decoração",65.38,27.1,876ebe1a
+2026-11-06,magic,9,SEER3,SER EDUCACIONAL S.A.,Educação,70.93,11.36,876ebe1a
+2026-11-06,magic,10,LEVE3,MAHLE METAL LEVE,"Máquinas, Equipamentos, Veículos e Peças",68.22,31.45,876ebe1a

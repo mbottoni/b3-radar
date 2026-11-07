@@ -1,3 +1,3 @@
-date,strategy,portfolio,benchmark
-2026-11-06,composite,100.0,100.0
-2026-11-06,magic,100.0,100.0
+date,strategy,rules,portfolio,benchmark
+2026-11-06,composite,876ebe1a,100.0,100.0
+2026-11-06,magic,876ebe1a,100.0,100.0
