@@ -1,15 +1,15 @@
 {
-  "date": "2026-11-09",
+  "date": "2026-11-10",
   "eligible": 129,
-  "earnings_yield": 0.12541064831935891,
-  "earnings_yield_agg": 0.12464607703709349,
-  "pe_agg": 10.500764773804343,
-  "dividend_yield": 0.04118103212757973,
-  "dividend_yield_agg": 0.05249282060297498,
+  "earnings_yield": 0.12755646299943027,
+  "earnings_yield_agg": 0.1249948179765221,
+  "pe_agg": 10.458501141518848,
+  "dividend_yield": 0.041729068676806085,
+  "dividend_yield_agg": 0.05278449130138441,
   "cdi": 0.13649989315282562,
   "ipca_12m": 0.04576119675071877,
   "real_cdi": 0.08676808499305655,
-  "cheaper_than": 0.9838709677419355,
+  "cheaper_than": 0.9946236559139785,
   "history_from": "2011-05-31",
   "history_median": 0.08002329999999999
 }
