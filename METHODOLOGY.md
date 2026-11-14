@@ -76,6 +76,21 @@ share (divided by B3's quotation factor).
   under the old one (Hapvida 2025, Azevedo & Travassos 2026). Events are
   matched against every ISIN a ticker has traded under, and a payment on
   file under both is counted once.
+- **A company that changes its name gets a new ticker, and usually a new
+  ISIN** (Eletrobras ELET3 → AXIA3 and Embraer EMBR3 → EMBJ3 in Nov 2025,
+  Guararapes GUAR3 → RIAA3 in Feb 2026, CTEEP TRPL4 → ISAE4 in 2024; 49 such
+  switches since 2010). On its own the new ticker looks like a new listing:
+  under a year of quotes, no momentum, no history, and the old one is often
+  missing from CVM's current list of trading codes, so it never meets its
+  filings (CTEEP was absent from every backtest year for that reason). A
+  ticker that stops and one of the same company (CNPJ) and class (the
+  digits) with a different root that starts within 10 days, with the
+  adjusted price moving less than 25% across the switch, are taken as one
+  share: its whole history is read under the ticker it trades under now, in
+  the screen, the backtest, the company pages and the track record. The
+  price test keeps out a merger priced at an exchange ratio; a rename that
+  comes with a split on file passes it. Past lists in the backtest therefore
+  show today's ticker (CTEEP as ISAE4 in 2012). Since 2026-11-14.
 - **B3's events service misses some splits** (Magazine Luiza's 2017 and
   2019 8:1 bonus splits). B3 marks the session an event takes effect in the
   quote file (`EB` ex-bonus/split, `EG` ex-reverse split): a marked session
