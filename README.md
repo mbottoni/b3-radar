@@ -11,11 +11,16 @@ record of every shortlist against BOVA11, losers included.
   marked to the close.
 - **Weekly** (Mon, 11:00 Brasília): the top 10 is logged, the track record
   updated, and the email sent.
-- **The page** has four tabs: **Overview** (BOVA11, the CDI, inflation and
+- **The page** has five tabs: **Overview** (BOVA11, the CDI, inflation and
   the typical stock's earnings yield, a gauge of how cheap the market is
   against its own history and against cash, and this week's shortlist),
   **Screener** (every company with presets, 1-year sparklines and
-  heat-shaded scores), **Backtest** and **Track record**.
+  heat-shaded scores), **Financials**, **Backtest** and **Track record**.
+- **Financials** (daily): banks, insurers and their holdings, left out of
+  the main score, ranked among themselves on price to book, ROE and its
+  stability, momentum and dividend yield. A separate ranking with its own
+  rules fingerprint, never in the weekly list; with a by-fifths backtest
+  since 2015.
 - **Backtest** (monthly): the yearly list since 2012, bought each May and
   held, point in time, against BOVA11, the CDI and all eligible stocks; also
   each list held untouched for 1, 3 and 5 years.
@@ -60,6 +65,8 @@ data/prices/YYYY-MM.csv       daily quotes per ticker
 data/cvm/                     companies, trading codes, extracted filings
 data/events/                  dividends, JCP, splits; B3 share counts
 data/screen/latest.csv        today's metrics, scores and exclusions
+data/screen/financials.csv    today's financials screen (banks, insurers, holdings)
+data/cvm/financials.csv       their net income and equity, every filing, both bases
 data/screen/history/          the screen behind each weekly list
 data/picks/                   every list, the track record, per-list returns
 data/backtest/                yearly buy-and-hold backtest since 2012, and by score fifth

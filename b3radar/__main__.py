@@ -11,7 +11,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from . import backtest, companies, cotahist, cvm, events, history, market, picks, report, screen, sparks
+from . import backtest, companies, cotahist, cvm, events, financials, history, market, picks, report, screen, sparks
 
 REPO = Path(__file__).resolve().parent.parent
 
@@ -32,22 +32,26 @@ def refresh_cvm(data_dir: Path, cache: Path, year: int) -> None:
             cvm.merge_tickers(cvm.tickers(fca), data_dir)
     # This year's DFP file too: companies with fiscal years ending in
     # February or March (CAML, SMTO) file their latest annual report there.
+    fin = financials.cnpjs(data_dir)
     for kind, years in (("DFP", (year - 2, year - 1, year)), ("ITR", (year - 1, year))):
         for y in years:
             z = cvm.fetch_doc(kind, y, cache)
             if z is not None:
                 cvm.store_filings(cvm.filings(kind, z), data_dir)
+                cvm.store_financial_filings(cvm.financial_filings(kind, z, fin), data_dir)
 
 
 def backfill_cvm(data_dir: Path, cache: Path, first: int = 2010, last: int | None = None) -> None:
     """Statements, trading codes and the FRE capital timeline since ``first``
     (for the backtest; the daily job keeps the recent years fresh)."""
     last = last or dt.datetime.now(dt.UTC).year
+    fin = financials.cnpjs(data_dir)
     for y in range(first, last + 1):
         for kind in ("DFP", "ITR"):
             z = cvm.fetch_doc(kind, y, cache)
             if z is not None:
                 cvm.store_filings(cvm.filings(kind, z), data_dir)
+                cvm.store_financial_filings(cvm.financial_filings(kind, z, fin), data_dir)
         fca = cvm.fetch_doc("FCA", y, cache)
         if fca is not None:
             cvm.merge_tickers(cvm.tickers(fca), data_dir)
@@ -106,6 +110,7 @@ def cmd_daily(a) -> int:
     refresh_inferred(a.data)
     df = screen.build(a.data)
     screen.save(df, a.data)
+    financials.save(financials.build(df, a.data), a.data)
     write_status(a.data, df)
     market.today(df, a.data)
     sparks.build(df, a.data)
@@ -125,6 +130,7 @@ def cmd_weekly(a) -> int:
     refresh_inferred(a.data)
     df = screen.build(a.data)
     screen.save(df, a.data)
+    financials.save(financials.build(df, a.data), a.data)
     write_status(a.data, df)
     mk = market.today(df, a.data)
     sparks.build(df, a.data)
@@ -170,6 +176,11 @@ def cmd_backtest(a) -> int:
     res = backtest.run(a.data, a.first_year, log=lambda m: print(m, file=sys.stderr))
     backtest.save(res, a.data)
     print(res["summary"].round(3).to_string(index=False), file=sys.stderr)
+    # The financials screen's own fifths: shown apart, never part of the strategies above.
+    fin = financials.run_backtest(a.data, a.first_year, log=lambda m: print(m, file=sys.stderr))
+    financials.save_backtest(fin, a.data)
+    if fin:
+        print(fin["quintiles"].round(3).to_string(index=False), file=sys.stderr)
     return 0
 
 
@@ -211,6 +222,7 @@ def cmd_backfill(a) -> int:
 def cmd_screen(a) -> int:
     df = screen.build(a.data, a.asof)
     screen.save(df, a.data)
+    financials.save(financials.build(df, a.data), a.data)
     write_status(a.data, df)
     market.today(df, a.data)
     sparks.build(df, a.data)

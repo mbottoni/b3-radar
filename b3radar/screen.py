@@ -463,6 +463,9 @@ def compute(inp: Inputs, asof: str, pit: bool = False) -> pd.DataFrame:
             b3_on, b3_pn = inp.b3_shares.get(main[:4], (np.nan, np.nan))
             ref_on = b3_on / mult(on_isins, asof, "9999") if b3_on > 0 and len(on) else (b3_on if b3_on > 0 else None)
             ref_pn = b3_pn / mult(pn_isins, asof, "9999") if b3_pn > 0 and len(pn) else (b3_pn if b3_pn > 0 else None)
+            # B3's count carried back, unchecked: not used here, a magnitude check for the financials screen.
+            cap_b3 = np.nansum([x * p if x else np.nan for x, p in ((ref_on, on_px), (ref_pn, pn_px))])
+            r["market_cap_b3"] = cap_b3 if cap_b3 > 0 else np.nan
             if pit:   # carried back through later splits, B3's count is no reference (Gafisa: two reverse splits since 2017)
                 ref_on = ref_on if ref_on and mult(on_isins, asof, "9999") == 1.0 else None
                 ref_pn = ref_pn if ref_pn and mult(pn_isins, asof, "9999") == 1.0 else None

@@ -99,6 +99,15 @@ share (divided by B3's quotation factor).
   price test keeps out a merger priced at an exchange ratio; a rename that
   comes with a split on file passes it. Past lists in the backtest therefore
   show today's ticker (CTEEP as ISAE4 in 2012). Since 2026-11-14.
+- **B3's events service lists half of Itaú's 2011 operation**: the 100:1
+  reverse split of 2011-10-31, not the 1:100 split approved with it, which
+  left the share count and the price where they were (R$32.73 before,
+  R$32.13 after). Alone, the reverse split showed Itaú's total return
+  falling 99% in November 2011 and its dividend yield at 100–300% through
+  2012. `data/events/stock_fixes.csv` adds the missing half, labelled
+  `(CORRIGIDO)`. Two other recorded events disagree with the price on
+  their session by over 3x (Banestes 2012, General Shopping 2019); neither
+  is liquid enough to be screened, and they are left as filed.
 - **B3's events service misses some splits** (Magazine Luiza's 2017 and
   2019 8:1 bonus splits). B3 marks the session an event takes effect in the
   quote file (`EB` ex-bonus/split, `EG` ex-reverse split): a marked session
@@ -136,7 +145,8 @@ A company is eligible if all of these hold:
   pre-operational and halted companies are out;
 - **not a financial**: banks, insurers, financial intermediation, leasing,
   securitization and real-estate credit, plus holding companies in those
-  sectors, use a different chart of accounts;
+  sectors, use a different chart of accounts (they are ranked apart: see
+  [the financials screen](#the-financials-screen-a-separate-ranking));
 - TTM EBIT and a market cap can be computed, equity is positive and
   enterprise value is positive.
 
@@ -226,6 +236,139 @@ fingerprint: it cannot change a rank.
 
 **Magic Formula** (Greenblatt), the baseline: rank by earnings yield plus
 rank by ROIC, among eligible companies with positive EBIT.
+
+## The financials screen (a separate ranking)
+
+The companies the main screen leaves out as "financial sector" (banks,
+insurers and insurance brokers, their holdings, card acquirers) are ranked
+among themselves in `b3radar/financials.py`, on metrics that fit a lender:
+EBIT, enterprise value and net debt mean nothing for a bank, whose debt is
+its raw material. It is shown only: it never enters the main score, the
+weekly list, the track record or the main backtest, and it has a
+fingerprint of its own (`financials.rules_hash()`, on the page as "own
+rules xxxxxxxx"), so changing it never touches the main one.
+
+**Who is ranked.** The main screen's own filters, applied the same way:
+R$ 5 million a day, a year of quotes, a recent trade, registration active
+and operating normally (today only), outside the special segments; plus a
+trailing net income, a market cap and positive equity. Few pass: 7 in
+2012, 10 in 2015, 14–18 since 2019 (16 today).
+
+**Metrics**, point in time like the main screen:
+
+| pillar | metric | weight |
+|---|---|---|
+| Value | book / market (the parent's equity / market cap); P/B is its inverse | 25% |
+| Quality | ROE (the parent's net income, trailing twelve months / its equity); ROE stability (standard deviation of that ROE at every statement of the last 3 years, at least 4, lower is better) | 25% |
+| Momentum | 12–1 return, the main screen's | 25% |
+| Income | dividend yield, the main screen's 365-day rule | 25% |
+
+Each metric is a percentile among the eligible financials (0–100), each
+pillar the mean of its metrics, the score the weighted mean of the pillars.
+P/E, earnings yield (net income / market cap) and payout (dividend yield ×
+market cap / net income) are shown, not scored. These rules were set
+before the backtest below was run, and not changed after.
+
+**Where net income and equity are.** Banks, insurers and holdings file
+other charts of accounts than industrial companies, and the codes move
+between them: net income is `3.09` (Itaú; Banco do Brasil until 2019),
+`3.11` (Banco do Brasil since 2020, Itaúsa, Porto Seguro) or `3.13` (BB
+Seguridade, IRB, and most banks' individual statements); equity is
+`2.03` (insurers, holdings), `2.05`, `2.07` or `2.08` (banks), while a
+bank's consolidated `2.03` is a liability (Itaú's "Passivos Financeiros
+ao Custo Amortizado", R$ 2.35 trillion; Banco do Brasil's provisions). Read with the industrial codes, Bradesco
+showed a book / market of 3.2 and Itaú no P/E at all. What does not move,
+in every DFP and ITR the 48 listed financial companies filed since 2010
+(3,845 balance sheets, consolidated and individual, and their income
+statements; `cvm.financial_filings`):
+
+- **net income** is the last top-level income line before `3.99`
+  (earnings per share), always named "Lucro/Prejuízo ... do Período";
+  the controlling shareholders' share is its child "Atribuído a Sócios da
+  Empresa Controladora";
+- **equity** is the top-level liability line named "Patrimônio Líquido";
+  the controlling shareholders' share is that less its child "...
+  Não Controladores".
+
+Problems met in these filings, and what is done:
+
+- **The split between parent and minorities does not always add up.** IRB,
+  Caixa Seguridade, Banco Pan, Banestes and Santander (in several
+  quarters) file zeros in both lines; Santander's June 2026 ITR gives the
+  parent R$ 6.1 billion of a R$ 8.1 billion total with no minorities to
+  speak of. The split is used only when its two lines add up to the total
+  (within 1%); otherwise the total is the parent's (in 101 of 3,862
+  filings).
+- **Consolidated and individual statements differ.** A bank's individual
+  statements follow the Banco Central's accounting, its consolidated ones
+  IFRS, and some companies switch (ABC Brasil files consolidated statements
+  until 2023, individual ones after). Both are kept
+  (`data/cvm/financials.csv`, one row per filing and basis) and a trailing
+  twelve months is computed within one basis: the one with a computable
+  TTM and equity, then the latest statement, then consolidated.
+- **No prior-year figure in 2025.** Every bank's individual ITRs of 2025
+  give last year's year-to-date net income as 0: CMN Resolution 4,966
+  took effect on 1 January 2025 without restating comparatives. A zero
+  prior-year figure next to a non-zero current one is taken from the prior
+  year's own report for that quarter.
+- **A filing in the wrong unit.** Pine's ITRs of June and September 2024
+  say units but hold thousands (equity R$ 1.1 million, against R$ 1.07
+  billion in March). A filing whose equity is over 200 times smaller (or
+  larger) than the median of the company's previous four, same basis, is
+  multiplied (divided) by 1000. Only earlier filings are compared, so this
+  stays point in time.
+- **Equity of exactly 0** (Santander's individual annual reports of 2020
+  and 2021, an empty Banco Inter ITR) is a blank, not a bank with no
+  capital.
+- **Market caps 1000 times too small.** Itaú, Bradesco and Itaúsa file
+  share counts in thousands (4,958,290 for 4.96 billion), above the 2
+  million under which `screen.outstanding` reads thousands. Live, B3's
+  current count settles it; in the backtest it is dropped after any later
+  bonus issue, and these banks issue bonus shares most years, so their
+  market caps came out at R$ 0.2 billion from 2020. IRB's 2022 annual
+  report gives its share count after the 30:1 reverse split of January
+  2023, which was then applied again (1/30 of its size in May 2023). A
+  market cap over 10 times away from the one B3's count carried back
+  gives is a units or dating error, not issuance, and B3's is used. Smaller
+  gaps keep the filed count, as in the main screen: B3's events service
+  misses some of Bradesco's and Itaúsa's yearly bonus issues, which puts
+  its carried-back count 1.3–2.7 times too high before 2020. The same
+  thousands reading affects one class of Eletrobras in the main backtest
+  (from 2023 its market cap is about a seventh of its size; it ranked
+  81st, 61st and 20th in 2023–2025, never in the top 10); the main screen
+  is not changed here.
+- **Before 2020, share counts come from the Reference Form** (see above)
+  and stay approximate: Banco do Brasil's May 2012 market cap comes out at
+  R$ 20 billion, about a third of its size.
+- **A refiled report counts from its refiling.** Itaú filed new versions
+  of its 2011 and 2012 annual reports in March 2020; CVM keeps only the
+  latest version, which counts from the day it was received (as everywhere
+  here), so Itaú has no trailing net income, and no score, from mid-2012
+  to the end of 2013.
+
+Insurance brokers (Qualicorp, Wiz) file ordinary accounts and are in this
+screen only because CVM files them under "Seguradoras e Corretoras"; their
+book value, mostly goodwill, means less than a bank's.
+
+**Does the score separate winners from losers?** The backtest (`python -m
+b3radar backtest`, monthly; `data/backtest/financials_*`) cuts the eligible
+financials into fifths each May, as they stood that day, by the score and by
+each pillar, and holds each fifth a year in equal weights with dividends
+reinvested. It starts in 2015, the first May with 10 eligible financials, so
+each fifth holds 2–4 stocks. Through November 2026 (12 periods):
+
+| fifth by score | Q1 | Q2 | Q3 | Q4 | Q5 |
+|---|---|---|---|---|---|
+| per year | 13.7% | 9.4% | 8.0% | −0.7% | 8.2% |
+
+against 9.2% for all eligible financials, 10.1% for BOVA11 and 10.0% for
+the CDI. The top fifth beat the bottom in 7 of 12 years, and the fifths are
+not in order: Q4 did worst. By pillar, only value steps down roughly in
+order (13.7%, 15.2%, 10.4%, 4.5%, −3.1%); quality (ROE and its stability)
+shows no order at all (10.5% for Q1, 9.6% for Q5); momentum and income
+are mixed. With 2–4 names a fifth, one bank's year moves a fifth by
+several points: this describes the past and is not evidence that the score
+works.
 
 ## The market against cash
 
