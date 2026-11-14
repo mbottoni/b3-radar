@@ -36,9 +36,12 @@ STRATEGIES = {             # column, ascending
     "quality": ("quality_score", False),
     "momentum": ("momentum_score", False),
     "income": ("income_score", False),
+    "composite_bottom": ("score", True),       # the avoid list: the 10 lowest scores
 }
 # Variants of a strategy above: (base strategy, most names from one sector group).
 CAPPED = {"composite_cap": ("composite", SECTOR_CAP)}
+# The avoid list, as fifths: the score's bottom fifth, and every eligible stock but those.
+AVOID = ("score_q5", "eligible_ex_q5")
 BENCHMARKS = ("eligible", "bova11", "cdi")
 QUINTILE_FACTORS = {"score": "score", "value": "value_score", "quality": "quality_score",
                     "momentum": "momentum_score", "income": "income_score", "growth": "growth_score"}
@@ -132,6 +135,9 @@ def run(data_dir: Path, first_year: int = FIRST_YEAR, log=print) -> dict[str, pd
             q = pd.qcut(e[col].rank(method="first", ascending=False), 5, labels=[1, 2, 3, 4, 5])
             for k in range(1, 6):
                 buckets[(d, f, k)] = list(e.ticker[q == k])
+        q5 = set(buckets.get((d, "score", 5), ()))
+        lists[d]["score_q5"] = sorted(q5)
+        lists[d]["eligible_ex_q5"] = [t for t in lists[d]["eligible"] if t not in q5]
         for name, (col, asc, cap) in strategies().items():
             top = pick(snap, col, asc, cap=cap)
             lists[d][name] = list(top.ticker)
@@ -145,7 +151,7 @@ def run(data_dir: Path, first_year: int = FIRST_YEAR, log=print) -> dict[str, pd
     s = pd.Series(sessions)
     checkpoints = sorted(set(s.groupby(s.str[:7]).max()) | set(dates) | {end})
     checkpoints = [c for c in checkpoints if c >= dates[0]]
-    series = list(strategies()) + list(BENCHMARKS)
+    series = list(strategies()) + list(AVOID) + list(BENCHMARKS)
     value = {k: 100.0 for k in series}
     curve, periods = [], []
     for k in series:

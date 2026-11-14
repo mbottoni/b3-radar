@@ -151,7 +151,7 @@ function buildThirds() {
 }
 
 // Expandable row (click / Enter) showing the score breakdown.
-const OPEN = { list: new Set(), screen: new Set() };
+const OPEN = { list: new Set(), avoid: new Set(), screen: new Set() };
 function expandable(table, open, key, cells, row, span, rerender) {
   const tr = el("tr", { className: "clickable", tabIndex: 0 }, ...cells);
   tr.setAttribute("aria-expanded", String(open.has(key)));
@@ -161,6 +161,26 @@ function expandable(table, open, key, cells, row, span, rerender) {
   table.append(tr);
   if (open.has(key)) table.append(el("tr", { className: "detail" }, el("td", { colSpan: span }, breakdown(row))));
 }
+// The shortlist and the avoid list: one company per row, score cells shaded, click for the breakdown.
+// items: [{rank, row (screen row), score, badge}]; tail: [header, (item) => td].
+function listTable(t, open, items, tail) {
+  const head = [["#"], ["Company", "l sticky"], ["1Y"], ["Score"], ["V", "c", "Value"], ["Q", "c", "Quality"], ["M", "c", "Momentum"], ["I", "c", "Income"],
+    ["P/E"], ["EV/EBIT"], ["ROE"], ["Div. yield"], tail[0]];
+  const render = () => {
+    t.replaceChildren(el("tr", {}, ...head.map(([h, c = "", title = ""]) => el("th", { className: c, textContent: h, title }))));
+    for (const it of items) {
+      const s = it.row;
+      expandable(t, open, s.ticker, [
+        el("td", { textContent: it.rank }), nameCell(s, it.badge || []),
+        trendCell(SPARK()[s.ticker]), scoreCell(it.score),
+        ...PILLAR_KEYS.map((k) => scoreCell(num(s[k + "_score"]))),
+        el("td", { textContent: f1(num(s.pe)) }), el("td", { textContent: f1(num(s.ev_ebit)) }),
+        el("td", { textContent: pct(num(s.roe)) }), el("td", { textContent: pct(num(s.dividend_yield), 1) }),
+        tail[1](it)], s, head.length, render);
+    }
+  };
+  render();
+}
 function buildList() {
   const by = new Map(S.screen.map((r) => [r.ticker, r])), picks = S.picks || [];
   const dates = [...new Set(picks.map((p) => p.date))].sort();
@@ -168,24 +188,10 @@ function buildList() {
   const now = picks.filter((p) => p.date === cur && p.strategy === "composite").sort((a, b) => a.rank - b.rank);
   const before = new Set(picks.filter((p) => p.date === prev && p.strategy === "composite").map((p) => p.ticker));
   $("#listNote").textContent = cur ? `List of ${cur} (closing prices), the top 10 by score. Score cells: percentile in the eligible universe. Click a row for the full breakdown.` : "No list yet: the first one is made on Monday.";
-  const head = [["#"], ["Company", "l sticky"], ["1Y"], ["Score"], ["V", "c", "Value"], ["Q", "c", "Quality"], ["M", "c", "Momentum"], ["I", "c", "Income"],
-    ["P/E"], ["EV/EBIT"], ["ROE"], ["Div. yield"], ["Price"]];
-  const t = $("#list");
-  const render = () => {
-    t.replaceChildren(el("tr", {}, ...head.map(([h, c = "", title = ""]) => el("th", { className: c, textContent: h, title }))));
-    for (const p of now) {
-      const s = by.get(p.ticker) || { ticker: p.ticker, company: p.company };
-      expandable(t, OPEN.list, p.ticker, [
-        el("td", { textContent: p.rank }),
-        nameCell({ ...s, company: p.company }, prev && !before.has(p.ticker) ? [el("span", { className: "new", textContent: "NEW" })] : []),
-        trendCell(SPARK()[p.ticker]), scoreCell(num(p.score)),
-        ...PILLAR_KEYS.map((k) => scoreCell(num(s[k + "_score"]))),
-        el("td", { textContent: f1(num(s.pe)) }), el("td", { textContent: f1(num(s.ev_ebit)) }),
-        el("td", { textContent: pct(num(s.roe)) }), el("td", { textContent: pct(num(s.dividend_yield), 1) }),
-        el("td", { textContent: `R$ ${f1(num(p.price), 2)}` })], s, head.length, render);
-    }
-  };
-  render();
+  listTable($("#list"), OPEN.list, now.map((p) => ({ rank: p.rank, score: num(p.score), price: num(p.price),
+    row: { ...(by.get(p.ticker) || { ticker: p.ticker }), company: p.company },
+    badge: prev && !before.has(p.ticker) ? [el("span", { className: "new", textContent: "NEW" })] : [] })),
+  [["Price"], (it) => el("td", { textContent: `R$ ${f1(it.price, 2)}` })]);
   buildMix(now.map((p) => by.get(p.ticker) || p));
   const magic = picks.filter((p) => p.date === cur && p.strategy === "magic").sort((a, b) => a.rank - b.rank);
   $("#magic").replaceChildren(...magic.map((m) => el("a", { className: "chip", href: `company.html?t=${m.ticker}`, style: "text-decoration:none", textContent: `${m.rank}. ${m.ticker}`, title: m.company })));
@@ -205,10 +211,23 @@ function buildMix(rows) {
     title: [...new Set(rows.filter((r) => group(r) === g).map((r) => r.ticker))].join(", ") })));
 }
 
+// Today's bottom 10 by score: shown, not logged (no live record, nothing in data/picks).
+function buildAvoid() {
+  const elig = S.screen.filter((r) => !r.excluded), n = elig.length;
+  const rows = elig.filter((r) => Number.isFinite(num(r.rank))).sort((a, b) => num(b.rank) - num(a.rank)).slice(0, 10);
+  const bt = Object.fromEntries((S.bt.summary || []).map((r) => [r.series, r])), y = (k) => pct(num(bt[k]?.cagr), 1);
+  $("#avoidNote").textContent = `The lowest scores of today's screen: ranks ${n - rows.length + 1}–${n} of ${n} eligible companies, closing prices of ${S.status?.asof || "–"}. ` +
+    "Shown, not logged: unlike the shortlist it is not recorded in data/picks and has no live track record." +
+    (bt.score_q5 && bt.composite_bottom ? ` In the backtest the score told losers apart better than winners: since 2012 its bottom fifth returned ${y("score_q5")} a year and its bottom 10 ${y("composite_bottom")}, ` +
+      `against ${y("eligible")} for all eligible stocks and ${y("eligible_ex_q5")} for all of them but the bottom fifth. The bottom also led the sharp rebounds (2016, 2020): avoiding is not the same as betting against.` : "");
+  listTable($("#avoid"), OPEN.avoid, rows.map((r) => ({ rank: r.rank, score: num(r.score), row: r })),
+    [["Sector", "l"], (it) => el("td", { className: "l muted", textContent: group(it.row), title: it.row.sector || "" })]);
+}
+
 function buildOverview() {
   const st = S.status;
   $("#status").textContent = st ? `Closing prices of ${st.asof} · ${st.eligible} of ${st.companies} listed companies pass the filters · updated every weekday` : "";
-  buildCards(); buildWhy(); buildThirds(); buildList();
+  buildCards(); buildWhy(); buildThirds(); buildList(); buildAvoid();
 }
 function drawOverview() {
   for (const c of $("#cards").children) c._spark?.();
@@ -217,9 +236,13 @@ function drawOverview() {
 }
 
 // ================================================================ SCREENER
+// The score's bottom fifth among eligible companies, cut as the backtest's fifths (pandas qcut on the rank).
+let Q5_CUT;
+const bottomFifth = (r) => !r.excluded && num(r.rank) > (Q5_CUT ??= 1 + 0.8 * (S.screen.filter((x) => !x.excluded).length - 1));
 const PRESETS = [
   ["all", "All eligible", (r) => !r.excluded],
   ["top", "Top 20 score", (r) => !r.excluded && num(r.rank) <= 20],
+  ["bottom", "Bottom fifth", (r) => bottomFifth(r), "The score's bottom fifth among eligible companies: the avoid list"],
   ["magic", "Magic Formula 20", (r) => !r.excluded && num(r.magic_rank) <= 20],
   ["value", "Value ≥ 80", (r) => !r.excluded && num(r.value_score) >= 80],
   ["quality", "Quality ≥ 80", (r) => !r.excluded && num(r.quality_score) >= 80],
@@ -247,8 +270,8 @@ function buildScreener() {
   const groups = [...new Set(S.screen.map(group))].filter(Boolean).sort((a, b) => (a === "Other") - (b === "Other") || a.localeCompare(b));
   $("#sector").append(...groups.map((s) => el("option", { value: s, textContent: s })));
   for (const id of ["#q", "#sector", "#liq"]) $(id).addEventListener("input", renderScreen);
-  $("#presets").replaceChildren(...PRESETS.map(([k, label, f]) => {
-    const b = el("button", { className: "preset", type: "button" }, label, el("span", { className: "n", textContent: S.screen.filter(f).length }));
+  $("#presets").replaceChildren(...PRESETS.map(([k, label, f, title = ""]) => {
+    const b = el("button", { className: "preset", type: "button", title }, label, el("span", { className: "n", textContent: S.screen.filter(f).length }));
     b.dataset.k = k;
     b.addEventListener("click", () => { SCR.preset = k; renderScreen(); });
     return b;
@@ -327,7 +350,7 @@ function buildBacktest() {
       el("td", {}, signed(num(r.max_drawdown), 0)), el("td", {}, signed(num(r.best_year), 0)), el("td", {}, signed(num(r.worst_year), 0)),
       el("td", { textContent: r.years_beating_bova11 || "–" }), el("td", {}, signed(num(r.excess_over_cdi)))));
   }
-  buildBtYears(); buildBtCohorts(); buildBtHoldings();
+  buildBtYears(); buildBtCohorts(); buildBtHoldings(); buildBtAvoid();
 }
 function drawBtChart() {
   const curve = S.bt.curve; if (!curve) return;
@@ -425,7 +448,40 @@ function buildBtHoldings() {
     det.append(el("div", { className: "scroll" }, t)); box.append(det);
   });
 }
-function drawBacktest() { drawBtChart(); drawQuintiles(); }
+// The avoid list: the score's bottom 10 and bottom fifth against all eligible stocks.
+const AV = [["eligible_ex_q5", "--s1", "All eligible but the bottom fifth", "Ex bottom 5th"], ["eligible", "--other", "All eligible stocks", "All elig."],
+  ["cdi", "--s3", "CDI (cash)", "CDI"], ["score_q5", "--s2", "Bottom fifth by score", "Bottom 5th", true], ["composite_bottom", "--s2", "Bottom 10 by score", "Bottom 10"]];
+function drawBtAvoid() {
+  const curve = S.bt.curve, box = $("#btAvoid"); if (!curve) return;
+  const by = {}; for (const r of curve) (by[r.series] ||= new Map()).set(r.date, +r.value);
+  if (!by.score_q5) { box.closest(".card").hidden = true; return; }
+  const dates = [...new Set(curve.map((r) => r.date))].sort();
+  lineChart(box, dates, AV.map(([k, c, label, short, dash]) => ({ values: dates.map((d) => by[k]?.get(d) ?? NaN), color: c, label, dash,
+    width: k === "eligible_ex_q5" ? 2.5 : 2, endLabel: (v) => `${short} R$${v.toFixed(0)}` })),
+  { log: true, h: 300, ml: 48, labels: true, mr: 124, legend: true, legendNote: "· log scale", fmt: (v) => `R$${v}`, tipFmt: (v) => `R$ ${v.toFixed(0)}`,
+    aria: "Growth of R$100: the score's bottom 10 and bottom fifth against all eligible stocks, log scale" });
+}
+function buildBtAvoid() {
+  const { summary, periods } = S.bt; if (!summary || !summary.some((r) => r.series === "score_q5")) return;
+  const by = Object.fromEntries(summary.map((r) => [r.series, r]));
+  const ret = {}; for (const p of periods || []) (ret[p.series] ||= {})[p.start] = num(p.return);
+  const starts = Object.keys(ret.eligible || {}).sort();
+  const below = (k) => `${starts.filter((d) => ret[k]?.[d] < ret.eligible[d]).length}/${starts.length}`;
+  const t = $("#btAvoidSummary");
+  t.replaceChildren(el("tr", {}, ...["", "R$100 became", "Per year", "Volatility", "Worst fall", "Best year", "Worst year", "Years below all eligible"]
+    .map((h, i) => el("th", { className: i ? "" : "l", textContent: h }))));
+  for (const [k, , label] of [AV[4], AV[3], AV[1], AV[0], AV[2]]) {
+    const r = by[k]; if (!r) continue;
+    t.append(el("tr", {}, el("td", { className: "l", textContent: label }), el("td", { textContent: `R$ ${(100 * (1 + num(r.total_return))).toFixed(0)}` }),
+      el("td", {}, signed(num(r.cagr))), el("td", { textContent: pct(num(r.volatility)) }), el("td", {}, signed(num(r.max_drawdown), 0)),
+      el("td", {}, signed(num(r.best_year), 0)), el("td", {}, signed(num(r.worst_year), 0)), el("td", { textContent: k === "eligible" ? "–" : below(k) })));
+  }
+  const cols = [AV[4], AV[3], AV[0], AV[1]];
+  const y = $("#btAvoidYears");
+  y.replaceChildren(el("tr", {}, el("th", { className: "l", textContent: "Held from" }), ...cols.map(([, , label]) => el("th", { className: "c", textContent: label }))));
+  for (const d of [...starts].reverse()) y.append(el("tr", {}, el("td", { className: "l", textContent: d.slice(0, 7) }), ...cols.map(([k]) => retCell(ret[k]?.[d]))));
+}
+function drawBacktest() { drawBtChart(); drawQuintiles(); drawBtAvoid(); }
 
 // ============================================================ TRACK RECORD
 function liveCurve() {

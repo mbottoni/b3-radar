@@ -59,6 +59,16 @@ date,strategy,rank,ticker,company,sector,sector_group,metric,period_return
 2012-05-02,income,8,BRKM5,BRASKEM,Petroquímicos e Borracha,Paper & chemicals,91.25,0.276501
 2012-05-02,income,9,NATU3,NATURA COSMETICOS SA,Farmacêutico e Higiene,Health,90,0.189754
 2012-05-02,income,10,PETR4,PETROBRAS,Petróleo e Gás,Oil & gas,88.75,-0.0332056
+2012-05-02,composite_bottom,1,OGXP3,ÓLEO E GÁS PARTICIPAÇÕES S/A - EM RECUPERAÇÃO JUDICIAL,Emp. Adm. Part. - Petróleo e Gás,Oil & gas,14.4607,-0.869286
+2012-05-02,composite_bottom,2,GFSA3,GAFISA,"Construção Civil, Mat. Constr. e Decoração",Real estate,17.3009,0.0735695
+2012-05-02,composite_bottom,3,FIBR3,FIBRIA,Papel e Celulose,Paper & chemicals,19.8688,0.377457
+2012-05-02,composite_bottom,4,OSXB3,OSX BRASIL S.A. - EM RECUPERAÇÃO JUDICIAL,Emp. Adm. Part. - Sem Setor Principal,Other,21.5051,-0.800273
+2012-05-02,composite_bottom,5,MMXM3,MMX MINERAÇÃO E METÁLICOS S.A.  - EM RECUPERAÇÃO JUDICIAL,Extração Mineral,Mining & steel,21.5559,-0.74537
+2012-05-02,composite_bottom,6,HYPE3,HYPERA PHARMA S/A,Farmacêutico e Higiene,Health,22.4354,0.269959
+2012-05-02,composite_bottom,7,QGEP3,QGEP PARTICIPAÇÕES SA,Emp. Adm. Part. - Petróleo e Gás,Oil & gas,25.296,-0.110236
+2012-05-02,composite_bottom,8,USIM5,USIMINAS,Metalurgia e Siderurgia,Mining & steel,29.2768,-0.135578
+2012-05-02,composite_bottom,9,ESTC3,ESTACIO PARTICIPAÇÕES SA,Emp. Adm. Part. - Educação,Education,30.0092,0.959133
+2012-05-02,composite_bottom,10,BTOW3,AMERICANAS S.A. - EM RECUPERAÇÃO JUDICIAL,Comércio (Atacado e Varejo),Retail,30.7127,0.443758
 2012-05-02,composite_cap,1,ELPL4,AES ELETROPAULO,Energia Elétrica,Utilities,85.8439,-0.720277
 2012-05-02,composite_cap,2,CSAN3,COSAN SA INDUSTRIA E COMERCIO,"Agricultura (Açúcar, Álcool e Cana)",Food & agri,76.6297,0.461009
 2012-05-02,composite_cap,3,GETI4,AES TIETE SA,Energia Elétrica,Utilities,74.8134,-0.138122
@@ -129,6 +139,16 @@ date,strategy,rank,ticker,company,sector,sector_group,metric,period_return
 2013-05-02,income,8,VALE5,VALE,Extração Mineral,Mining & steel,92.5532,-0.0858407
 2013-05-02,income,9,HGTX3,CIA HERING,Têxtil e Vestuário,Apparel,91.4894,-0.391905
 2013-05-02,income,10,LEVE3,MAHLE METAL LEVE,"Máquinas, Equipamentos, Veículos e Peças",Industrials,90.4255,-0.111363
+2013-05-02,composite_bottom,1,OGXP3,ÓLEO E GÁS PARTICIPAÇÕES S/A - EM RECUPERAÇÃO JUDICIAL,Emp. Adm. Part. - Petróleo e Gás,Oil & gas,17.3344,-0.89071
+2013-05-02,composite_bottom,2,MMXM3,MMX MINERAÇÃO E METÁLICOS S.A.  - EM RECUPERAÇÃO JUDICIAL,Extração Mineral,Mining & steel,18.6227,-0.794697
+2013-05-02,composite_bottom,3,ELET6,AXIA ENERGIA S.A.,Emp. Adm. Part. - Energia Elétrica,Utilities,21.1918,0.255196
+2013-05-02,composite_bottom,4,RSID3,ROSSI RESIDENCIAL S.A. - EM RECUPERAÇÃO JUDICIAL,"Construção Civil, Mat. Constr. e Decoração",Real estate,21.4191,-0.477341
+2013-05-02,composite_bottom,5,OSXB3,OSX BRASIL S.A. - EM RECUPERAÇÃO JUDICIAL,Emp. Adm. Part. - Sem Setor Principal,Other,21.7275,-0.853242
+2013-05-02,composite_bottom,6,GOLL4,GOL LINHAS AEREAS INTELIGENTES SA,Emp. Adm. Part. - Serviços Transporte e Logística,Transport,21.9877,0.252267
+2013-05-02,composite_bottom,7,TCSA3,TECNISA S/A,"Construção Civil, Mat. Constr. e Decoração",Real estate,25.315,-0.167009
+2013-05-02,composite_bottom,8,USIM5,USIMINAS,Metalurgia e Siderurgia,Mining & steel,29.3082,-0.0536842
+2013-05-02,composite_bottom,9,LLIS3,LE LIS BLANC DEUX,Emp. Adm. Part. - Comércio (Atacado e Varejo),Retail,29.8378,-0.299435
+2013-05-02,composite_bottom,10,GFSA3,GAFISA,"Construção Civil, Mat. Constr. e Decoração",Real estate,32.4602,-0.0203046
 2013-05-02,composite_cap,1,LEVE3,MAHLE METAL LEVE,"Máquinas, Equipamentos, Veículos e Peças",Industrials,74.1263,-0.111363
 2013-05-02,composite_cap,2,VLID3,AMERICAN BANKNOTE COMPANY,Comunicação e Informática,Tech & media,71.881,-0.0162834
 2013-05-02,composite_cap,3,VIVT4,TELEFÔNICA BRASIL,Telecomunicações,Telecom,71.6874,-0.050682
@@ -199,6 +219,16 @@ date,strategy,rank,ticker,company,sector,sector_group,metric,period_return
 2014-05-02,income,8,VIVT4,TELEFÔNICA BRASIL,Telecomunicações,Telecom,91.5663,0.146623
 2014-05-02,income,9,VALE5,VALE,Extração Mineral,Mining & steel,90.3614,-0.235151
 2014-05-02,income,10,TCSA3,TECNISA S/A,"Construção Civil, Mat. Constr. e Decoração",Real estate,89.1566,-0.428348
+2014-05-02,composite_bottom,1,MMXM3,MMX MINERAÇÃO E METÁLICOS S.A.  - EM RECUPERAÇÃO JUDICIAL,Extração Mineral,Mining & steel,17.2703,-0.778598
+2014-05-02,composite_bottom,2,GOLL4,GOL LINHAS AEREAS INTELIGENTES SA,Emp. Adm. Part. - Serviços Transporte e Logística,Transport,18.4959,-0.475971
+2014-05-02,composite_bottom,3,TRPL4,CTEEP,Energia Elétrica,Utilities,20.335,0.689751
+2014-05-02,composite_bottom,4,PDGR3,PDG REALTY SA EMPREENDIMENTOS E PARTS,"Emp. Adm. Part. - Const. Civil, Mat. Const. e Decoração",Real estate,20.5897,-0.657534
+2014-05-02,composite_bottom,5,RSID3,ROSSI RESIDENCIAL S.A. - EM RECUPERAÇÃO JUDICIAL,"Construção Civil, Mat. Constr. e Decoração",Real estate,23.5527,-0.736416
+2014-05-02,composite_bottom,6,MRFG3,MARFRIG,Alimentos,Food & agri,27.7427,-0.0527473
+2014-05-02,composite_bottom,7,CSAN3,COSAN SA INDUSTRIA E COMERCIO,"Agricultura (Açúcar, Álcool e Cana)",Food & agri,34.4022,-0.236991
+2014-05-02,composite_bottom,8,ALSC3,ALIANSCE,Emp. Adm. Part. - Comércio (Atacado e Varejo),Retail,35.6377,-0.0655956
+2014-05-02,composite_bottom,9,ARZZ3,AZZAS 2154 S.A.,Têxtil e Vestuário,Apparel,35.9879,-0.0290698
+2014-05-02,composite_bottom,10,PFRM3,PROFARMA,Comércio (Atacado e Varejo),Retail,36.3197,-0.53908
 2014-05-02,composite_cap,1,GETI4,AES TIETE SA,Energia Elétrica,Utilities,79.0136,0.111041
 2014-05-02,composite_cap,2,EZTC3,EZ TEC EMPREEND. E PARTICIPAÇÕES S/A,"Emp. Adm. Part. - Const. Civil, Mat. Const. e Decoração",Real estate,75.8901,-0.312704
 2014-05-02,composite_cap,3,CSNA3,CSN,Metalurgia e Siderurgia,Mining & steel,71.9414,0.0447186
@@ -269,6 +299,16 @@ date,strategy,rank,ticker,company,sector,sector_group,metric,period_return
 2015-05-04,income,8,VALE5,VALE,Extração Mineral,Mining & steel,91.0256,-0.17006
 2015-05-04,income,9,CPLE6,COPEL,Energia Elétrica,Utilities,89.7436,-0.151092
 2015-05-04,income,10,EZTC3,EZ TEC EMPREEND. E PARTICIPAÇÕES S/A,"Emp. Adm. Part. - Const. Civil, Mat. Const. e Decoração",Real estate,88.4615,-0.0231704
+2015-05-04,composite_bottom,1,PETR4,PETROBRAS,Petróleo e Gás,Oil & gas,20.0334,-0.263043
+2015-05-04,composite_bottom,2,ELET6,AXIA ENERGIA S.A.,Emp. Adm. Part. - Energia Elétrica,Utilities,20.5156,0.440884
+2015-05-04,composite_bottom,3,PDGR3,PDG REALTY SA EMPREENDIMENTOS E PARTS,"Emp. Adm. Part. - Const. Civil, Mat. Const. e Decoração",Real estate,20.8965,-0.8764
+2015-05-04,composite_bottom,4,GFSA3,GAFISA,"Construção Civil, Mat. Constr. e Decoração",Real estate,21.799,-0.178571
+2015-05-04,composite_bottom,5,USIM5,USIMINAS,Metalurgia e Siderurgia,Mining & steel,24.8481,-0.610937
+2015-05-04,composite_bottom,6,ELPL4,AES ELETROPAULO,Energia Elétrica,Utilities,31.4692,-0.242456
+2015-05-04,composite_bottom,7,OIBR4,BRASIL TELECOM S.A.,Telecomunicações,Telecom,34.2366,-0.81295
+2015-05-04,composite_bottom,8,DTEX3,DEXCO S.A.,"Construção Civil, Mat. Constr. e Decoração",Real estate,34.8499,-0.115861
+2015-05-04,composite_bottom,9,BTOW3,AMERICANAS S.A. - EM RECUPERAÇÃO JUDICIAL,Comércio (Atacado e Varejo),Retail,36.4732,-0.484601
+2015-05-04,composite_bottom,10,KLBN11,KLABIN,Papel e Celulose,Paper & chemicals,37.7442,-0.0720867
 2015-05-04,composite_cap,1,MRVE3,MRV ENGENHARIA,"Construção Civil, Mat. Constr. e Decoração",Real estate,76.7073,0.519084
 2015-05-04,composite_cap,2,CMIG4,CEMIG,Energia Elétrica,Utilities,74.393,-0.510358
 2015-05-04,composite_cap,3,MPLU3,MULTIPLUS SA,Comércio (Atacado e Varejo),Retail,73.8782,0.225005
@@ -339,6 +379,16 @@ date,strategy,rank,ticker,company,sector,sector_group,metric,period_return
 2016-05-02,income,8,VIVT4,TELEFÔNICA BRASIL,Telecomunicações,Telecom,90,0.176175
 2016-05-02,income,9,ECOR3,ECORODOVIAS INFRAESTRUTURA E LOGÍSTICA S.A.,Serviços Transporte e Logística,Transport,88.5714,0.331263
 2016-05-02,income,10,BRKM5,BRASKEM,Petroquímicos e Borracha,Paper & chemicals,87.1429,0.485574
+2016-05-02,composite_bottom,1,USIM5,USIMINAS,Metalurgia e Siderurgia,Mining & steel,19.5903,0.771084
+2016-05-02,composite_bottom,2,PETR4,PETROBRAS,Petróleo e Gás,Oil & gas,22.2269,0.375615
+2016-05-02,composite_bottom,3,OIBR3,BRASIL TELECOM S.A.,Telecomunicações,Telecom,24.0301,3.85882
+2016-05-02,composite_bottom,4,GOAU4,METALÚRGICA GERDAU,Emp. Adm. Part. - Metalurgia e Siderurgia,Mining & steel,29.3627,0.666667
+2016-05-02,composite_bottom,5,DTEX3,DEXCO S.A.,"Construção Civil, Mat. Constr. e Decoração",Real estate,29.916,0.156489
+2016-05-02,composite_bottom,6,BTOW3,AMERICANAS S.A. - EM RECUPERAÇÃO JUDICIAL,Comércio (Atacado e Varejo),Retail,31.9433,0.0215983
+2016-05-02,composite_bottom,7,RUMO3,RUMO LOGÍSTICA OPERADORA MULTIMODAL S.A.,Serviços Transporte e Logística,Transport,32.8221,0.915718
+2016-05-02,composite_bottom,8,KLBN11,KLABIN,Papel e Celulose,Paper & chemicals,32.8676,-0.0654206
+2016-05-02,composite_bottom,9,CSNA3,CSN,Metalurgia e Siderurgia,Mining & steel,33.8831,-0.385271
+2016-05-02,composite_bottom,10,VALE5,VALE,Extração Mineral,Mining & steel,34.3592,0.78955
 2016-05-02,composite_cap,1,ENBR3,EDP ENERGIAS DO BRASIL S/A,Energia Elétrica,Utilities,81.1555,0.12533
 2016-05-02,composite_cap,2,BRKM5,BRASKEM,Petroquímicos e Borracha,Paper & chemicals,79.0371,0.485574
 2016-05-02,composite_cap,3,MPLU3,MULTIPLUS SA,Comércio (Atacado e Varejo),Retail,75.7143,0.0868682
@@ -409,6 +459,16 @@ date,strategy,rank,ticker,company,sector,sector_group,metric,period_return
 2017-05-02,income,8,POMO4,MARCOPOLO,"Máquinas, Equipamentos, Veículos e Peças",Industrials,91.5663,0.643783
 2017-05-02,income,9,FLRY3,FLEURY SA,Serviços Médicos,Health,90.3614,-0.00445263
 2017-05-02,income,10,VIVT4,TELEFÔNICA BRASIL,Telecomunicações,Telecom,89.1566,0.0753612
+2017-05-02,composite_bottom,1,GFSA3,GAFISA,"Construção Civil, Mat. Constr. e Decoração",Real estate,21.8924,-0.354326
+2017-05-02,composite_bottom,2,FIBR3,FIBRIA,Papel e Celulose,Paper & chemicals,23.6629,1.40967
+2017-05-02,composite_bottom,3,EMBR3,EMBRAER,"Máquinas, Equipamentos, Veículos e Peças",Industrials,24.0621,0.493225
+2017-05-02,composite_bottom,4,BTOW3,AMERICANAS S.A. - EM RECUPERAÇÃO JUDICIAL,Comércio (Atacado e Varejo),Retail,25.8816,0.957012
+2017-05-02,composite_bottom,5,KLBN11,KLABIN,Papel e Celulose,Paper & chemicals,27.139,0.31875
+2017-05-02,composite_bottom,6,BRPR3,BR PROPERTIES S.A.,Emp. Adm. Part. - Sem Setor Principal,Other,27.5676,-0.0687388
+2017-05-02,composite_bottom,7,MRFG3,MARFRIG,Alimentos,Food & agri,28.6243,0.0569106
+2017-05-02,composite_bottom,8,ALSC3,ALIANSCE,Emp. Adm. Part. - Comércio (Atacado e Varejo),Retail,29.2205,0.13338
+2017-05-02,composite_bottom,9,BRFS3,BRF S.A.,Emp. Adm. Part. - Alimentos,Food & agri,29.9025,-0.411483
+2017-05-02,composite_bottom,10,DTEX3,DEXCO S.A.,"Construção Civil, Mat. Constr. e Decoração",Real estate,32.1004,0.182618
 2017-05-02,composite_cap,1,SAPR4,SANEPAR,"Saneamento, Serv. Água e Gás",Utilities,85.3487,0.0710201
 2017-05-02,composite_cap,2,CGAS5,COMPANHIA DE GÁS DE SÃO PAULO - COMGÁS,"Emp. Adm. Part. - Saneamento, Serv. Água e Gás",Utilities,80.6139,0.391524
 2017-05-02,composite_cap,3,VALE5,VALE,Extração Mineral,Mining & steel,79.1324,0.242458
@@ -479,6 +539,16 @@ date,strategy,rank,ticker,company,sector,sector_group,metric,period_return
 2018-05-02,income,8,TIET11,CIA BRASILIANA DE ENERGIA,Emp. Adm. Part. - Energia Elétrica,Utilities,92.4731,0.0227034
 2018-05-02,income,9,BRKM5,BRASKEM,Petroquímicos e Borracha,Paper & chemicals,91.3978,0.0547036
 2018-05-02,income,10,TUPY3,TUPY,Metalurgia e Siderurgia,Mining & steel,90.3226,-0.0264035
+2018-05-02,composite_bottom,1,BRFS3,BRF S.A.,Emp. Adm. Part. - Alimentos,Food & agri,15.0616,0.250407
+2018-05-02,composite_bottom,2,GFSA3,GAFISA,"Construção Civil, Mat. Constr. e Decoração",Real estate,17.6981,-0.525021
+2018-05-02,composite_bottom,3,CESP6,CESP CIA ENERGETICA SAO PAULO,Energia Elétrica,Utilities,20.3434,0.488372
+2018-05-02,composite_bottom,4,BRML3,BR MALLS PARTICIPAÇOES S.A.,Emp. Adm. Part. - Comércio (Atacado e Varejo),Retail,21.4625,0.160776
+2018-05-02,composite_bottom,5,BEEF3,MINERVA S/A,Alimentos,Food & agri,24.4331,0.08125
+2018-05-02,composite_bottom,6,MRFG3,MARFRIG,Alimentos,Food & agri,27.2324,-0.0820513
+2018-05-02,composite_bottom,7,KLBN11,KLABIN,Papel e Celulose,Paper & chemicals,28.4722,-0.208531
+2018-05-02,composite_bottom,8,CYRE3,CYRELA BRAZIL REALTY S.A.,"Construção Civil, Mat. Constr. e Decoração",Real estate,29.1715,0.374174
+2018-05-02,composite_bottom,9,JBSS3,JBS SA,Alimentos,Food & agri,32.6915,1.25404
+2018-05-02,composite_bottom,10,LIGT3,LIGHT S.A. - EM RECUPERAÇÃO JUDICIAL,Emp. Adm. Part. - Energia Elétrica,Utilities,33.2398,0.229698
 2018-05-02,composite_cap,1,FESA4,FERBASA,Metalurgia e Siderurgia,Mining & steel,87.6208,0.0853893
 2018-05-02,composite_cap,2,BRAP4,BRADESPAR S/A,Emp. Adm. Part. - Extração Mineral,Mining & steel,85.9251,-0.110557
 2018-05-02,composite_cap,3,SLCE3,SLC AGRICOLA SA,"Agricultura (Açúcar, Álcool e Cana)",Food & agri,81.9143,0.0454512
@@ -549,6 +619,16 @@ date,strategy,rank,ticker,company,sector,sector_group,metric,period_return
 2019-05-02,income,8,LEVE3,MAHLE METAL LEVE,"Máquinas, Equipamentos, Veículos e Peças",Industrials,93.3333,-0.248678
 2019-05-02,income,9,CYRE3,CYRELA BRAZIL REALTY S.A.,"Construção Civil, Mat. Constr. e Decoração",Real estate,92.381,-0.0689575
 2019-05-02,income,10,CSMG3,COPASA MG,"Saneamento, Serv. Água e Gás",Utilities,91.4286,-0.277292
+2019-05-02,composite_bottom,1,BRFS3,BRF S.A.,Emp. Adm. Part. - Alimentos,Food & agri,13.2135,-0.401821
+2019-05-02,composite_bottom,2,GFSA3,GAFISA,"Construção Civil, Mat. Constr. e Decoração",Real estate,18.0227,-0.3375
+2019-05-02,composite_bottom,3,ANIM3,ANIMA HOLDING S/A,Educação,Education,21.6987,0.0845
+2019-05-02,composite_bottom,4,VVAR3,PONTO FRIO,Comércio (Atacado e Varejo),Retail,23.1372,1.29469
+2019-05-02,composite_bottom,5,AZUL4,AZUL S.A.,Emp. Adm. Part. - Serviços Transporte e Logística,Transport,24.3353,-0.56185
+2019-05-02,composite_bottom,6,EMBR3,EMBRAER,"Máquinas, Equipamentos, Veículos e Peças",Industrials,25.7814,-0.608321
+2019-05-02,composite_bottom,7,CCRO3,MOTIVA INFRAESTRUTURA DE MOBILIDADE S.A.,Emp. Adm. Part. - Serviços Transporte e Logística,Transport,26.6583,0.0295858
+2019-05-02,composite_bottom,8,BTOW3,AMERICANAS S.A. - EM RECUPERAÇÃO JUDICIAL,Comércio (Atacado e Varejo),Retail,27.2047,1.01277
+2019-05-02,composite_bottom,9,KLBN11,KLABIN,Papel e Celulose,Paper & chemicals,27.6534,0.0646707
+2019-05-02,composite_bottom,10,MRFG3,MARFRIG,Alimentos,Food & agri,27.6702,0.74162
 2019-05-02,composite_cap,1,UNIP6,UNIPAR CARBOCLORO S.A.,Petroquímicos e Borracha,Paper & chemicals,84.2117,-0.387574
 2019-05-02,composite_cap,2,CGAS5,COMPANHIA DE GÁS DE SÃO PAULO - COMGÁS,"Emp. Adm. Part. - Saneamento, Serv. Água e Gás",Utilities,80.6189,1.41643
 2019-05-02,composite_cap,3,SAPR11,SANEPAR,"Saneamento, Serv. Água e Gás",Utilities,77.893,0.0302278
@@ -619,6 +699,16 @@ date,strategy,rank,ticker,company,sector,sector_group,metric,period_return
 2020-05-04,income,8,TAEE11,TRANSMISSORA ALIANÇA DE ENERGIA ELÉTRICA S.A.,Emp. Adm. Part. - Energia Elétrica,Utilities,94.2149,0.714955
 2020-05-04,income,9,FESA4,FERBASA,Metalurgia e Siderurgia,Mining & steel,93.3884,1.49657
 2020-05-04,income,10,TGMA3,TEGMA GESTÃO LOGÍSTICA SA,Serviços Transporte e Logística,Transport,92.562,0.281984
+2020-05-04,composite_bottom,1,EMBR3,EMBRAER,"Máquinas, Equipamentos, Veículos e Peças",Industrials,20.5234,1.06736
+2020-05-04,composite_bottom,2,AMAR3,MARISA LOJAS SA,Comércio (Atacado e Varejo),Retail,20.5923,-0.126829
+2020-05-04,composite_bottom,3,TCSA3,TECNISA S/A,"Construção Civil, Mat. Constr. e Decoração",Real estate,21.5909,0.131579
+2020-05-04,composite_bottom,4,SUZB3,SUZANO PAPEL E CELULOSE SA,Papel e Celulose,Paper & chemicals,21.8664,0.671605
+2020-05-04,composite_bottom,5,BRKM5,BRASKEM,Petroquímicos e Borracha,Paper & chemicals,24.8623,1.37156
+2020-05-04,composite_bottom,6,MEAL3,INTERNATIONAL MEAL COMAPANY ALIMENTAÇÃO S.A.,Alimentos,Food & agri,26.0331,0.157233
+2020-05-04,composite_bottom,7,MILS3,MILLS ESTRUTURAS E SERVIÇOS DE ENGENHARIA S/A,Serviços Transporte e Logística,Transport,26.0675,0.90372
+2020-05-04,composite_bottom,8,PTBL3,PORTOBELLO S/A,"Construção Civil, Mat. Constr. e Decoração",Real estate,26.2741,3.72421
+2020-05-04,composite_bottom,9,GFSA3,GAFISA,"Construção Civil, Mat. Constr. e Decoração",Real estate,26.4463,0.207547
+2020-05-04,composite_bottom,10,VVAR3,PONTO FRIO,Comércio (Atacado e Varejo),Retail,28.3747,0.249474
 2020-05-04,composite_cap,1,JHSF3,JHSF,"Emp. Adm. Part. - Const. Civil, Mat. Const. e Decoração",Real estate,79.0289,0.821833
 2020-05-04,composite_cap,2,TRIS3,TRISUL,"Emp. Adm. Part. - Const. Civil, Mat. Const. e Decoração",Real estate,78.3058,0.291018
 2020-05-04,composite_cap,3,CPLE6,COPEL,Energia Elétrica,Utilities,77.1006,0.283919
@@ -689,6 +779,16 @@ date,strategy,rank,ticker,company,sector,sector_group,metric,period_return
 2021-05-03,income,8,BRAP4,BRADESPAR S/A,Emp. Adm. Part. - Extração Mineral,Mining & steel,94.6565,-0.471379
 2021-05-03,income,9,TAEE11,TRANSMISSORA ALIANÇA DE ENERGIA ELÉTRICA S.A.,Emp. Adm. Part. - Energia Elétrica,Utilities,93.8931,0.154211
 2021-05-03,income,10,ROMI3,ROMI S.A.,"Máquinas, Equipamentos, Veículos e Peças",Industrials,93.1298,-0.553504
+2021-05-03,composite_bottom,1,AMAR3,MARISA LOJAS SA,Comércio (Atacado e Varejo),Retail,16.8575,-0.582868
+2021-05-03,composite_bottom,2,COGN3,KROTON EDUCACIONAL S.A.,Emp. Adm. Part. - Educação,Education,19.7201,-0.367876
+2021-05-03,composite_bottom,3,AALR3,ALLIANÇA SAÚDE E PARTICIPAÇÕES S.A.,Serviços Médicos,Health,20.7061,1.1957
+2021-05-03,composite_bottom,4,BTOW3,AMERICANAS S.A. - EM RECUPERAÇÃO JUDICIAL,Comércio (Atacado e Varejo),Retail,21.374,0.0188792
+2021-05-03,composite_bottom,5,TCSA3,TECNISA S/A,"Construção Civil, Mat. Constr. e Decoração",Real estate,21.7557,-0.655814
+2021-05-03,composite_bottom,6,RAIL3,ALL - AMÉRICA LATINA LOGÍSTICA S.A.,Emp. Adm. Part. - Serviços Transporte e Logística,Transport,22.1374,-0.241145
+2021-05-03,composite_bottom,7,BKBR3,ZAMP S.A.,Alimentos,Food & agri,22.6463,-0.389389
+2021-05-03,composite_bottom,8,CVCB3,CVC BRASIL OPERADORA E AGÊNCIA DE VIAGENS SA,Hospedagem e Turismo,Leisure & travel,23.1234,-0.440523
+2021-05-03,composite_bottom,9,MYPK3,IOCHPE-MAXION,"Máquinas, Equipamentos, Veículos e Peças",Industrials,23.2188,-0.0225653
+2021-05-03,composite_bottom,10,ECOR3,ECORODOVIAS INFRAESTRUTURA E LOGÍSTICA S.A.,Serviços Transporte e Logística,Transport,23.4097,-0.4425
 2021-05-03,composite_cap,1,CYRE3,CYRELA BRAZIL REALTY S.A.,"Construção Civil, Mat. Constr. e Decoração",Real estate,84.8919,-0.373139
 2021-05-03,composite_cap,2,VALE3,VALE,Extração Mineral,Mining & steel,82.57,-0.106385
 2021-05-03,composite_cap,3,SMLS3,SMILES FIDELIDADE S.A.,Comércio (Atacado e Varejo),Retail,81.9338,0.044289
@@ -759,6 +859,16 @@ date,strategy,rank,ticker,company,sector,sector_group,metric,period_return
 2022-05-02,income,8,CPLE6,COPEL,Energia Elétrica,Utilities,95.1049,0.232432
 2022-05-02,income,9,USIM5,USIMINAS,Metalurgia e Siderurgia,Mining & steel,94.4056,-0.330702
 2022-05-02,income,10,LEVE3,MAHLE METAL LEVE,"Máquinas, Equipamentos, Veículos e Peças",Industrials,93.7063,0.395579
+2022-05-02,composite_bottom,1,CVCB3,CVC BRASIL OPERADORA E AGÊNCIA DE VIAGENS SA,Hospedagem e Turismo,Leisure & travel,8.3042,-0.795171
+2022-05-02,composite_bottom,2,CASH3,MELIUZ S.A.,Comunicação e Informática,Tech & media,12.296,-0.551913
+2022-05-02,composite_bottom,3,SEQL3,SEQUOIA LOGÍSTICA E TRANSPORTES S.A.,Serviços Transporte e Logística,Transport,12.9662,-0.855212
+2022-05-02,composite_bottom,4,HBSA3,HIDROVIAS DO BRASIL S.A.,Serviços Transporte e Logística,Transport,13.3741,-0.140468
+2022-05-02,composite_bottom,5,MGLU3,MAGAZINE LUIZA SA,Comércio (Atacado e Varejo),Retail,15.9091,-0.325
+2022-05-02,composite_bottom,6,TEND3,CONSTRUTORA TENDA S/A,"Construção Civil, Mat. Constr. e Decoração",Real estate,16.6958,0.0315789
+2022-05-02,composite_bottom,7,AMAR3,MARISA LOJAS SA,Comércio (Atacado e Varejo),Retail,19.7261,-0.723214
+2022-05-02,composite_bottom,8,BKBR3,ZAMP S.A.,Alimentos,Food & agri,20.4254,0.25082
+2022-05-02,composite_bottom,9,DASA3,DIAGNOSTICOS DA AMERICA SA,Serviços Médicos,Health,20.8916,-0.612403
+2022-05-02,composite_bottom,10,LWSA3,LWSA S/A,Comunicação e Informática,Tech & media,21.7657,-0.269774
 2022-05-02,composite_cap,1,PETR4,PETROBRAS,Petróleo e Gás,Oil & gas,88.345,0.30324
 2022-05-02,composite_cap,2,ENAT3,QGEP PARTICIPAÇÕES SA,Emp. Adm. Part. - Petróleo e Gás,Oil & gas,84.8485,-0.457551
 2022-05-02,composite_cap,3,UNIP6,UNIPAR CARBOCLORO S.A.,Petroquímicos e Borracha,Paper & chemicals,84.324,-0.260451
@@ -829,6 +939,16 @@ date,strategy,rank,ticker,company,sector,sector_group,metric,period_return
 2023-05-02,income,8,PARD3,INSTITUTO HERMES PARDINI S/A,Serviços Médicos,Health,95.0704,0
 2023-05-02,income,9,BRAP4,BRADESPAR S/A,Emp. Adm. Part. - Extração Mineral,Mining & steel,94.3662,0.0131567
 2023-05-02,income,10,CMIN3,CSN MINERAÇÃO S.A,Extração Mineral,Mining & steel,93.662,0.273861
+2023-05-02,composite_bottom,1,CVCB3,CVC BRASIL OPERADORA E AGÊNCIA DE VIAGENS SA,Hospedagem e Turismo,Leisure & travel,8.9789,-0.140684
+2023-05-02,composite_bottom,2,LIGT3,LIGHT S.A. - EM RECUPERAÇÃO JUDICIAL,Emp. Adm. Part. - Energia Elétrica,Utilities,16.6373,0.408571
+2023-05-02,composite_bottom,3,AMAR3,MARISA LOJAS SA,Comércio (Atacado e Varejo),Retail,17.9577,-0.46129
+2023-05-02,composite_bottom,4,MGLU3,MAGAZINE LUIZA SA,Comércio (Atacado e Varejo),Retail,19.1021,-0.549383
+2023-05-02,composite_bottom,5,HAPV3,HAPVIDA PARTICIPAÇÕES E INVESTIMENTOS S.A.,Serviços Médicos,Health,20.4519,0.333333
+2023-05-02,composite_bottom,6,BRFS3,BRF S.A.,Emp. Adm. Part. - Alimentos,Food & agri,20.4812,1.74836
+2023-05-02,composite_bottom,7,SMFT3,SMARTFIT ESCOLA DE GINÁSTICA E DANÇA S.A.,Brinquedos e Lazer,Leisure & travel,20.4812,0.608513
+2023-05-02,composite_bottom,8,SEQL3,SEQUOIA LOGÍSTICA E TRANSPORTES S.A.,Serviços Transporte e Logística,Transport,21.4789,-0.733333
+2023-05-02,composite_bottom,9,ALPA4,ALPARGATAS,Têxtil e Vestuário,Apparel,22.5939,0.33882
+2023-05-02,composite_bottom,10,HBSA3,HIDROVIAS DO BRASIL S.A.,Serviços Transporte e Logística,Transport,22.7113,0.766537
 2023-05-02,composite_cap,1,PETR4,PETROBRAS,Petróleo e Gás,Oil & gas,90.6397,1.1564
 2023-05-02,composite_cap,2,GOAU4,METALÚRGICA GERDAU,Emp. Adm. Part. - Metalurgia e Siderurgia,Mining & steel,89.3779,0.0985156
 2023-05-02,composite_cap,3,FESA4,FERBASA,Metalurgia e Siderurgia,Mining & steel,84.5364,-0.310141
@@ -899,6 +1019,16 @@ date,strategy,rank,ticker,company,sector,sector_group,metric,period_return
 2024-05-02,income,8,CMIN3,CSN MINERAÇÃO S.A,Extração Mineral,Mining & steel,94.8148,0.3415
 2024-05-02,income,9,AGRO3,BRASILAGRO CIA BRAS DE PROP AGRICOLAS,"Agricultura (Açúcar, Álcool e Cana)",Food & agri,94.0741,-0.112421
 2024-05-02,income,10,SLCE3,SLC AGRICOLA SA,"Agricultura (Açúcar, Álcool e Cana)",Food & agri,93.3333,0.105408
+2024-05-02,composite_bottom,1,SEQL3,SEQUOIA LOGÍSTICA E TRANSPORTES S.A.,Serviços Transporte e Logística,Transport,12.8086,-0.746053
+2024-05-02,composite_bottom,2,CLSA3,CLEAR SALE S.A,Comunicação e Informática,Tech & media,14.3519,0.345711
+2024-05-02,composite_bottom,3,CVCB3,CVC BRASIL OPERADORA E AGÊNCIA DE VIAGENS SA,Hospedagem e Turismo,Leisure & travel,15.7407,-0.0221239
+2024-05-02,composite_bottom,4,MGLU3,MAGAZINE LUIZA SA,Comércio (Atacado e Varejo),Retail,16.4815,-0.341735
+2024-05-02,composite_bottom,5,CBAV3,COMPANHIA BRASILEIRA DE ALUMINIO,Extração Mineral,Mining & steel,18.7037,-0.215953
+2024-05-02,composite_bottom,6,SOMA3,RBX RIO COMÉRCIO DE ROUPAS S.A.,Têxtil e Vestuário,Apparel,18.7037,-0.0278232
+2024-05-02,composite_bottom,7,IFCM3,INFRACOMMERCE CXAAS S.A.,Comércio (Atacado e Varejo),Retail,20.3086,-0.876712
+2024-05-02,composite_bottom,8,BRKM5,BRASKEM,Petroquímicos e Borracha,Paper & chemicals,22.5926,-0.518132
+2024-05-02,composite_bottom,9,ALPA4,ALPARGATAS,Têxtil e Vestuário,Apparel,24.2593,-0.208352
+2024-05-02,composite_bottom,10,ORVR3,ORIZON VALORIZAÇÃO DE RESÍDUOS S.A.,"Saneamento, Serv. Água e Gás",Utilities,24.4444,0.2289
 2024-05-02,composite_cap,1,PETR4,PETROBRAS,Petróleo e Gás,Oil & gas,85.3395,-0.137691
 2024-05-02,composite_cap,2,VLID3,AMERICAN BANKNOTE COMPANY,Comunicação e Informática,Tech & media,83.3642,0.618135
 2024-05-02,composite_cap,3,VBBR3,VIBRA ENERGIA S/A,Comércio (Atacado e Varejo),Retail,80.8333,-0.1145
@@ -969,6 +1099,16 @@ date,strategy,rank,ticker,company,sector,sector_group,metric,period_return
 2025-05-02,income,8,CMIG4,CEMIG,Energia Elétrica,Utilities,94.5736,0.254497
 2025-05-02,income,9,KEPL3,KEPLER WEBER SA,Emp. Adm. Part. - Metalurgia e Siderurgia,Mining & steel,93.7984,0.0559401
 2025-05-02,income,10,TAEE11,TRANSMISSORA ALIANÇA DE ENERGIA ELÉTRICA S.A.,Emp. Adm. Part. - Energia Elétrica,Utilities,93.0233,0.274598
+2025-05-02,composite_bottom,1,HBSA3,HIDROVIAS DO BRASIL S.A.,Serviços Transporte e Logística,Transport,7.8165,0.095082
+2025-05-02,composite_bottom,2,AZEV4,AZEVEDO & TRAVASSOS,"Construção Civil, Mat. Constr. e Decoração",Real estate,18.2494,-0.865979
+2025-05-02,composite_bottom,3,GFSA3,GAFISA,"Construção Civil, Mat. Constr. e Decoração",Real estate,18.637,-0.946591
+2025-05-02,composite_bottom,4,RAIL3,ALL - AMÉRICA LATINA LOGÍSTICA S.A.,Emp. Adm. Part. - Serviços Transporte e Logística,Transport,19.9612,-0.114498
+2025-05-02,composite_bottom,5,ONCO3,ONCOCLÍNICAS DO BRASIL SERVIÇOS MÉDICOS S.A.,Serviços Médicos,Health,21.2209,-0.737288
+2025-05-02,composite_bottom,6,HAPV3,HAPVIDA PARTICIPAÇÕES E INVESTIMENTOS S.A.,Serviços Médicos,Health,21.8992,-0.670959
+2025-05-02,composite_bottom,7,NTCO3,NATURA & CO HOLDING S.A.,Farmacêutico e Higiene,Health,21.8992,0.132075
+2025-05-02,composite_bottom,8,RAIZ4,RAÍZEN S.A.,Comércio (Atacado e Varejo),Retail,23.8695,-0.745946
+2025-05-02,composite_bottom,9,MRVE3,MRV ENGENHARIA,"Construção Civil, Mat. Constr. e Decoração",Real estate,24.7416,0.136054
+2025-05-02,composite_bottom,10,AURE3,AUREN ENERGIA S.A,Energia Elétrica,Utilities,25.0323,0.542825
 2025-05-02,composite_cap,1,LAVV3,LAVVI EMPREENDIMENTOS IMOBILIÁRIOS S.A,"Construção Civil, Mat. Constr. e Decoração",Real estate,83.7209,0.431487
 2025-05-02,composite_cap,2,CMIN3,CSN MINERAÇÃO S.A,Extração Mineral,Mining & steel,83.0426,-0.15434
 2025-05-02,composite_cap,3,VLID3,AMERICAN BANKNOTE COMPANY,Comunicação e Informática,Tech & media,82.5581,-0.23006
@@ -1039,6 +1179,16 @@ date,strategy,rank,ticker,company,sector,sector_group,metric,period_return
 2026-05-04,income,8,LOGG3,LOG COMMERCIAL PROPERTIES E PARTICIPAÇÕES S.A.,"Construção Civil, Mat. Constr. e Decoração",Real estate,94.3548,-0.045831
 2026-05-04,income,9,CMIN3,CSN MINERAÇÃO S.A,Extração Mineral,Mining & steel,93.5484,0.0108932
 2026-05-04,income,10,EVEN3,EVEN,"Construção Civil, Mat. Constr. e Decoração",Real estate,92.7419,-0.387945
+2026-05-04,composite_bottom,1,BIOM3,BIOMM SA,Farmacêutico e Higiene,Health,8.2661,-0.2
+2026-05-04,composite_bottom,2,ONCO3,ONCOCLÍNICAS DO BRASIL SERVIÇOS MÉDICOS S.A.,Serviços Médicos,Health,8.4341,-0.477419
+2026-05-04,composite_bottom,3,TUPY3,TUPY,Metalurgia e Siderurgia,Mining & steel,15.2554,0.417256
+2026-05-04,composite_bottom,4,CSAN3,COSAN SA INDUSTRIA E COMERCIO,"Agricultura (Açúcar, Álcool e Cana)",Food & agri,16.3306,-0.392157
+2026-05-04,composite_bottom,5,PRNR3,PRINER SERVIÇOS INDUSTRIAIS S.A.,"Construção Civil, Mat. Constr. e Decoração",Real estate,22.9167,-0.269148
+2026-05-04,composite_bottom,6,LJQQ3,LOJAS QUERO-QUERO S.A.,Comércio (Atacado e Varejo),Retail,23.5887,-0.388889
+2026-05-04,composite_bottom,7,CASH3,MELIUZ S.A.,Comunicação e Informática,Tech & media,23.6895,-0.115207
+2026-05-04,composite_bottom,8,DXCO3,DEXCO S.A.,"Construção Civil, Mat. Constr. e Decoração",Real estate,24.0255,-0.0692308
+2026-05-04,composite_bottom,9,CSNA3,CSN,Metalurgia e Siderurgia,Mining & steel,24.496,-0.388158
+2026-05-04,composite_bottom,10,USIM5,USIMINAS,Metalurgia e Siderurgia,Mining & steel,25.5712,-0.419198
 2026-05-04,composite_cap,1,LAVV3,LAVVI EMPREENDIMENTOS IMOBILIÁRIOS S.A,"Construção Civil, Mat. Constr. e Decoração",Real estate,82.5269,-0.341812
 2026-05-04,composite_cap,2,MDNE3,MOURA DUBEUX,"Construção Civil, Mat. Constr. e Decoração",Real estate,81.5188,-0.372759
 2026-05-04,composite_cap,3,VULC3,VULCABRAS S/A.,Têxtil e Vestuário,Apparel,72.1438,-0.258126

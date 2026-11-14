@@ -12,12 +12,14 @@ record of every shortlist against BOVA11, losers included.
   updated, and the email sent.
 - **The page** has four tabs: **Overview** (BOVA11, the CDI, inflation and
   the typical stock's earnings yield, a gauge of how cheap the market is
-  against its own history and against cash, and this week's shortlist),
+  against its own history and against cash, this week's shortlist, and
+  the avoid list: today's bottom 10 by score, shown but not logged),
   **Screener** (every company with presets, 1-year sparklines and
   heat-shaded scores), **Backtest** and **Track record**.
 - **Backtest** (monthly): the yearly list since 2012, bought each May and
   held, point in time, against BOVA11, the CDI and all eligible stocks; also
-  each list held untouched for 1, 3 and 5 years.
+  each list held untouched for 1, 3 and 5 years, the list capped at two
+  names per sector group, and the score's bottom 10 and bottom fifth.
 - **The market against cash** (monthly): the typical stock's earnings yield
   at every month end since 2011 against the CDI, before and after
   inflation, and what stocks paid over cash in the three years that
