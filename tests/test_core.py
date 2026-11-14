@@ -230,3 +230,19 @@ def test_a_failed_macro_update_does_not_end_the_daily_run(monkeypatch, tmp_path,
     cli.update_macro(tmp_path)
     assert calls == [tmp_path]                                   # IPCA still read after the CDI failed
     assert "CDI not updated" in capsys.readouterr().err
+
+
+def test_a_renamed_ticker_keeps_its_history_but_a_merger_does_not():
+    days = pd.bdate_range("2025-01-01", periods=20).strftime("%Y-%m-%d").tolist()
+    rows = [("OLDX3", "I1", d, 10.0) for d in days[:10]] + [("NEWX3", "I2", d, 10.1) for d in days[11:]]   # renamed
+    rows += [("MRGA3", "I3", d, 10.0) for d in days[:10]] + [("MRGB3", "I4", d, 30.0) for d in days[11:]]  # 3x jump
+    rows += [("ONEA3", "I5", d, 5.0) for d in days[:10]] + [("ONEB3", "I6", d, 5.0) for d in days[15:]]    # ...
+    rows += [("CHNA3", "I7", d, 7.0) for d in days[:5]] + [("CHNB3", "I8", d, 7.0) for d in days[6:12]] \
+        + [("CHNC3", "I9", d, 7.0) for d in days[13:]]                                                         # A -> B -> C
+    px = pd.DataFrame(rows, columns=["ticker", "isin", "date", "close"])
+    tmap = {"OLDX3": "1", "NEWX3": "1", "MRGA3": "2", "MRGB3": "2", "ONEA3": "3", "ONEB3": "4",
+            "CHNA3": "5", "CHNB3": "5", "CHNC3": "5"}
+    empty_cash = pd.DataFrame(columns=["isin", "rate", "last_date_prior", "label"])
+    empty_stock = pd.DataFrame(columns=["isin", "mult", "last_date_prior", "label"])
+    ren = screen.renames(px, tmap, empty_cash, empty_stock)
+    assert ren == {"OLDX3": "NEWX3", "CHNA3": "CHNC3", "CHNB3": "CHNC3"}   # not the merger, not another company
