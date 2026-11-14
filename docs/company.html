@@ -74,6 +74,7 @@
 </main>
 <div id="tip" role="tooltip"></div>
 <script src="assets/common.js"></script>
+<script src="assets/financials.js"></script>
 <script>
 "use strict";
 function card({ k, sub, value, d, spark, ref, foot = [] }) {
@@ -86,16 +87,18 @@ function card({ k, sub, value, d, spark, ref, foot = [] }) {
   return c;
 }
 
-function render(d, sp) {
+// ``fin``: today's row of the financials screen (banks, insurers, holdings: a separate ranking; see financials.js).
+function render(d, sp, fin, finMeta) {
   const n = d.now, H = d.history;
   document.title = `${d.ticker} · ${d.company} · B3 Radar`;
   $("#crumbT").textContent = d.ticker;
   $("#name").textContent = `${d.ticker} · ${d.company}`;
   $("#meta").textContent = `${d.sector} · tickers ${d.tickers} · CNPJ ${d.cnpj}`;
   const chips = $("#chips"); chips.replaceChildren();
-  if (n.excluded) chips.append(el("span", { className: "chip warn", textContent: `Not ranked today: ${n.excluded}` }));
+  if (fin) { chips.append(...finChips(fin, finMeta)); finRetitle(fin, finMeta); }
+  else if (n.excluded) chips.append(el("span", { className: "chip warn", textContent: `Not ranked today: ${n.excluded}` }));
   else chips.append(el("span", { className: "chip", textContent: `Rank #${n.rank} of today's eligible` }));
-  chips.append(el("span", { className: "chip warn", textContent: `EV/EBIT ${f1(num(n.ev_ebit))} · ROE ${pct(num(n.roe))} · trades ${brl(num(n.liquidity))}/day` }));
+  if (!fin) chips.append(el("span", { className: "chip warn", textContent: `EV/EBIT ${f1(num(n.ev_ebit))} · ROE ${pct(num(n.roe))} · trades ${brl(num(n.liquidity))}/day` }));
 
   // Snapshot cards: today's figures, each over its own history.
   const hist = (k) => [...H[k].map(num), num(n[k])];
@@ -111,10 +114,13 @@ function render(d, sp) {
     spark: hist("dividend_yield"), ref: medDY }));
   cards.push(card({ k: "Market cap", sub: "all share classes", value: brl(num(n.market_cap)), spark: hist("market_cap"),
     foot: [`statements ${n.fundamentals_date || "–"}`] }));
-  $("#cards").replaceChildren(...cards);
+  $("#cards").replaceChildren(...(fin ? finCards(d, fin, sp, card) : cards));
 
-  $("#whyNote").textContent = `Percentiles among today's eligible companies (0–100). Statements up to ${n.fundamentals_date || "–"}, filed with CVM ${n.filed || "–"}` + (n.growth_base ? `; growth measured from ${n.growth_base}.` : ".");
-  $("#why").replaceChildren(breakdown(n, { meta: false, among: "" }));
+  if (fin) $("#why").replaceChildren(finBreakdown(fin, { among: "" }));
+  else {
+    $("#whyNote").textContent = `Percentiles among today's eligible companies (0–100). Statements up to ${n.fundamentals_date || "–"}, filed with CVM ${n.filed || "–"}` + (n.growth_base ? `; growth measured from ${n.growth_base}.` : ".");
+    $("#why").replaceChildren(breakdown(n, { meta: false, among: "" }));
+  }
 
   // Total return vs BOVA11, both rebased to 100 at the first common month.
   const P = d.price, i0 = Math.max(0, P.adj.findIndex((v, i) => Number.isFinite(v) && Number.isFinite(P.bova[i])));
@@ -126,6 +132,8 @@ function render(d, sp) {
       { values: comp.slice(i0), color: "--s1", label: d.ticker, width: 2.5, endLabel: (v) => `${d.ticker} R$${v.toFixed(0)}` },
       { values: bova.slice(i0), color: "--s2", label: "BOVA11", endLabel: (v) => `BOVA11 R$${v.toFixed(0)}` }],
       { log: true, h: 280, labels: true, legend: true, fmt: (v) => (Number.isFinite(v) ? `R$${v.toFixed(0)}` : "–"), aria: `${d.ticker} total return against BOVA11` });
+    barChart($("#dividends"), d.dividends.years, d.dividends.per_share.map(num), (v) => `R$ ${v.toFixed(2)}`, { aria: "Dividends per share by year" });
+    if (fin) { finDraw(d, fin); return; }   // score, valuation and business: the financials screen's own
 
     const fmtS = (v) => (Number.isFinite(v) ? v.toFixed(0) : "–");
     lineChart($("#score"), H.dates, [{ values: H.score.map(num), color: "--s1", label: "score", width: 2.5 }],
@@ -160,14 +168,14 @@ function render(d, sp) {
       lineChart(cell.lastChild, dates, [{ values, color: "--s1", label }], { h: 140, fmt, ref: label.startsWith("Net") ? 0 : undefined, refLabel: "zero",
         ml: fmt === brl ? 70 : 46 });
     }
-    barChart($("#dividends"), d.dividends.years, d.dividends.per_share.map(num), (v) => `R$ ${v.toFixed(2)}`, { aria: "Dividends per share by year" });
   };
   draw();
   REDRAW.add(draw);
   onResize($("main"), draw);
 
   const bt = $("#backtest"); bt.replaceChildren();
-  if (!d.backtest.length) bt.append(el("p", { className: "muted", textContent: "Never in the yearly top 10 since 2012." }));
+  if (fin) bt.append(finBacktestTable(d));
+  else if (!d.backtest.length) bt.append(el("p", { className: "muted", textContent: "Never in the yearly top 10 since 2012." }));
   else {
     const t = el("table");
     t.append(el("tr", {}, ...["Bought", "Rank", "Return over the year"].map((h, i) => el("th", { className: i ? "" : "l", textContent: h }))));
@@ -180,13 +188,14 @@ function render(d, sp) {
   shell(null, null);
   const t = (new URLSearchParams(location.search).get("t") || "").toUpperCase();
   if (!/^[A-Z0-9]{4,6}$/.test(t)) { $("#name").textContent = "Pick a company from the screener"; return; }
-  const [doc, latest, status, sparks] = await Promise.all([getJSON(`companies/${t}.json`), get("screen/latest.csv"), getJSON("status.json"), getJSON("screen/sparks.json")]);
+  const [doc, latest, status, sparks, finRows, finMeta] = await Promise.all([getJSON(`companies/${t}.json`), get("screen/latest.csv"), getJSON("status.json"),
+    getJSON("screen/sparks.json"), get("screen/financials.csv"), getJSON("screen/financials.json")]);
   setStatus(status);
   if (!doc) { $("#name").textContent = `${t}: no page (only companies in today's screen have one)`; return; }
   // History is rebuilt monthly; today's numbers come from the daily screen.
   const row = (latest || []).find((x) => x.ticker === t);
   if (row) doc.now = row;
-  render(doc, sparks?.tickers?.[t]);
+  render(doc, sparks?.tickers?.[t], (finRows || []).find((x) => x.ticker === t), finMeta);
 })();
 </script>
 </body>
