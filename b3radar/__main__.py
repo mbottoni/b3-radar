@@ -85,6 +85,16 @@ def write_status(data_dir: Path, df: pd.DataFrame) -> None:
     (data_dir / "status.json").write_text(json.dumps(status, indent=2) + "\n")
 
 
+def update_macro(data_dir: Path) -> None:
+    """CDI and IPCA from the Banco Central. They are context for the screen, so a failure keeps the stored
+    series (a day behind) instead of ending the run that commits the quotes and the screen."""
+    for name, update in (("CDI", history.update_cdi), ("IPCA", history.update_ipca)):
+        try:
+            update(data_dir)
+        except RuntimeError as e:
+            print(f"[macro] {name} not updated, the stored series is kept: {e}", file=sys.stderr)
+
+
 def cmd_daily(a) -> int:
     today = _today(a)
     if cotahist.last_date(a.data) is None:
@@ -92,14 +102,16 @@ def cmd_daily(a) -> int:
     cotahist.update_daily(a.data, a.cache, today)
     refresh_cvm(a.data, a.cache, today.year)
     print(f"[events] {events.refresh(candidate_issuers(a.data), a.data)}", file=sys.stderr)
-    history.update_cdi(a.data)
-    history.update_ipca(a.data)
+    update_macro(a.data)
     refresh_inferred(a.data)
     df = screen.build(a.data)
     screen.save(df, a.data)
     write_status(a.data, df)
     market.today(df, a.data)
     sparks.build(df, a.data)
+    # The track record marked to this close every session; only the weekly job adds lists.
+    curve, cohorts = picks.performance(a.data, df["asof"].iloc[0])
+    picks.save_performance(curve, cohorts, a.data)
     print(f"screen as of {df['asof'].iloc[0]}: {len(df)} companies, {(df.excluded == '').sum()} eligible", file=sys.stderr)
     return 0
 

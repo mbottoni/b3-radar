@@ -47,6 +47,13 @@ def dividend_history(trading_name: str, pause: float = 0.25) -> list[dict]:
         time.sleep(pause)
 
 
+def trading_names(name: str) -> list[str]:
+    """The names to ask B3 for: as on file, and with "S/A" written "SA", which is the only spelling B3's
+    dividend history matches ("AMBEV S/A" gives nothing, "AMBEV SA" 2014 on)."""
+    name = name.strip()
+    return [name] + ([name.replace("S/A", "SA")] if "S/A" in name else [])
+
+
 def class_isins(prices: pd.DataFrame) -> dict[tuple[str, str], str]:
     """(issuer, kind) -> ISIN, from the quotes (latest ISIN per ticker)."""
     last = prices.sort_values("date").groupby("ticker").tail(1)
@@ -62,7 +69,7 @@ def backfill_dividends(issuers: dict[str, str], prices: pd.DataFrame, data_dir: 
     rows, unmapped = [], 0
     for i, (code, name) in enumerate(sorted(issuers.items())):
         try:
-            hist = dividend_history(name.strip(), pause)
+            hist = [h for n in trading_names(name) for h in dividend_history(n, pause)]
         except RuntimeError as e:
             print(f"[history] {code}: {e}", file=sys.stderr)
             continue

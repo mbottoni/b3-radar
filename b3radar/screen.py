@@ -21,6 +21,8 @@ LIQUIDITY_WINDOW = 63        # sessions (~3 months)
 MOMENTUM_LONG, MOMENTUM_SKIP = 252, 21   # 12-month return, skipping the last month
 HISTORY_MIN = 252            # sessions of quotes needed (excludes recent IPOs)
 STALE_SESSIONS = 5           # a ticker must have traded in the last N sessions
+RENAME_GAP_DAYS = 10         # a ticker that stops, and one of the same company and class that starts within this...
+RENAME_JUMP = 0.25           # ...with the adjusted price moving less than this across the switch, is one share renamed
 FINANCIAL = ("Bancos", "Intermediação Financeira", "Seguradoras", "Arrendamento Mercantil",
              "Securitização", "Crédito Imobiliário")
 OPERATING = "FASE OPERACIONAL"
@@ -232,7 +234,62 @@ def ticker_map(prices: pd.DataFrame, tickers: pd.DataFrame, companies: pd.DataFr
     return out
 
 
+def renames(px: pd.DataFrame, tmap: dict, cash: pd.DataFrame, stock: pd.DataFrame) -> dict:
+    """old ticker -> the ticker the same share trades under now (ELET3 -> AXIA3, Nov 2025; SSBR3 -> ALSO3 -> ALOS3).
+
+    B3 gives a renamed company a new ticker and usually a new ISIN, so on its own the new ticker looks like a
+    new listing: under a year of quotes, no momentum, no history. A pair counts as a rename when both tickers
+    belong to the same CNPJ and share class (the digits), have different roots, the old one stops and the new
+    one starts within RENAME_GAP_DAYS, and the adjusted price (events under either ISIN) moves less than
+    RENAME_JUMP across the switch, which tells a rename (or a rename with a split on file) from a merger
+    priced at an exchange ratio."""
+    span = px.groupby("ticker").date.agg(["min", "max"])
+    span["cnpj"] = span.index.map(tmap)
+    span = span.dropna(subset=["cnpj"])
+    span["cls"] = span.index.str[4:]
+    step = {}
+    for _, g in span.groupby(["cnpj", "cls"]):
+        if len(g) < 2:
+            continue
+        g = g.sort_values(["min", "max"], kind="stable")
+        for a, b in zip(g.index[:-1], g.index[1:]):
+            gap = (pd.Timestamp(g.at[b, "min"]) - pd.Timestamp(g.at[a, "max"])).days
+            if not (0 < gap <= RENAME_GAP_DAYS) or a[:4] == b[:4]:
+                continue
+            both = px[px.ticker.isin([a, b])]
+            adj = events.adjusted_close(both[["date", "close"]], set(both["isin"]), cash, stock)
+            x, y = adj.get(g.at[a, "max"]), adj.get(g.at[b, "min"])
+            if x and y and abs(y / x - 1) < RENAME_JUMP:
+                step[a] = b
+    out = {}
+    for a, b in step.items():
+        seen = {a}
+        while b in step and b not in seen:   # a chain of renames ends at the ticker trading now
+            seen.add(b)
+            b = step[b]
+        out[a] = b
+    return out
+
+
+def chain_renames(px: pd.DataFrame, data_dir: Path, cash: pd.DataFrame | None = None,
+                  stock: pd.DataFrame | None = None) -> tuple[pd.DataFrame, dict]:
+    """``px`` with each renamed ticker's rows under the ticker it trades under now, and the map used."""
+    tickers, companies = _load(data_dir, "tickers.csv"), _load(data_dir, "companies.csv")
+    if tickers.empty or companies.empty:   # no CVM tables to tell whose ticker is whose
+        return px, {}
+    if cash is None or stock is None:
+        cash, stock = events.load(data_dir)
+    tmap = ticker_map(px, tickers, companies, _issuers(data_dir))
+    ren = renames(px, tmap, cash, stock)
+    return (px.assign(ticker=px.ticker.replace(ren)) if ren else px), ren
+
+
 # -------------------------------------------------------------------- build
+
+def _issuers(data_dir: Path) -> pd.DataFrame:
+    p = data_dir / "events" / "issuers.csv"
+    return pd.read_csv(p, dtype=str, keep_default_na=False) if p.exists() else pd.DataFrame()
+
 
 def _load(data_dir: Path, name: str) -> pd.DataFrame:
     p = data_dir / "cvm" / name
@@ -263,9 +320,12 @@ def load_inputs(data_dir: Path, since: str | None = None) -> Inputs:
     cap_path = data_dir / "cvm" / "capital.csv"
     capital = pd.read_csv(cap_path, dtype={"cnpj": str, "date": str, "form": str}) if cap_path.exists() \
         else pd.DataFrame(columns=["cnpj", "date", "shares_on", "shares_pn"])
-    issuers_path = data_dir / "events" / "issuers.csv"
-    issuers = pd.read_csv(issuers_path, dtype=str, keep_default_na=False) if issuers_path.exists() else pd.DataFrame()
+    issuers = _issuers(data_dir)
     cash, stock = events.load(data_dir)
+    tickers = _load(data_dir, "tickers.csv")
+    ren = renames(px, ticker_map(px, tickers, companies, issuers), cash, stock)
+    if ren:   # a renamed share keeps its history under the ticker it trades under now
+        px = px.assign(ticker=px.ticker.replace(ren))
     b3_shares = {r.issuer: (float(r.shares_on or "nan"), float(r.shares_pn or "nan"))
                  for r in issuers.itertuples()} if len(issuers) else {}
     isins = {t: set(g) for t, g in px.groupby("ticker")["isin"]}
@@ -273,7 +333,7 @@ def load_inputs(data_dir: Path, since: str | None = None) -> Inputs:
     fre = pd.read_csv(fre_path, dtype={"cnpj": str, "date": str, "meeting": str, "form": str}) \
         .sort_values(["cnpj", "date"], kind="stable").reset_index(drop=True) \
         if fre_path.exists() else pd.DataFrame(columns=["cnpj", "date", "shares_on", "shares_pn"])
-    tmap = ticker_map(px, _load(data_dir, "tickers.csv"), companies, issuers)
+    tmap = ticker_map(px, tickers, companies, issuers)
     cnpj_isins = {}
     for t, c in tmap.items():
         cnpj_isins.setdefault(c, set()).update(isins.get(t, ()))

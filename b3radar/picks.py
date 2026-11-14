@@ -109,6 +109,8 @@ def performance(data_dir: Path, asof: str | None = None) -> tuple[pd.DataFrame, 
     px = cotahist.load(data_dir, since=log.date.min()[:7] + "-01")
     px = px[px.date <= asof]
     cash, stock = events.load(data_dir)
+    px, ren = screen.chain_renames(px, data_dir, cash, stock)   # a listed ticker renamed later keeps its prices
+    log = log.assign(ticker=log.ticker.replace(ren))
     adj = _adjusted(px[px.ticker.isin(set(log.ticker) | {BENCHMARK})], cash, stock)
 
     curve, cohorts = [], []

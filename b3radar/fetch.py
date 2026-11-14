@@ -32,13 +32,14 @@ def _req(url: str, method: str = "GET", headers: dict | None = None) -> urllib.r
 
 
 def get_json(url: str, *, attempts: int = 4, timeout: float = 30, backoff: float = 2.0):
-    """GET a small JSON document with retries. Returns None on 404."""
+    """GET a small JSON document with retries. Returns None on 404, and on 304 (Not Modified), which the Banco
+    Central's SGS sometimes answers to a plain request: there is nothing new to read either way."""
     for attempt in range(1, attempts + 1):
         try:
             with urllib.request.urlopen(_req(url), timeout=timeout) as r:
                 return json.loads(r.read().decode("utf-8"))
         except urllib.error.HTTPError as e:
-            if e.code == 404:
+            if e.code in (304, 404):
                 return None
             err: Exception = e
         except (urllib.error.URLError, http.client.HTTPException, OSError, json.JSONDecodeError) as e:
