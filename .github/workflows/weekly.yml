@@ -1,11 +1,14 @@
 name: weekly
 
-# Monday 14:00 UTC (11:00 in Brasília, which has no daylight saving): the
+# Monday 14:17 UTC (11:17 in Brasília, which has no daylight saving): the
 # shortlist uses Friday's close, prepared by Saturday's daily run. GitHub
-# starts scheduled runs late under load, sometimes by hours.
+# starts scheduled runs hours late (4 to 10.5 in November 2026, most on
+# Mondays; see the README); one that starts after about 21:00 Brasília, when
+# B3 posts Monday's session, uses Monday's close. Minute 17 keeps off the top
+# of the hour, GitHub's busiest. A manual run (Run workflow) starts at once.
 on:
   schedule:
-    - cron: "0 14 * * 1"
+    - cron: "17 14 * * 1"
   workflow_dispatch:
 
 permissions:

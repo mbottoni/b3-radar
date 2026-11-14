@@ -6,11 +6,12 @@ A daily screen of Brazilian stocks built only from official open data (B3,
 CVM, Banco Central), a shortlist emailed every Monday, and a public track
 record of every shortlist against BOVA11, losers included.
 
-- **Daily** (Tue–Sat, 07:00 Brasília): new quotes, filings and corporate events
-  are committed to `data/`; the screen is rebuilt and the track record
-  marked to the close.
-- **Weekly** (Mon, 11:00 Brasília): the top 10 is logged, the track record
-  updated, and the email sent.
+- **Daily** (Tue–Sat, scheduled for 07:17 Brasília, in practice early
+  afternoon; see [When the jobs run](#when-the-jobs-run)): new quotes,
+  filings and corporate events are committed to `data/`; the screen is
+  rebuilt and the track record marked to the close.
+- **Weekly** (Mon, scheduled for 11:17 Brasília, likely evening): the top 10
+  is logged, the track record updated, and the email sent.
 - **The page** has four tabs: **Overview** (BOVA11, the CDI, inflation and
   the typical stock's earnings yield, a gauge of how cheap the market is
   against its own history and against cash, and this week's shortlist),
@@ -30,6 +31,23 @@ record of every shortlist against BOVA11, losers included.
   its years in the backtest.
 - **[METHODOLOGY.md](METHODOLOGY.md)**: every rule, and every problem found in
   the data with how it is handled.
+
+## When the jobs run
+
+GitHub starts scheduled workflows when it has capacity, not at the time in
+the cron, and may drop a run under heavy load. In November 2026 every
+scheduled run, here and in the sibling project political-eye, started 4 to
+10.5 hours late (median 7.6 hours), least on weekends and most on Mondays.
+
+| job | scheduled (Brasília) | what happened (Nov 7–14, 2026) |
+|---|---|---|
+| daily | Tue–Sat 07:17 | started between 13:10 and 14:58 (6h10 to 7h58 late), while the cron said 07:00; it still reads the previous session |
+| weekly | Mon 11:17 | no scheduled run yet. Late by as much as the Mondays measured (8 to 10.5 hours), the email would arrive between about 19:15 and 22:00. B3 posts each session's files at about 20:30–21:00, so a run after that would make the list from Monday's close instead of Friday's |
+| backtest | 2nd of the month, 09:17 | first scheduled run on Dec 2 |
+
+To get the email at a set time, start it by hand (Actions → weekly → Run
+workflow): manual runs start within seconds. On-time options are discussed
+in [#30](https://github.com/mbottoni/b3-radar/issues/30).
 
 ## Email setup
 
