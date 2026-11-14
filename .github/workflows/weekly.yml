@@ -20,9 +20,9 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 45
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: astral-sh/setup-uv@v5
+      - uses: astral-sh/setup-uv@v10.3.3
         with:
           enable-cache: true
 
@@ -41,7 +41,7 @@ jobs:
         run: uv run python -m b3radar weekly
 
       - name: Keep the rendered email
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: email
           path: out/
