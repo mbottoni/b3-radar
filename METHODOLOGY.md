@@ -72,6 +72,14 @@ share (divided by B3's quotation factor).
   full history (since the 1990s) comes from its `GetListedCashDividends`
   service, per share class, and every later fetch is merged into
   `data/events/`.
+- **B3's dividend history matches the company's trading name exactly**, and
+  answers nothing for a name written with "S/A" ("AMBEV S/A": none; "AMBEV
+  SA": 2014 on). Such names are also asked for with "SA"; before 2026-11-14,
+  13 companies (Ambev, Klabin, Cury, Light, TIM among them) had only the
+  last year of dividends on file. B3's history for **Fras-le stops in
+  2002** under every spelling, and the daily events feed starts in late
+  2025, so FRAS3's dividends for 2003–2024 are missing: its dividend yield
+  and total return in those years are understated.
 - **B3 often issues a new ISIN after a reverse split** and files the event
   under the old one (Hapvida 2025, Azevedo & Travassos 2026). Events are
   matched against every ISIN a ticker has traded under, and a payment on

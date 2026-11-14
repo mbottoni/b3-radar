@@ -246,3 +246,9 @@ def test_a_renamed_ticker_keeps_its_history_but_a_merger_does_not():
     empty_stock = pd.DataFrame(columns=["isin", "mult", "last_date_prior", "label"])
     ren = screen.renames(px, tmap, empty_cash, empty_stock)
     assert ren == {"OLDX3": "NEWX3", "CHNA3": "CHNC3", "CHNB3": "CHNC3"}   # not the merger, not another company
+
+
+def test_a_trading_name_with_s_barra_a_is_also_asked_as_sa():
+    from b3radar import history
+    assert history.trading_names("AMBEV S/A ") == ["AMBEV S/A", "AMBEV SA"]
+    assert history.trading_names("PETROBRAS") == ["PETROBRAS"]
