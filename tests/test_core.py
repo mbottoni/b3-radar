@@ -252,3 +252,13 @@ def test_a_trading_name_with_s_barra_a_is_also_asked_as_sa():
     from b3radar import history
     assert history.trading_names("AMBEV S/A ") == ["AMBEV S/A", "AMBEV SA"]
     assert history.trading_names("PETROBRAS") == ["PETROBRAS"]
+
+
+def test_an_empty_year_of_filings_leaves_the_stored_file_alone(tmp_path):
+    from b3radar import cvm
+    cols = ["cnpj", "cd_cvm", "kind", "dt_refer", "dt_receb", "basis"]
+    one = pd.DataFrame([["1", "10", "DFP", "2025-12-31", "2026-03-01", "con"]], columns=cols)
+    cvm.store_filings(one, tmp_path)
+    cvm.store_filings(pd.DataFrame(columns=cols), tmp_path)        # this year's file, nothing in it yet
+    back = pd.read_csv(tmp_path / "cvm" / "filings.csv", dtype=str)
+    assert back.cnpj.tolist() == ["1"]
