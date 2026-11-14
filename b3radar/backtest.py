@@ -46,6 +46,12 @@ BENCHMARKS = ("eligible", "bova11", "cdi")
 QUINTILE_FACTORS = {"score": "score", "value": "value_score", "quality": "quality_score",
                     "momentum": "momentum_score", "income": "income_score", "growth": "growth_score"}
 QUINTILE_MIN = 25          # scored names needed to split a date into fifths (growth: none in 2012)
+# How often the score's top 10 is set back to the current list (months between rebalances, from May).
+# The live record holds each weekly list one week; "weekly" (the last session of each week, as the
+# weekly job uses) needs a screen per week, about 40 minutes, so it runs only on request (--weekly).
+CADENCES = {"yearly": 12, "quarterly": 3, "monthly": 1}
+CADENCE_SERIES = {"yearly": "composite", "quarterly": "composite_q", "monthly": "composite_m", "weekly": "composite_w"}
+COST_PER_SIDE = 0.001      # brokerage, exchange fees and half the spread, per side of every trade (--cost, in %)
 
 
 def rebalance_dates(sessions: np.ndarray, first_year: int = FIRST_YEAR) -> list[str]:
@@ -78,6 +84,26 @@ def pick(snap: pd.DataFrame, col: str, ascending: bool, n: int = TOP_N, cap: int
     return ok.head(n)
 
 
+def cadence_dates(sessions: np.ndarray, months: int, first_year: int = FIRST_YEAR) -> list[str]:
+    """First session of every ``months``-th month, counted from May of ``first_year``."""
+    out = []
+    for y in range(first_year, int(sessions[-1][:4]) + 1):
+        for m in range(1, 13):
+            if (y == first_year and m < REBALANCE_MONTH) or (m - REBALANCE_MONTH) % months:
+                continue
+            later = sessions[sessions >= f"{y}-{m:02d}-01"]
+            if len(later):
+                out.append(later[0])
+    return sorted(set(out))
+
+
+def week_ends(sessions: np.ndarray, first: str) -> list[str]:
+    """``first``, then the last session of every later week (the session the weekly list uses)."""
+    s = pd.Series(sessions[sessions > first])
+    ends = s.groupby(pd.to_datetime(s).dt.strftime("%G-%V")).max()
+    return [first] + sorted(ends)
+
+
 class Prices:
     """Adjusted closes, looked up as of any date (a ticker that stopped
     trading keeps its last price)."""
@@ -104,6 +130,44 @@ class Prices:
         return float(np.mean(r)) - 1 if r else np.nan
 
 
+def follow(lists: dict[str, list[str]], dates: list[str], end: str, checkpoints: list[str], prices: Prices,
+           cost: float = COST_PER_SIDE) -> tuple[pd.DataFrame, pd.DataFrame]:
+    """(values, trades) of a portfolio bought in equal weights on ``dates[0]``
+    and set back to equal weights on each later date's list.
+
+    ``values``: gross and net of ``cost`` per side of every trade, at every
+    checkpoint; the value on a rebalance date is before that day's trades.
+    ``trades``: per rebalance, the share of the portfolio bought and sold.
+    Between rebalances the holdings drift with their returns; a rebalance
+    trades the gap between those weights and equal weights on the new list
+    (selling a third of the portfolio to buy new names is a turnover of a
+    third). Names with no price at either end are left out, as ``Prices.ret``
+    does."""
+    gross = net = 100.0
+    held: dict[str, float] = {}
+    rows, trades = [{"date": dates[0], "gross": gross, "net": net}], []
+    for i, d0 in enumerate(dates):
+        d1 = dates[i + 1] if i + 1 < len(dates) else end
+        names = lists[d0]
+        target = {t: 1 / len(names) for t in names} if names else {}
+        bought = sum(max(target.get(t, 0.0) - held.get(t, 0.0), 0.0) for t in set(target) | set(held))
+        sold = sum(max(held.get(t, 0.0) - target.get(t, 0.0), 0.0) for t in set(target) | set(held))
+        trades.append({"date": d0, "bought": bought, "sold": sold})
+        net *= 1 - cost * (bought + sold)
+        g0, n0 = gross, net
+        for c in (c for c in checkpoints if d0 < c <= d1):
+            x = prices.ret(names, d0, c)
+            x = x if np.isfinite(x) else 0.0
+            rows.append({"date": c, "gross": g0 * (1 + x), "net": n0 * (1 + x)})
+        ratio = {t: prices.at(t, d1) / prices.at(t, d0) for t in names}
+        ratio = {t: r for t, r in ratio.items() if np.isfinite(r) and r > 0}
+        x = float(np.mean(list(ratio.values()))) - 1 if ratio else 0.0
+        gross, net = g0 * (1 + x), n0 * (1 + x)
+        total = sum(ratio.values())
+        held = {t: r / total for t, r in ratio.items()} if total else {}
+    return pd.DataFrame(rows).drop_duplicates("date", keep="last"), pd.DataFrame(trades)
+
+
 def cdi_index(data_dir: Path) -> pd.Series:
     c = pd.read_csv(data_dir / "macro" / "cdi.csv", dtype={"date": str})
     return (1 + c.set_index("date").rate / 100).cumprod()
@@ -114,7 +178,8 @@ def _cdi_ret(idx: pd.Series, d0: str, d1: str) -> float:
     return float(b.iloc[-1] / a.iloc[-1] - 1) if len(a) and len(b) else np.nan
 
 
-def run(data_dir: Path, first_year: int = FIRST_YEAR, log=print) -> dict[str, pd.DataFrame]:
+def run(data_dir: Path, first_year: int = FIRST_YEAR, log=print, cost: float = COST_PER_SIDE,
+        cadences: tuple[str, ...] = tuple(CADENCES)) -> dict[str, pd.DataFrame]:
     inp = screen.load_inputs(data_dir)
     sessions = np.sort(inp.px.date.unique())
     end = sessions[-1]
@@ -174,6 +239,42 @@ def run(data_dir: Path, first_year: int = FIRST_YEAR, log=print) -> dict[str, pd
     curve = pd.DataFrame(curve).drop_duplicates(["date", "series"], keep="last")
     periods = pd.DataFrame(periods)
 
+    # The score's top 10 rebalanced yearly, quarterly, monthly (or weekly), gross and net of costs.
+    cad_dates = {c: week_ends(sessions, dates[0]) if c == "weekly" else cadence_dates(sessions, CADENCES[c], first_year)
+                 for c in cadences}
+    cad_dates = {c: [d for d in ds if d < end or d == dates[0]] for c, ds in cad_dates.items()}
+    tops = {d: lists[d]["composite"] for d in dates}
+    todo = sorted(set().union(*cad_dates.values()) - set(tops)) if cad_dates else []
+    for j, d in enumerate(todo):
+        tops[d] = list(pick(screen.compute(inp, d, pit=True), *STRATEGIES["composite"]).ticker)
+        if j % 24 == 0 or j == len(todo) - 1:
+            log(f"[backtest] rebalance lists: {d} ({j + 1}/{len(todo)})")
+    years = (pd.Timestamp(end) - pd.Timestamp(dates[0])).days / 365.25
+    cad_rows, extra_curve, extra_periods = [], [], []
+    for c, ds in cad_dates.items():
+        pts = sorted(set(checkpoints) | set(ds))
+        vals, trades = follow(tops, ds, end, pts, prices, cost)
+        vals = vals.set_index("date")
+        name = CADENCE_SERIES[c]
+        for col, k in (("gross", name), ("net", f"{name}_net")):
+            if k == "composite":          # the yearly gross series is the backtest's own
+                continue
+            v = vals[col]
+            extra_curve += [{"date": d, "series": k, "value": float(x)} for d, x in v[v.index.isin(checkpoints)].items()]
+            for i, d0 in enumerate(dates):
+                d1 = dates[i + 1] if i + 1 < len(dates) else end
+                extra_periods.append({"start": d0, "end": d1, "series": k, "return": float(v[d1] / v[d0] - 1)})
+        g, n = vals.gross.iloc[-1] / 100, vals.net.iloc[-1] / 100
+        cad_rows.append({"cadence": c, "series": name, "rebalances": len(ds), "cost_per_side": cost,
+                         "turnover_per_rebalance": float(trades.sold.iloc[1:].mean()) if len(trades) > 1 else 0.0,
+                         "turnover_per_year": float(trades.sold.sum() / years),
+                         "gross_cagr": g ** (1 / years) - 1, "net_cagr": n ** (1 / years) - 1})
+    cadence = pd.DataFrame(cad_rows)
+    if len(cadence):
+        cadence["cost_per_year"] = cadence.gross_cagr - cadence.net_cagr
+    curve = pd.concat([curve, pd.DataFrame(extra_curve)], ignore_index=True)
+    periods = pd.concat([periods, pd.DataFrame(extra_periods)], ignore_index=True)
+
     # Ticker returns within each holding period (for the holdings table).
     hold = pd.DataFrame(holdings)
     nxt = {d: (dates[i + 1] if i + 1 < len(dates) else end) for i, d in enumerate(dates)}
@@ -216,9 +317,10 @@ def run(data_dir: Path, first_year: int = FIRST_YEAR, log=print) -> dict[str, pd
                        for d in qdates[f])) for f in QUINTILE_FACTORS}
     quintiles["top_beat_bottom"] = quintiles.factor.map(lambda f: f"{wins[f]}/{len(qdates[f])}")
     meta = {"first": dates[0], "last": end, "rebalances": len(dates), "top_n": TOP_N, "rules": screen.rules_hash(),
-            "rebalance": f"first session of month {REBALANCE_MONTH}", "costs": "none", "sector_cap": SECTOR_CAP}
+            "rebalance": f"first session of month {REBALANCE_MONTH}", "costs": "none", "sector_cap": SECTOR_CAP,
+            "cost_per_side": cost, "cadences": list(cad_dates)}
     return {"curve": curve, "periods": periods, "holdings": hold, "cohorts": cohorts, "summary": summary, "meta": meta,
-            "quintiles": quintiles, "quintile_periods": qper}
+            "quintiles": quintiles, "quintile_periods": qper, "cadence": cadence}
 
 
 def _summary(curve: pd.DataFrame, periods: pd.DataFrame, start: str, end: str) -> pd.DataFrame:
@@ -246,6 +348,6 @@ def _summary(curve: pd.DataFrame, periods: pd.DataFrame, start: str, end: str) -
 def save(res: dict, data_dir: Path) -> None:
     out = data_dir / "backtest"
     out.mkdir(parents=True, exist_ok=True)
-    for name in ("curve", "periods", "holdings", "cohorts", "summary", "quintiles", "quintile_periods"):
+    for name in ("curve", "periods", "holdings", "cohorts", "summary", "quintiles", "quintile_periods", "cadence"):
         res[name].to_csv(out / f"{name}.csv", index=False, lineterminator="\n", float_format="%.6g")
     (out / "meta.json").write_text(json.dumps(res["meta"], indent=2) + "\n")

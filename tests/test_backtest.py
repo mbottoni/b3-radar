@@ -56,6 +56,37 @@ def test_buy_and_hold_return_includes_dividends_and_keeps_dead_stocks():
     assert np.isnan(p.ret(["NOPE3"], "2020-05-04", "2021-05-03"))
 
 
+def test_cadences_count_months_from_may_and_weeks_end_on_their_last_session():
+    sessions = np.array(["2012-05-02", "2012-05-04", "2012-06-01", "2012-07-02", "2012-08-01", "2012-11-01",
+                         "2013-02-01", "2013-05-02"])
+    assert backtest.cadence_dates(sessions, 3, 2012) == ["2012-05-02", "2012-08-01", "2012-11-01", "2013-02-01", "2013-05-02"]
+    assert backtest.cadence_dates(sessions, 12, 2012) == backtest.rebalance_dates(sessions, 2012)
+    week = np.array(["2026-11-03", "2026-11-04", "2026-11-06", "2026-11-09", "2026-11-13", "2026-11-16"])
+    assert backtest.week_ends(week, "2026-11-04") == ["2026-11-04", "2026-11-06", "2026-11-13", "2026-11-16"]
+
+
+def test_rebalancing_trades_the_drift_and_costs_both_sides():
+    px = pd.DataFrame({"date": ["2020-05-04", "2020-06-01", "2020-07-01"] * 3,
+                       "ticker": ["AAA3"] * 3 + ["BBB3"] * 3 + ["CCC3"] * 3, "isin": ["A"] * 3 + ["B"] * 3 + ["C"] * 3,
+                       "close": [10, 20, 20, 10, 10, 10, 10, 10, 15]})
+    p = backtest.Prices(px, pd.DataFrame(columns=["isin", "rate", "last_date_prior", "label"]),
+                        pd.DataFrame(columns=["isin", "mult", "last_date_prior", "label"]))
+    lists = {"2020-05-04": ["AAA3", "BBB3"], "2020-06-01": ["AAA3", "CCC3"]}
+    dates, end = list(lists), "2020-07-01"
+    vals, trades = backtest.follow(lists, dates, end, ["2020-06-01", end], p, cost=0.01)
+    v = vals.set_index("date")
+    # AAA3 doubled: the holdings drift to 2/3 AAA3, 1/3 BBB3; equal weights on the new list sell
+    # 1/6 of AAA3 and all of BBB3 (1/3 + 1/6 = 1/2 of the portfolio) to buy half in CCC3.
+    assert trades.sold.tolist() == pytest.approx([0.0, 0.5]) and trades.bought.tolist() == pytest.approx([1.0, 0.5])
+    assert v.gross["2020-06-01"] == pytest.approx(150.0) and v.gross[end] == pytest.approx(150 * 1.25)
+    assert v.net["2020-06-01"] == pytest.approx(100 * 0.99 * 1.5)                  # buying it all: 1% once
+    assert v.net[end] == pytest.approx(100 * 0.99 * 1.5 * (1 - 0.01 * 1.0) * 1.25)  # half sold + half bought: 1%
+    # Without costs it is the plain chain of equal-weight returns.
+    same, _ = backtest.follow(lists, dates, end, [end], p, cost=0.0)
+    assert same.set_index("date").net[end] == pytest.approx(100 * (1 + p.ret(lists[dates[0]], dates[0], "2020-06-01"))
+                                                            * (1 + p.ret(lists[dates[1]], "2020-06-01", end)))
+
+
 def test_cdi_return_compounds_daily_rates():
     idx = (1 + pd.Series([0.05, 0.05, 0.05], index=["2020-01-02", "2020-01-03", "2020-01-06"]) / 100).cumprod()
     assert backtest._cdi_ret(idx, "2020-01-02", "2020-01-06") == pytest.approx(1.0005 ** 2 - 1)

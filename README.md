@@ -19,7 +19,8 @@ record of every shortlist against BOVA11, losers included.
 - **Backtest** (monthly): the yearly list since 2012, bought each May and
   held, point in time, against BOVA11, the CDI and all eligible stocks; also
   each list held untouched for 1, 3 and 5 years, the list capped at two
-  names per sector group, and the score's bottom 10 and bottom fifth.
+  names per sector group, the score's bottom 10 and bottom fifth, and the
+  top 10 rebalanced quarterly and monthly, gross and net of trading costs.
 - **The market against cash** (monthly): the typical stock's earnings yield
   at every month end since 2011 against the CDI, before and after
   inflation, and what stocks paid over cash in the three years that
@@ -50,7 +51,7 @@ rendered email is kept as a workflow artifact.
 uv sync
 uv run python -m b3radar daily     # fetch and rebuild data/
 uv run python -m b3radar weekly    # list, track record, email (dry run without the env vars)
-uv run python -m b3radar backtest  # yearly buy-and-hold backtest from data/
+uv run python -m b3radar backtest  # backtest from data/ (--cost 0.10: % per side; --weekly: slow)
 uv run pytest -q
 ```
 

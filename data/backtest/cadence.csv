@@ -1,0 +1,4 @@
+cadence,series,rebalances,cost_per_side,turnover_per_rebalance,turnover_per_year,gross_cagr,net_cagr,cost_per_year
+yearly,composite,15,0.001,0.698128,0.672547,0.0904154,0.0888737,0.00154175
+quarterly,composite_q,59,0.001,0.388615,1.55098,0.0772584,0.0738466,0.00341179
+monthly,composite_m,175,0.001,0.253901,3.04,0.09269,0.0859898,0.00670017

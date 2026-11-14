@@ -104,6 +104,14 @@
       <div class="scroll" style="margin-top:12px"><table id="btSummary"></table></div>
     </section>
 
+    <section class="card" id="cadenceCard">
+      <p class="eyebrow">How often to rebalance, and what trading costs</p>
+      <p class="note" id="cadNote"></p>
+      <div class="scroll"><table id="cadTable"></table></div>
+      <details style="margin-top:12px"><summary>Year by year, net of costs</summary><div class="scroll"><table id="cadYears" style="max-width:720px"></table></div></details>
+      <p class="note" style="margin:12px 0 0" id="cadTax"></p>
+    </section>
+
     <section class="card">
       <p class="eyebrow">Does the score separate winners from losers?</p>
       <p class="note">Each May, every eligible company split into fifths by each score (Q1 = best), each fifth held as an equal-weight portfolio for the year. Bars: return per year, 2012–today (growth: 2013–today, it needs three years of statements). A working factor steps down from Q1 to Q5; the gray line is all eligible stocks. Growth failed this test, so it is shown but not counted in the score.</p>
@@ -115,7 +123,7 @@
       <p class="note">Each May, the 10 lowest scores and the lowest fifth (Q5 above) as the screen stood that day, held a year like the top 10, against all eligible stocks; and all eligible stocks with that fifth left out, which is what avoiding it would have added to owning the whole universe. Shown on the page, not logged as a live strategy.</p>
       <div id="btAvoid"></div>
       <div class="scroll" style="margin-top:12px"><table id="btAvoidSummary"></table></div>
-      <details style="margin-top:12px"><summary>Year by year</summary><div class="scroll"><table id="btAvoidYears"></table></div></details>
+      <details style="margin-top:12px"><summary>Year by year</summary><div class="scroll"><table id="btAvoidYears" style="max-width:860px"></table></div></details>
     </section>
 
     <div>
@@ -141,7 +149,7 @@
       <p class="eyebrow">How much to trust the backtest</p>
       <ul class="caveats">
         <li><b>Point in time:</b> each list uses only quotes, filings and events public on its date, through the same code as the live screen; share counts are the ones filed at the time.</li>
-        <li><b>Not in the numbers:</b> brokerage, taxes, slippage. A yearly rebalance trades little, but taxes on gains are real.</li>
+        <li><b>Costs and taxes:</b> the main figures have none. The rebalancing table charges a cost on every trade; taxes on gains depend on the investor's size (the R$ 20,000 monthly exemption), so they are left out.</li>
         <li><b>Survivors:</b> companies that went bankrupt or into recovery stay in, and their quotes follow them into the special segments. Companies that delisted keep their quotes but lose their dividends (B3 only serves listed companies' history), which slightly understates returns.</li>
         <li><b>Approximations before 2020:</b> share counts come from the yearly Reference Form, dated by when CVM received it; registration status is today's, so it is not used as a filter in the past.</li>
         <li><b>One path:</b> fifteen yearly decisions are a small sample. A strategy that beat the market here can lag for years; compare it with "all eligible stocks" to see what the picking itself added.</li>
@@ -160,6 +168,7 @@
       <ul class="caveats">
         <li>Every Monday the top 10 by score (and by the Magic Formula) is appended to <code>data/picks/picks.csv</code> with its prices. Nothing is ever removed, and a recorded list is never replaced (a re-run on the same session keeps the first).</li>
         <li>Each list is held as an equal-weight portfolio until the next one, on dividend- and split-adjusted prices, against BOVA11 over the same days.</li>
+        <li>That is a weekly rebalance with no trading costs, while the backtest buys once a year. The backtest's <a href="#/backtest">rebalancing table</a> shows what trading more often did and cost.</li>
         <li>Lists are stamped with the scoring rules' fingerprint: a rule change ends one record and starts another, it never rewrites the past.</li>
       </ul>
     </section>

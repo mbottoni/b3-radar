@@ -6,5 +6,11 @@
   "rules": "876ebe1a",
   "rebalance": "first session of month 5",
   "costs": "none",
-  "sector_cap": 2
+  "sector_cap": 2,
+  "cost_per_side": 0.001,
+  "cadences": [
+    "yearly",
+    "quarterly",
+    "monthly"
+  ]
 }
