@@ -204,3 +204,26 @@ def test_a_form_count_taken_before_a_split_is_dated_at_its_meeting():
     assert list(out.as_of) == ["2012-04-27", "2013-04-01", "2014-05-07"]   # the 2013 form lagged the split
     fresh = fre.assign(shares_on=[227.8e6, 683.4e6, 683.5e6])                  # this form had it already
     assert list(screen.date_share_counts(fresh, stock, {"S": {"X"}}).as_of) == list(fre.date)
+
+
+# ------------------------------------------------------------------ sectors
+
+def test_sector_groups_fold_cvm_labels():
+    from b3radar import sectors
+    # A holding sits under its own label, often abbreviated (JHSF next to Cyrela, Allos next to Renner).
+    assert sectors.group("Emp. Adm. Part. - Const. Civil, Mat. Const. e Decoração") == "Real estate"
+    assert sectors.group("Construção Civil, Mat. Constr. e Decoração") == "Real estate"
+    assert sectors.group("Emp. Adm. Part. - Comércio (Atacado e Varejo)") == sectors.group("Comércio (Atacado e Varejo)") == "Retail"
+    assert sectors.group("Emp. Adm. Part. - Máqs., Equip., Veíc. e Peças") == "Industrials"
+    assert sectors.group("Emp. Adm. Part. - Serviços médicos") == sectors.group("Farmacêutico e Higiene") == "Health"
+    assert sectors.group("Emp. Adm. Part.-Bolsas de Valores/Mercadorias e Futuros") == "Financials"
+    assert sectors.group("Crédito Imobiliário") == "Financials"                 # credit, not real estate
+    assert sectors.group("Energia Elétrica") == sectors.group("Saneamento, Serv. Água e Gás") == "Utilities"
+    assert sectors.group("Telecomunicações") == "Telecom" and sectors.group("Comunicação e Informática") == "Tech & media"
+    assert sectors.group("Emp. Adm. Part. - Sem Setor Principal") == sectors.group("") == sectors.OTHER
+    assert sectors.group("Emp. Adm. Participações") == sectors.OTHER
+
+
+def test_sector_group_is_shown_but_not_a_rule():
+    assert "sector_group" in screen.COLUMNS
+    assert "group" not in str(screen.rules())          # the fingerprint, and so the live record, is untouched

@@ -137,8 +137,8 @@ def cmd_email(a) -> int:
     in out/ (or, with --send and the SMTP variables set, a real send)."""
     df = pd.read_csv(a.data / "screen" / "latest.csv", dtype={"ticker": str, "cnpj": str}, keep_default_na=False)
     for c in df.columns:
-        if c not in ("asof", "ticker", "company", "sector", "tickers", "cnpj", "excluded", "fundamentals_date", "filed",
-                     "shares_source", "growth_base"):
+        if c not in ("asof", "ticker", "company", "sector", "sector_group", "tickers", "cnpj", "excluded",
+                     "fundamentals_date", "filed", "shares_source", "growth_base"):
             df[c] = pd.to_numeric(df[c], errors="coerce")
     log = picks.load(a.data)
     curve, cohorts = picks.performance(a.data, df["asof"].iloc[0])

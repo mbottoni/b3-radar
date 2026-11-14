@@ -119,6 +119,46 @@ A company is eligible if all of these hold:
 
 Each excluded company is still listed on the page with its reason.
 
+### Sector groups
+
+CVM's activity sector (`SETOR_ATIV`) splits one business across labels: a
+holding company gets "Emp. Adm. Part. - " in front of its subsidiaries'
+sector, often abbreviated, so JHSF ("Emp. Adm. Part. - Const. Civil, Mat.
+Const. e Decoração") sits apart from Cyrela ("Construção Civil, Mat.
+Constr. e Decoração"), and Allos ("Emp. Adm. Part. - Comércio…") apart
+from Lojas Renner ("Comércio…"). `b3radar/sectors.py` folds the labels
+into 17 groups (`sector_group` in the screen): the holding prefix is
+removed, accents dropped, and the first group whose keyword appears in the
+label wins.
+
+| group | CVM labels (with or without the holding prefix) |
+|---|---|
+| Financials | Bancos, Intermediação Financeira, Seguradoras e Corretoras, Arrendamento Mercantil, Securitização de Recebíveis, Crédito Imobiliário, Bolsas de Valores/Mercadorias e Futuros, Factoring |
+| Real estate | Construção Civil, Mat. Constr. e Decoração (homebuilders, developers, malls and building materials) |
+| Retail | Comércio (Atacado e Varejo), Comércio Exterior |
+| Apparel | Têxtil e Vestuário |
+| Utilities | Energia Elétrica; Saneamento, Serv. Água e Gás |
+| Oil & gas | Petróleo e Gás |
+| Mining & steel | Extração Mineral, Metalurgia e Siderurgia |
+| Paper & chemicals | Papel e Celulose, Petroquímicos e Borracha, Embalagens, Reflorestamento |
+| Industrials | Máquinas, Equipamentos, Veículos e Peças; Outras Atividades Industriais |
+| Transport | Serviços Transporte e Logística |
+| Food & agri | Alimentos; Agricultura (Açúcar, Álcool e Cana); Bebidas e Fumo; Pesca |
+| Health | Serviços Médicos, Farmacêutico e Higiene |
+| Education | Educação |
+| Tech & media | Comunicação e Informática, Gráficas e Editoras |
+| Telecom | Telecomunicações |
+| Leisure & travel | Hospedagem e Turismo, Brinquedos e Lazer |
+| Other | Emp. Adm. Participações with no main sector ("Sem Setor Principal"), Serviços Diversos, Serviços em Geral, blank |
+
+The groups follow CVM's label, not a judgement of each business: malls
+filed under commerce (Allos, Iguatemi) are Retail, Multiplan, filed under
+construction, is Real estate, and Vibra (fuel distribution) is Retail.
+The groups are for reading and for measuring concentration only. They
+are not in the rules fingerprint, and the financial exclusion above still
+reads CVM's own label. CVM's register gives today's sector, which the
+backtest also uses for past dates (sectors rarely change).
+
 ## Metrics
 
 - **Market cap:** shares outstanding per class (ON, PN) times that class's

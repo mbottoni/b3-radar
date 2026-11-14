@@ -219,16 +219,18 @@ const COLS = [
   ["income_score", "I", "n", "c", "Income"], ["growth_score", "G", "n", "c", "Growth (shown, not scored)"],
   ["pe", "P/E", "n"], ["ev_ebit", "EV/EBIT", "n"], ["roe", "ROE", "n"], ["dividend_yield", "Div. yield", "n"],
   ["momentum", "12–1m", "n", "", "Return from 12 months to 1 month ago"], ["market_cap", "Mkt cap", "n"], ["liquidity", "Daily vol.", "n", "", "Average daily traded volume, 3 months"],
-  ["sector", "Sector", "s", "l"], ["excluded", "Excluded because", "s", "l"],
+  ["sector_group", "Sector", "s", "l", "Sector group; hover for CVM's own label"], ["excluded", "Excluded because", "s", "l"],
 ];
 const FMT = { pe: f1, ev_ebit: f1, roe: (x) => pct(x), dividend_yield: (x) => pct(x, 1), market_cap: brl, liquidity: brl };
 const SCR = { preset: "all", sortKey: "rank", sortAsc: true };
-const val = (r, k) => (k === "r1y" ? num(SPARK()[r.ticker]?.r1y) : r[k]);
+// Short sector group (b3radar/sectors.py); CVM's full label until the screen has the column.
+const group = (r) => r.sector_group || r.sector || "";
+const val = (r, k) => (k === "r1y" ? num(SPARK()[r.ticker]?.r1y) : k === "sector_group" ? group(r) : r[k]);
 function buildScreener() {
   const st = S.status;
   $("#scrMeta").textContent = st ? `${st.companies} companies · ${st.eligible} eligible · closing prices of ${st.asof}` : "";
-  const sectors = [...new Set(S.screen.filter((r) => !r.excluded).map((r) => r.sector))].filter(Boolean).sort();
-  $("#sector").append(...sectors.map((s) => el("option", { value: s, textContent: s })));
+  const groups = [...new Set(S.screen.map(group))].filter(Boolean).sort((a, b) => (a === "Other") - (b === "Other") || a.localeCompare(b));
+  $("#sector").append(...groups.map((s) => el("option", { value: s, textContent: s })));
   for (const id of ["#q", "#sector", "#liq"]) $(id).addEventListener("input", renderScreen);
   $("#presets").replaceChildren(...PRESETS.map(([k, label, f]) => {
     const b = el("button", { className: "preset", type: "button" }, label, el("span", { className: "n", textContent: S.screen.filter(f).length }));
@@ -243,7 +245,7 @@ function renderScreen() {
   const q = $("#q").value.trim().toLowerCase(), sec = $("#sector").value, liq = +$("#liq").value;
   const pf = PRESETS.find(([k]) => k === SCR.preset)[2];
   const cols = COLS.filter(([k]) => SCR.preset === "excluded" || k !== "excluded");
-  const rows = S.screen.filter((r) => pf(r) && (!sec || r.sector === sec) && num(r.liquidity) >= liq &&
+  const rows = S.screen.filter((r) => pf(r) && (!sec || group(r) === sec) && num(r.liquidity) >= liq &&
     (!q || r.ticker.toLowerCase().includes(q) || r.company.toLowerCase().includes(q) || r.tickers.toLowerCase().includes(q)));
   const type = Object.fromEntries(COLS.map(([k, , t]) => [k, t]));
   const { sortKey, sortAsc } = SCR;
@@ -270,6 +272,7 @@ function renderScreen() {
       if (k.endsWith("_score") || k === "score") return scoreCell(num(v));
       if (k === "momentum") return el("td", {}, signed(num(v), 0));
       if (k === "rank") return el("td", { className: "muted", textContent: v || "–" });
+      if (k === "sector_group") return el("td", { className: "l", textContent: group(r), title: r.sector || "" });
       if (ty === "s") return el("td", { className: `l ${k === "excluded" ? "muted" : ""}`, textContent: v, title: v, style: "max-width:220px;overflow:hidden;text-overflow:ellipsis" });
       return el("td", { textContent: (FMT[k] || ((x) => (Number.isFinite(x) ? x : "–")))(num(v)) });
     }), r, cols.length, renderScreen);
