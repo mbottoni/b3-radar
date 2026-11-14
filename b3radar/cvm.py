@@ -162,10 +162,11 @@ def filings(kind: str, zip_path: Path) -> pd.DataFrame:
 
 def store_filings(new: pd.DataFrame, data_dir: Path, name: str = "filings.csv",
                   order: tuple[str, ...] = ("cnpj", "kind", "dt_refer")) -> None:
-    """Merge into data/cvm/filings.csv, replacing the (kind, year) blocks rebuilt.
-    A file with nothing in it (this year's DFP for the financials) changes nothing."""
+    """Merge into data/cvm/<name>, replacing the (kind, year) blocks rebuilt.
+    A file with nothing in it (January's files, this year's DFP for the financials)
+    changes nothing."""
     path = data_dir / "cvm" / name
-    if new.empty and path.exists():
+    if new.empty:
         return
     if path.exists():
         old = pd.read_csv(path, dtype={"cnpj": str, "cd_cvm": str, "kind": str, "dt_refer": str, "dt_receb": str,
