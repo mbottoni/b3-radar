@@ -10,6 +10,15 @@ def test_rebalance_is_first_session_of_may_each_year():
     assert backtest.rebalance_dates(sessions, 2012) == ["2012-05-02", "2013-05-06"]
 
 
+def test_sector_cap_skips_names_past_the_cap_and_the_next_best_fill_in():
+    snap = pd.DataFrame({"ticker": ["A3", "B3", "C3", "D3", "E3", "F3", "X3"], "excluded": [""] * 6 + ["illiquid"],
+                         "score": [90.0, 80.0, 70.0, 60.0, 50.0, 40.0, 99.0],
+                         "sector_group": ["Real estate"] * 3 + ["Retail", "Real estate", "Oil & gas", "Retail"]})
+    assert list(backtest.pick(snap, "score", False, n=4).ticker) == ["A3", "B3", "C3", "D3"]
+    assert list(backtest.pick(snap, "score", False, n=4, cap=2).ticker) == ["A3", "B3", "D3", "F3"]
+    assert list(backtest.pick(snap, "score", False, n=10, cap=2).ticker) == ["A3", "B3", "D3", "F3"]   # fewer if the groups run out
+
+
 def prices():
     px = pd.DataFrame({
         "date": ["2020-05-04", "2020-06-01", "2021-05-03"] * 2 + ["2020-05-04", "2020-06-01"],

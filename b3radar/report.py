@@ -24,6 +24,8 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
+from . import sectors
+
 PAGE = "https://mbottoni.github.io/b3-radar/"
 DISCLAIMER = ("A rules-based screen of public data (B3, CVM, Banco Central). It is not investment advice: "
               "the scores know nothing about news, governance or your situation. Do your own research.")
@@ -94,6 +96,12 @@ def market_line(m: dict | None) -> str:
     if m.get("real_cdi") is not None:
         out += f", {f('real_cdi')} after the last 12 months' inflation"
     return out + "."
+
+
+def sector_mix(sector_labels) -> list[tuple[str, int]]:
+    """(sector group, names) of a list, most common first."""
+    n = pd.Series([sectors.group(str(s)) for s in sector_labels], dtype=object).value_counts()
+    return sorted(n.items(), key=lambda kv: (-kv[1], kv[0]))
 
 
 def load_extras(data_dir: Path) -> dict:
@@ -211,6 +219,11 @@ def build(screen: pd.DataFrame, picks: pd.DataFrame, entered: list[str], left: l
     if entered or left:
         changes = (f"<p style='margin:10px 0 0;font-size:13px'><b>Entered:</b> {html.escape(', '.join(entered) or '—')}"
                    f" &nbsp;·&nbsp; <b>Left:</b> {html.escape(', '.join(left) or '—')}</p>")
+    mix = sector_mix(top.sector) if "sector" in top else []
+    mix_text = ", ".join(f"{g} {n}" for g, n in mix)
+    if mix:
+        changes += (f"<p style='margin:6px 0 0;font-size:13px'><b>Sector mix:</b> {html.escape(mix_text)}"
+                    f" <span style='color:{MUTED}'>(sector groups; the list is not capped by sector)</span></p>")
 
     # ------------------------------------------------------------- the market
     market_html = ""
@@ -292,6 +305,8 @@ Value (EBIT/EV, book/price), Quality (ROIC, ROE, low leverage), Momentum (12-mon
                     f"1Y {_pct(s_t.get('r1y'), 0, True):>5}  P/E {_num(r.pe)}  DY {_pct(r.dividend_yield, 1)}")
     if entered or left:
         text += ["", f"Entered: {', '.join(entered) or '-'}   Left: {', '.join(left) or '-'}"]
+    if mix:
+        text += ["", f"Sector mix: {mix_text}"]
     if market_line(market):
         text += ["", market_line(market)]
     text += ["", f"Magic Formula baseline: {', '.join(magic.ticker)}", "", PAGE, "", DISCLAIMER]
