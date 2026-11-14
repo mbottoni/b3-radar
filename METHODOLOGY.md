@@ -72,10 +72,33 @@ share (divided by B3's quotation factor).
   full history (since the 1990s) comes from its `GetListedCashDividends`
   service, per share class, and every later fetch is merged into
   `data/events/`.
+- **B3's dividend history matches the company's trading name exactly**, and
+  answers nothing for a name written with "S/A" ("AMBEV S/A": none; "AMBEV
+  SA": 2014 on). Such names are also asked for with "SA"; before 2026-11-14,
+  13 companies (Ambev, Klabin, Cury, Light, TIM among them) had only the
+  last year of dividends on file. B3's history for **Fras-le stops in
+  2002** under every spelling, and the daily events feed starts in late
+  2025, so FRAS3's dividends for 2003–2024 are missing: its dividend yield
+  and total return in those years are understated.
 - **B3 often issues a new ISIN after a reverse split** and files the event
   under the old one (Hapvida 2025, Azevedo & Travassos 2026). Events are
   matched against every ISIN a ticker has traded under, and a payment on
   file under both is counted once.
+- **A company that changes its name gets a new ticker, and usually a new
+  ISIN** (Eletrobras ELET3 → AXIA3 and Embraer EMBR3 → EMBJ3 in Nov 2025,
+  Guararapes GUAR3 → RIAA3 in Feb 2026, CTEEP TRPL4 → ISAE4 in 2024; 49 such
+  switches since 2010). On its own the new ticker looks like a new listing:
+  under a year of quotes, no momentum, no history, and the old one is often
+  missing from CVM's current list of trading codes, so it never meets its
+  filings (CTEEP was absent from every backtest year for that reason). A
+  ticker that stops and one of the same company (CNPJ) and class (the
+  digits) with a different root that starts within 10 days, with the
+  adjusted price moving less than 25% across the switch, are taken as one
+  share: its whole history is read under the ticker it trades under now, in
+  the screen, the backtest, the company pages and the track record. The
+  price test keeps out a merger priced at an exchange ratio; a rename that
+  comes with a split on file passes it. Past lists in the backtest therefore
+  show today's ticker (CTEEP as ISAE4 in 2012). Since 2026-11-14.
 - **B3's events service misses some splits** (Magazine Luiza's 2017 and
   2019 8:1 bonus splits). B3 marks the session an event takes effect in the
   quote file (`EB` ex-bonus/split, `EG` ex-reverse split): a marked session
@@ -281,6 +304,8 @@ next list**, on adjusted prices (dividends reinvested), and compares it with
 BOVA11 over the same sessions. A ticker that stops trading keeps its last
 price. The return is measured from the close used to make the list, so it
 assumes you could buy at that close; buying at Monday's open will differ.
+The record is marked to the latest close by every daily run; only the
+weekly job adds lists.
 
 ## Backtest
 

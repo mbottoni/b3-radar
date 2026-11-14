@@ -15,7 +15,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-from . import backtest, cotahist, events
+from . import backtest, cotahist, events, screen
 
 YEAR, MONTH, WEEK = 252, 21, 5
 
@@ -35,6 +35,7 @@ def build(df: pd.DataFrame, data_dir: Path) -> dict:
     px = cotahist.load(data_dir, since=since)
     px = px[px.date <= asof]
     cash, stock = events.load(data_dir)
+    px, _ = screen.chain_renames(px, data_dir, cash, stock)   # a renamed share's year runs through the rename
     prices = backtest.Prices(px, cash, stock)
     sessions = np.sort(px.date.unique())
     year = sessions[-(YEAR + 1):]
