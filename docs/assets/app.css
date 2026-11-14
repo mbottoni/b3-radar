@@ -138,6 +138,11 @@ td.trend .tw { display: flex; align-items: center; gap: 8px; justify-content: fl
 a.tk { color: inherit; text-decoration: none; }
 a.tk:hover { color: var(--s1); text-decoration: underline; text-underline-offset: 3px; }
 .new { display: inline-block; color: var(--chip-ink); background: var(--chip); font-size: 10px; font-weight: 700; border-radius: 4px; padding: 0 4px; margin-left: 6px; vertical-align: 1px; }
+.star { font: inherit; font-size: 15px; line-height: 1; background: none; border: 0; padding: 0 5px 0 0; margin: 0; cursor: pointer; color: var(--muted); }
+.star:hover, .star[aria-pressed="true"] { color: var(--s1); }
+.star:focus-visible { outline: 2px solid var(--s1); outline-offset: 1px; border-radius: 3px; }
+td.watchable .co { padding-left: 20px; }
+#watch { width: auto; min-width: min(100%, 680px); }
 #listMoves .note { margin: 12px 0 6px; }
 .mv-row { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 18px; font-size: 13px; margin-bottom: 4px; }
 .mv-k { font-weight: 650; color: var(--ink2); min-width: 56px; }

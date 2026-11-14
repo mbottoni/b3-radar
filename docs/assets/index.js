@@ -164,12 +164,13 @@ function expandable(table, open, key, cells, row, span, rerender) {
 }
 // The weekly lists' dates, and the screen each was made from (data/screen/history/,
 // eligible companies only) by ticker, for the last two lists.
+// Rows by ticker, and by each of a company's other tickers: its most-traded one can change.
+const tickersOf = (r) => [r.ticker, ...(r.tickers || "").split(" ")].filter(Boolean);
+const byAnyTicker = (rows) => { const m = new Map(rows.map((r) => [r.ticker, r])); for (const r of rows) for (const t of tickersOf(r)) if (!m.has(t)) m.set(t, r); return m; };
 const listDates = (picks = S.picks) => [...new Set((picks || []).filter((p) => p.strategy === "composite").map((p) => p.date))].sort();
 async function loadListScreens(picks) {
   const ds = listDates(picks).slice(-2), files = await Promise.all(ds.map((d) => get(`screen/history/${d}.csv`)));
-  // Also by each of a company's tickers: its most-traded one can change between weeks.
-  const index = (rows) => { const m = new Map(rows.map((r) => [r.ticker, r])); for (const r of rows) for (const t of (r.tickers || "").split(" ")) if (t && !m.has(t)) m.set(t, r); return m; };
-  return Object.fromEntries(ds.map((d, i) => [d, files[i] && index(files[i])]));
+  return Object.fromEntries(ds.map((d, i) => [d, files[i] && byAnyTicker(files[i])]));
 }
 // What changed between the last two lists: the same comparison as the email
 // (picks.changes), with each name's rank and score in both screens.
@@ -210,7 +211,7 @@ function buildList() {
       const s = by.get(p.ticker) || { ticker: p.ticker, company: p.company };
       expandable(t, OPEN.list, p.ticker, [
         el("td", { textContent: p.rank }),
-        nameCell({ ...s, company: p.company }, fresh.has(p.ticker) ? [el("span", { className: "new", textContent: "NEW", title: `Not in the list of ${ch.prev}: ${moveTxt(fresh.get(p.ticker))}` })] : []),
+        watchName({ ...s, company: p.company }, fresh.has(p.ticker) ? [el("span", { className: "new", textContent: "NEW", title: `Not in the list of ${ch.prev}: ${moveTxt(fresh.get(p.ticker))}` })] : []),
         trendCell(SPARK()[p.ticker]), scoreCell(num(p.score)),
         ...PILLAR_KEYS.map((k) => scoreCell(num(s[k + "_score"]))),
         el("td", { textContent: f1(num(s.pe)) }), el("td", { textContent: f1(num(s.ev_ebit)) }),
@@ -227,7 +228,65 @@ function buildList() {
 function buildOverview() {
   const st = S.status;
   $("#status").textContent = st ? `Closing prices of ${st.asof} · ${st.eligible} of ${st.companies} listed companies pass the filters · updated every weekday` : "";
-  buildCards(); buildWhy(); buildThirds(); buildList();
+  buildCards(); buildWhy(); buildThirds(); buildList(); buildWatch();
+}
+
+// ============================================================== WATCHLIST
+// Starred companies, kept in this browser only (localStorage; if storage is
+// blocked, for this visit). Stored by ticker, matched by any of a company's tickers.
+const WATCH_KEY = "b3radar-watchlist";
+const WATCH = new Set((() => {
+  try { const v = JSON.parse(localStorage.getItem(WATCH_KEY) || "[]"); return Array.isArray(v) ? v.filter((t) => typeof t === "string") : []; }
+  catch { return []; }
+})());
+const isWatched = (r) => tickersOf(r).some((t) => WATCH.has(t));
+function toggleWatch(r) {
+  if (isWatched(r)) for (const t of tickersOf(r)) WATCH.delete(t); else WATCH.add(r.ticker);
+  try { localStorage.setItem(WATCH_KEY, JSON.stringify([...WATCH].sort())); } catch { /* storage blocked: this visit only */ }
+  for (const b of document.querySelectorAll(".star")) syncStar(b);
+  if (BUILT.has("overview")) buildWatch();
+  if (BUILT.has("screener")) { const n = $('#presets [data-k="watch"] .n'); if (n) n.textContent = S.screen.filter(isWatched).length; if (SCR.preset === "watch") renderScreen(); }
+}
+function syncStar(b) {
+  const on = isWatched(b._row);
+  b.textContent = on ? "★" : "☆"; b.setAttribute("aria-pressed", String(on));
+  b.title = on ? "In your watchlist (click to remove)" : "Add to your watchlist";
+}
+// A company cell with a star; the click must not also expand the row.
+function watchName(r, extra) {
+  const b = el("button", { className: "star", type: "button" });
+  b._row = r; b.setAttribute("aria-label", `Watch ${r.ticker}`); syncStar(b);
+  b.addEventListener("click", (e) => { e.stopPropagation(); toggleWatch(r); });
+  b.addEventListener("keydown", (e) => e.stopPropagation());
+  const td = nameCell(r, extra); td.classList.add("watchable"); td.prepend(b);
+  return td;
+}
+// Each watched company: its score today, the change since the last weekly
+// list, and whether it entered or left the top 10 since then.
+function buildWatch() {
+  const t = $("#watch"), idx = byAnyTicker(S.screen), seen = new Set(), rows = [];
+  for (const w of WATCH) { const r = idx.get(w) || { ticker: w, company: "", gone: true }; if (!seen.has(r.ticker)) { seen.add(r.ticker); rows.push(r); } }
+  rows.sort((a, b) => (num(a.rank) || Infinity) - (num(b.rank) || Infinity) || a.ticker.localeCompare(b.ticker));
+  const cur = listDates().at(-1), then = S.listScreens?.[cur], ch = listChanges();
+  const inList = new Set((S.picks || []).filter((p) => p.date === cur && p.strategy === "composite").map((p) => p.ticker));
+  const fresh = new Set((ch?.entered || []).map((m) => m.ticker)), left = new Set((ch?.left || []).map((m) => m.ticker));
+  $("#watchNote").textContent = !rows.length ? "Star a company (☆) here or in the screener to follow it. The list is kept in this browser only." :
+    `Score today and its change since the list of ${cur || "–"}; ▲ / ▼ mark a company that entered or left the top 10 since then. Kept in this browser only.`;
+  t.hidden = !rows.length;
+  if (!rows.length) { t.replaceChildren(); return; }
+  t.replaceChildren(el("tr", {}, ...[["Company", "l sticky"], ["Score"], ["Since the list", "", "Score today minus its score in the screen of the last weekly list"], ["Rank"],
+    ["Top 10", "l", `Against the list of ${cur}`]].map(([h, c = "", title = ""]) => el("th", { className: c, textContent: h, title }))));
+  for (const r of rows) {
+    const any = tickersOf(r), has = (set) => any.some((x) => set.has(x));
+    const before = then && any.map((x) => then.get(x)).find(Boolean), d = num(r.score) - num(before?.score);
+    const rank = num(r.rank), top = rank <= 10, listed = has(inList);
+    const [txt, cls] = r.gone ? ["no longer in the screen", "muted"] : listed && top ? ["in the list", ""] : listed ? ["▼ left the top 10", "neg"] :
+      top ? ["▲ entered the top 10", "pos"] : has(left) ? [`left the list of ${cur}`, "muted"] : ["–", "muted"];
+    t.append(el("tr", {}, watchName(r, listed && has(fresh) ? [el("span", { className: "new", textContent: "NEW" })] : []), scoreCell(num(r.score)),
+      el("td", {}, Number.isFinite(d) ? el("span", { className: d > 0 ? "pos" : d < 0 ? "neg" : "muted", textContent: `${d > 0 ? "▲ " : d < 0 ? "▼ " : ""}${f1(Math.abs(d))}` }) : "–"),
+      el("td", { className: Number.isFinite(rank) ? "" : "muted", textContent: Number.isFinite(rank) ? `#${rank}` : r.excluded ? "not eligible" : "–", title: r.excluded || "" }),
+      el("td", { className: `l ${cls}`, textContent: txt })));
+  }
 }
 function drawOverview() {
   for (const c of $("#cards").children) c._spark?.();
@@ -238,6 +297,7 @@ function drawOverview() {
 // ================================================================ SCREENER
 const PRESETS = [
   ["all", "All eligible", (r) => !r.excluded],
+  ["watch", "Watchlist", (r) => isWatched(r)],
   ["top", "Top 20 score", (r) => !r.excluded && num(r.rank) <= 20],
   ["magic", "Magic Formula 20", (r) => !r.excluded && num(r.magic_rank) <= 20],
   ["value", "Value ≥ 80", (r) => !r.excluded && num(r.value_score) >= 80],
@@ -322,7 +382,7 @@ function renderScreen() {
   for (const b of $("#presets").children) b.setAttribute("aria-pressed", String(b.dataset.k === SCR.preset));
   const q = $("#q").value.trim().toLowerCase(), sec = $("#sector").value, liq = +$("#liq").value;
   const pf = PRESETS.find(([k]) => k === SCR.preset)[2];
-  const cols = COLS.filter(([k]) => SCR.preset === "excluded" || k !== "excluded");
+  const cols = COLS.filter(([k]) => ["excluded", "watch"].includes(SCR.preset) || k !== "excluded");   // a watched company can be excluded
   const rows = S.screen.filter((r) => pf(r) && (!sec || r.sector === sec) && num(r.liquidity) >= liq &&
     (!q || r.ticker.toLowerCase().includes(q) || r.company.toLowerCase().includes(q) || r.tickers.toLowerCase().includes(q)));
   const type = Object.fromEntries(COLS.map(([k, , t]) => [k, t]));
@@ -344,11 +404,11 @@ function renderScreen() {
     th.addEventListener("click", go); th.addEventListener("keydown", (e) => (e.key === "Enter" || e.key === " ") && (e.preventDefault(), go()));
     return th;
   })));
-  if (!rows.length) { t.append(el("tr", {}, el("td", { className: "l muted", colSpan: cols.length, textContent: "No company matches." }))); return; }
+  if (!rows.length) { t.append(el("tr", {}, el("td", { className: "l muted", colSpan: cols.length, textContent: SCR.preset === "watch" && !WATCH.size ? "No company starred yet: click ☆ next to a ticker to watch it." : "No company matches." }))); return; }
   for (const r of rows) {
     expandable(t, OPEN.screen, r.ticker, cols.map(([k, , ty]) => {
       const v = r[k];
-      if (k === "ticker") return nameCell(r);
+      if (k === "ticker") return watchName(r);
       if (k === "r1y") return trendCell(SPARK()[r.ticker]);
       if (k.endsWith("_score") || k === "score") return scoreCell(num(v));
       if (k === "momentum") return el("td", {}, signed(num(v), 0));
