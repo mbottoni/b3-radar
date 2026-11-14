@@ -109,6 +109,9 @@ def cmd_daily(a) -> int:
     write_status(a.data, df)
     market.today(df, a.data)
     sparks.build(df, a.data)
+    # The track record marked to this close every session; only the weekly job adds lists.
+    curve, cohorts = picks.performance(a.data, df["asof"].iloc[0])
+    picks.save_performance(curve, cohorts, a.data)
     print(f"screen as of {df['asof'].iloc[0]}: {len(df)} companies, {(df.excluded == '').sum()} eligible", file=sys.stderr)
     return 0
 
