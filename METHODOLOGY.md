@@ -241,6 +241,8 @@ next list**, on adjusted prices (dividends reinvested), and compares it with
 BOVA11 over the same sessions. A ticker that stops trading keeps its last
 price. The return is measured from the close used to make the list, so it
 assumes you could buy at that close; buying at Monday's open will differ.
+The record is marked to the latest close by every daily run; only the
+weekly job adds lists.
 
 ## Backtest
 
