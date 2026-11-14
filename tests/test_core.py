@@ -204,3 +204,29 @@ def test_a_form_count_taken_before_a_split_is_dated_at_its_meeting():
     assert list(out.as_of) == ["2012-04-27", "2013-04-01", "2014-05-07"]   # the 2013 form lagged the split
     fresh = fre.assign(shares_on=[227.8e6, 683.4e6, 683.5e6])                  # this form had it already
     assert list(screen.date_share_counts(fresh, stock, {"S": {"X"}}).as_of) == list(fre.date)
+
+
+def test_get_json_takes_304_and_404_as_nothing_new(monkeypatch):
+    import io
+    import urllib.error
+
+    from b3radar import fetch
+
+    for code in (304, 404):
+        def boom(req, timeout=None, code=code):
+            raise urllib.error.HTTPError(req.full_url, code, "x", {}, io.BytesIO(b""))
+        monkeypatch.setattr(fetch.urllib.request, "urlopen", boom)
+        assert fetch.get_json("https://example.invalid/x", attempts=1) is None
+
+
+def test_a_failed_macro_update_does_not_end_the_daily_run(monkeypatch, tmp_path, capsys):
+    from b3radar import __main__ as cli
+
+    def fail(data_dir):
+        raise RuntimeError("GET ... failed 4 times: HTTP Error 500")
+    calls = []
+    monkeypatch.setattr(cli.history, "update_cdi", fail)
+    monkeypatch.setattr(cli.history, "update_ipca", lambda d: calls.append(d))
+    cli.update_macro(tmp_path)
+    assert calls == [tmp_path]                                   # IPCA still read after the CDI failed
+    assert "CDI not updated" in capsys.readouterr().err
