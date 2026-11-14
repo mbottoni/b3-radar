@@ -7,7 +7,8 @@ CVM, Banco Central), a shortlist emailed every Monday, and a public track
 record of every shortlist against BOVA11, losers included.
 
 - **Daily** (Tue–Sat, 07:00 Brasília): new quotes, filings and corporate events
-  are committed to `data/`; the screen is rebuilt.
+  are committed to `data/`; the screen is rebuilt and the track record
+  marked to the close.
 - **Weekly** (Mon, 11:00 Brasília): the top 10 is logged, the track record
   updated, and the email sent.
 - **The page** has four tabs: **Overview** (BOVA11, the CDI, inflation and

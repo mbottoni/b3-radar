@@ -206,6 +206,64 @@ def test_a_form_count_taken_before_a_split_is_dated_at_its_meeting():
     assert list(screen.date_share_counts(fresh, stock, {"S": {"X"}}).as_of) == list(fre.date)
 
 
+def test_get_json_takes_304_and_404_as_nothing_new(monkeypatch):
+    import io
+    import urllib.error
+
+    from b3radar import fetch
+
+    for code in (304, 404):
+        def boom(req, timeout=None, code=code):
+            raise urllib.error.HTTPError(req.full_url, code, "x", {}, io.BytesIO(b""))
+        monkeypatch.setattr(fetch.urllib.request, "urlopen", boom)
+        assert fetch.get_json("https://example.invalid/x", attempts=1) is None
+
+
+def test_a_failed_macro_update_does_not_end_the_daily_run(monkeypatch, tmp_path, capsys):
+    from b3radar import __main__ as cli
+
+    def fail(data_dir):
+        raise RuntimeError("GET ... failed 4 times: HTTP Error 500")
+    calls = []
+    monkeypatch.setattr(cli.history, "update_cdi", fail)
+    monkeypatch.setattr(cli.history, "update_ipca", lambda d: calls.append(d))
+    cli.update_macro(tmp_path)
+    assert calls == [tmp_path]                                   # IPCA still read after the CDI failed
+    assert "CDI not updated" in capsys.readouterr().err
+
+
+def test_a_renamed_ticker_keeps_its_history_but_a_merger_does_not():
+    days = pd.bdate_range("2025-01-01", periods=20).strftime("%Y-%m-%d").tolist()
+    rows = [("OLDX3", "I1", d, 10.0) for d in days[:10]] + [("NEWX3", "I2", d, 10.1) for d in days[11:]]   # renamed
+    rows += [("MRGA3", "I3", d, 10.0) for d in days[:10]] + [("MRGB3", "I4", d, 30.0) for d in days[11:]]  # 3x jump
+    rows += [("ONEA3", "I5", d, 5.0) for d in days[:10]] + [("ONEB3", "I6", d, 5.0) for d in days[15:]]    # ...
+    rows += [("CHNA3", "I7", d, 7.0) for d in days[:5]] + [("CHNB3", "I8", d, 7.0) for d in days[6:12]] \
+        + [("CHNC3", "I9", d, 7.0) for d in days[13:]]                                                         # A -> B -> C
+    px = pd.DataFrame(rows, columns=["ticker", "isin", "date", "close"])
+    tmap = {"OLDX3": "1", "NEWX3": "1", "MRGA3": "2", "MRGB3": "2", "ONEA3": "3", "ONEB3": "4",
+            "CHNA3": "5", "CHNB3": "5", "CHNC3": "5"}
+    empty_cash = pd.DataFrame(columns=["isin", "rate", "last_date_prior", "label"])
+    empty_stock = pd.DataFrame(columns=["isin", "mult", "last_date_prior", "label"])
+    ren = screen.renames(px, tmap, empty_cash, empty_stock)
+    assert ren == {"OLDX3": "NEWX3", "CHNA3": "CHNC3", "CHNB3": "CHNC3"}   # not the merger, not another company
+
+
+def test_a_trading_name_with_s_barra_a_is_also_asked_as_sa():
+    from b3radar import history
+    assert history.trading_names("AMBEV S/A ") == ["AMBEV S/A", "AMBEV SA"]
+    assert history.trading_names("PETROBRAS") == ["PETROBRAS"]
+
+
+def test_an_empty_year_of_filings_leaves_the_stored_file_alone(tmp_path):
+    from b3radar import cvm
+    cols = ["cnpj", "cd_cvm", "kind", "dt_refer", "dt_receb", "basis"]
+    one = pd.DataFrame([["1", "10", "DFP", "2025-12-31", "2026-03-01", "con"]], columns=cols)
+    cvm.store_filings(one, tmp_path)
+    cvm.store_filings(pd.DataFrame(columns=cols), tmp_path)        # this year's file, nothing in it yet
+    back = pd.read_csv(tmp_path / "cvm" / "filings.csv", dtype=str)
+    assert back.cnpj.tolist() == ["1"]
+
+
 # ------------------------------------------------------------------ sectors
 
 def test_sector_groups_fold_cvm_labels():

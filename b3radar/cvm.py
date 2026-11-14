@@ -161,7 +161,9 @@ def filings(kind: str, zip_path: Path) -> pd.DataFrame:
 def store_filings(new: pd.DataFrame, data_dir: Path) -> None:
     """Merge into data/cvm/filings.csv, replacing the (kind, year) blocks rebuilt."""
     path = data_dir / "cvm" / "filings.csv"
-    if path.exists() and not new.empty:
+    if new.empty:   # a year with nothing filed yet (January's files): keep what is there
+        return
+    if path.exists():
         old = pd.read_csv(path, dtype={"cnpj": str, "cd_cvm": str, "kind": str, "dt_refer": str, "dt_receb": str,
                                        "basis": str})
         rebuilt = set(zip(new.kind, new.dt_refer.str[:4]))
