@@ -18,6 +18,7 @@ function show() {
   document.title = tab === "overview" ? "B3 Radar" : `${TABS.find(([k]) => k === tab)[1]} · B3 Radar`;
   if (!S.ready) return;
   if (!BUILT.has(tab)) { BUILD[tab](); BUILT.add(tab); }
+  else if (tab === "screener") screenerFromHash();
   REDRAW.clear(); if (DRAW[tab]) { REDRAW.add(DRAW[tab]); DRAW[tab](); }
 }
 addEventListener("hashchange", show);
@@ -255,7 +256,8 @@ const COLS = [
   ["sector", "Sector", "s", "l"], ["excluded", "Excluded because", "s", "l"],
 ];
 const FMT = { pe: f1, ev_ebit: f1, roe: (x) => pct(x), dividend_yield: (x) => pct(x, 1), market_cap: brl, liquidity: brl };
-const SCR = { preset: "all", sortKey: "rank", sortAsc: true };
+const SCR = { preset: "all", sortKey: "rank", sortAsc: true, shown: { rows: [], cols: [] } };
+const defaultAsc = (k) => k === "rank" || COLS.find(([c]) => c === k)?.[2] === "s";
 const val = (r, k) => (k === "r1y" ? num(SPARK()[r.ticker]?.r1y) : r[k]);
 function buildScreener() {
   const st = S.status;
@@ -269,7 +271,52 @@ function buildScreener() {
     b.addEventListener("click", () => { SCR.preset = k; renderScreen(); });
     return b;
   }));
+  $("#scrCsv").addEventListener("click", downloadScreen);
+  screenerFromHash();
+}
+// The screener's state lives in the hash (#/screener?preset=value&sort=pe), so
+// a filtered view can be linked and survives a reload. Defaults are left out.
+const hashParams = () => new URLSearchParams(location.hash.split("?")[1] || "");
+function screenerFromHash() {
+  const p = hashParams();
+  if (BUILT.has("screener") && !p.toString()) { screenerToHash(); return; }   // the bare tab link keeps the current view
+  const opt = (sel, v) => ([...$(sel).options].find((o) => o.value === v) ? v : $(sel).options[0].value);
+  SCR.preset = PRESETS.some(([k]) => k === p.get("preset")) ? p.get("preset") : "all";
+  $("#q").value = p.get("q") || "";
+  $("#sector").value = opt("#sector", p.get("sector") || "");
+  $("#liq").value = [...$("#liq").options].find((o) => +o.value === parseFloat(p.get("vol")) * 1e6)?.value ?? "0";
+  SCR.sortKey = COLS.some(([k]) => k === p.get("sort")) ? p.get("sort") : "rank";
+  SCR.sortAsc = ["asc", "desc"].includes(p.get("dir")) ? p.get("dir") === "asc" : defaultAsc(SCR.sortKey);
   renderScreen();
+}
+function screenerToHash() {
+  if (current !== "screener") return;
+  const p = new URLSearchParams(), q = $("#q").value.trim(), liq = +$("#liq").value;
+  if (SCR.preset !== "all") p.set("preset", SCR.preset);
+  if (q) p.set("q", q);
+  if ($("#sector").value) p.set("sector", $("#sector").value);
+  if (liq) p.set("vol", `${liq / 1e6}m`);
+  if (SCR.sortKey !== "rank" || !SCR.sortAsc) {
+    p.set("sort", SCR.sortKey);
+    if (SCR.sortAsc !== defaultAsc(SCR.sortKey)) p.set("dir", SCR.sortAsc ? "asc" : "desc");
+  }
+  const h = `#/screener${p.toString() ? `?${p}` : ""}`;
+  if (location.hash !== h) history.replaceState(null, "", h);   // no new history entry per keystroke
+}
+// The rows on screen, as CSV: the shown columns, raw values as in data/screen/latest.csv.
+function screenCSV() {
+  const { rows, cols } = SCR.shown;
+  // [header, value] per column, values as the table sorts them (val).
+  const fields = cols.flatMap(([k]) => (k === "ticker" ? [["ticker", (r) => r.ticker], ["company", (r) => r.company]] : [[k === "r1y" ? "return_1y" : k, (r) => val(r, k)]]));
+  const cell = (v) => { const t = v == null || (typeof v === "number" && !Number.isFinite(v)) ? "" : String(v); return /[",\n\r]/.test(t) ? `"${t.replace(/"/g, '""')}"` : t; };
+  return [fields.map(([h]) => h).join(","), ...rows.map((r) => fields.map(([, f]) => cell(f(r))).join(","))].join("\n") + "\n";
+}
+function downloadScreen() {
+  const name = `b3-radar-screener-${S.status?.asof || "latest"}${SCR.preset === "all" ? "" : `-${SCR.preset}`}.csv`;
+  const url = URL.createObjectURL(new Blob(["\ufeff", screenCSV()], { type: "text/csv;charset=utf-8" }));   // BOM: Excel reads the accents
+  const a = el("a", { href: url, download: name });
+  document.body.append(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 function renderScreen() {
   for (const b of $("#presets").children) b.setAttribute("aria-pressed", String(b.dataset.k === SCR.preset));
@@ -286,11 +333,14 @@ function renderScreen() {
     return sortAsc ? String(x).localeCompare(String(y)) : String(y).localeCompare(String(x));
   });
   $("#scrCount").textContent = `${rows.length} shown`;
+  SCR.shown = { rows, cols };
+  $("#scrCsv").disabled = !rows.length;
+  screenerToHash();
   const t = $("#screen");
   t.replaceChildren(el("tr", {}, ...cols.map(([k, label, ty, cls = "", title = ""]) => {
     const th = el("th", { className: `sortable ${cls} ${k === sortKey ? "sorted" : ""}`, textContent: label + (k === sortKey ? (sortAsc ? " ▲" : " ▼") : ""), tabIndex: 0, title });
     th.setAttribute("aria-sort", k === sortKey ? (sortAsc ? "ascending" : "descending") : "none");
-    const go = () => { if (SCR.sortKey === k) SCR.sortAsc = !SCR.sortAsc; else { SCR.sortKey = k; SCR.sortAsc = ty === "s" || k === "rank"; } renderScreen(); };
+    const go = () => { if (SCR.sortKey === k) SCR.sortAsc = !SCR.sortAsc; else { SCR.sortKey = k; SCR.sortAsc = defaultAsc(k); } renderScreen(); };
     th.addEventListener("click", go); th.addEventListener("keydown", (e) => (e.key === "Enter" || e.key === " ") && (e.preventDefault(), go()));
     return th;
   })));
