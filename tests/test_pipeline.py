@@ -55,9 +55,6 @@ def test_email_dry_run_without_secrets(tmp_path, monkeypatch):
                         "price": [10.0, 10.0]})
     subject, body, text, images = report.build(screen, new, ["AAA3"], [], pd.DataFrame(), pd.DataFrame(columns=["strategy"]))
     assert "2026-11-06" in subject and "A &lt;&amp;&gt; Co" in body and "NEW" in body and images == {}
-    assert report.sector_mix(["Emp. Adm. Part. - Const. Civil, Mat. Const. e Decoração", "Petróleo e Gás",
-                              "Construção Civil, Mat. Constr. e Decoração"]) == [("Real estate", 2), ("Oil & gas", 1)]
-    assert "Sector mix:</b> Other 1" in body and "Sector mix: Other 1" in text
     assert report.send(subject, body, text, tmp_path) is False
     assert (tmp_path / "email.html").exists() and "AAA3" in (tmp_path / "email.txt").read_text()
     m = {"earnings_yield": 0.129, "cheaper_than": 0.8, "history_from": "2011-05-31", "history_median": 0.105,

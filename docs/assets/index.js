@@ -192,23 +192,8 @@ function buildList() {
     row: { ...(by.get(p.ticker) || { ticker: p.ticker }), company: p.company },
     badge: prev && !before.has(p.ticker) ? [el("span", { className: "new", textContent: "NEW" })] : [] })),
   [["Price"], (it) => el("td", { textContent: `R$ ${f1(it.price, 2)}` })]);
-  buildMix(now.map((p) => by.get(p.ticker) || p));
   const magic = picks.filter((p) => p.date === cur && p.strategy === "magic").sort((a, b) => a.rank - b.rank);
   $("#magic").replaceChildren(...magic.map((m) => el("a", { className: "chip", href: `company.html?t=${m.ticker}`, style: "text-decoration:none", textContent: `${m.rank}. ${m.ticker}`, title: m.company })));
-}
-
-// How many of the list's names share a sector group, against the backtest's capped variant.
-function buildMix(rows) {
-  const n = {}; for (const r of rows) n[group(r)] = (n[group(r)] || 0) + 1;
-  const mix = Object.entries(n).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
-  if (!mix.length) { $("#mixNote").textContent = ""; $("#mix").replaceChildren(); return; }
-  const cap = num(S.bt.meta?.sector_cap), [top, k] = mix[0];
-  const bt = Object.fromEntries((S.bt.summary || []).map((r) => [r.series, r])), a = bt.composite, b = bt.composite_cap;
-  $("#mixNote").textContent = `Sector mix: ${k} of ${rows.length} in ${top}.` + (a && b && Number.isFinite(cap) ?
-    ` The list is not capped by sector. In the backtest, the same ranking with at most ${cap} per sector group returned ${pct(num(b.cagr), 1)} a year ` +
-    `against ${pct(num(a.cagr), 1)}, with volatility ${pct(num(b.volatility), 1)} against ${pct(num(a.volatility), 1)} and a worst year of ${pct(num(b.worst_year), 1)} against ${pct(num(a.worst_year), 1)}.` : "");
-  $("#mix").replaceChildren(...mix.map(([g, c]) => el("span", { className: "chip", textContent: `${g} ${c}`,
-    title: [...new Set(rows.filter((r) => group(r) === g).map((r) => r.ticker))].join(", ") })));
 }
 
 // Today's bottom 10 by score: shown, not logged (no live record, nothing in data/picks).
@@ -318,11 +303,11 @@ function renderScreen() {
 }
 
 // ================================================================ BACKTEST
-const BT_LABEL = { composite: "Score (top 10)", composite_cap: "Score, max 2 per sector group", magic: "Magic Formula (top 10)", value: "Value only", quality: "Quality only",
+const BT_LABEL = { composite: "Score (top 10)", magic: "Magic Formula (top 10)", value: "Value only", quality: "Quality only",
   momentum: "Momentum only", income: "Income only", eligible: "All eligible stocks", bova11: "BOVA11 (Ibovespa)", cdi: "CDI (cash)" };
-const BT_SHORT = { composite: "Score", composite_cap: "Max 2/sect.", magic: "Magic", value: "Value", quality: "Quality", momentum: "Mom.", income: "Income", eligible: "All elig.", bova11: "BOVA11", cdi: "CDI" };
-const BT_CHART = [["composite", "--s1"], ["composite_cap", "--s1", true], ["bova11", "--s2"], ["cdi", "--s3"], ["eligible", "--other"]];
-const BT_ORDER = ["composite", "composite_cap", "magic", "value", "quality", "momentum", "income", "eligible", "bova11", "cdi"];
+const BT_SHORT = { composite: "Score", magic: "Magic", value: "Value", quality: "Quality", momentum: "Mom.", income: "Income", eligible: "All elig.", bova11: "BOVA11", cdi: "CDI" };
+const BT_CHART = [["composite", "--s1"], ["bova11", "--s2"], ["cdi", "--s3"], ["eligible", "--other"]];
+const BT_ORDER = ["composite", "magic", "value", "quality", "momentum", "income", "eligible", "bova11", "cdi"];
 
 function buildBacktest() {
   const { meta, summary } = S.bt;
@@ -330,8 +315,7 @@ function buildBacktest() {
   const by = Object.fromEntries(summary.map((r) => [r.series, r]));
   $("#btMeta").textContent = `${meta.first} to ${meta.last} · ${meta.rebalances} yearly lists · rules ${meta.rules}`;
   $("#btNote").textContent = `Every May, the top ${meta.top_n} by score as the screen stood that day, bought in equal weights and held a year with dividends reinvested; no costs or taxes. ` +
-    "Compared with BOVA11, with the CDI (cash) and with owning every eligible stock, which isolates what the picking adds." +
-    (by.composite_cap ? ` "Max ${meta.sector_cap} per sector group" is the same ranking with at most ${meta.sector_cap} names from one sector group, the next best filling in: shown, not used for the weekly list.` : "");
+    "Compared with BOVA11, with the CDI (cash) and with owning every eligible stock, which isolates what the picking adds.";
   $("#btTiles").replaceChildren(...["composite", "bova11", "cdi", "eligible"].filter((k) => by[k]).map((k) => {
     const r = by[k];
     return el("div", { className: `tile ${k === "composite" ? "lead" : ""}` }, el("div", { className: "k", textContent: BT_LABEL[k] }),
@@ -356,7 +340,7 @@ function drawBtChart() {
   const curve = S.bt.curve; if (!curve) return;
   const dates = [...new Set(curve.map((r) => r.date))].sort();
   const by = {}; for (const r of curve) (by[r.series] ||= new Map()).set(r.date, +r.value);
-  lineChart($("#btChart"), dates, BT_CHART.filter(([k]) => by[k]).map(([k, c, dash]) => ({ values: dates.map((d) => by[k]?.get(d) ?? NaN), color: c, label: BT_LABEL[k], dash,
+  lineChart($("#btChart"), dates, BT_CHART.map(([k, c]) => ({ values: dates.map((d) => by[k]?.get(d) ?? NaN), color: c, label: BT_LABEL[k],
     width: k === "composite" ? 2.5 : 2, endLabel: (v) => `${BT_SHORT[k]} R$${v.toFixed(0)}` })),
   { log: true, h: 330, ml: 48, labels: true, mr: 120, legend: true, legendNote: "· log scale", fmt: (v) => `R$${v}`, tipFmt: (v) => `R$ ${v.toFixed(0)}`, aria: "Growth of R$100, log scale" });
 }
@@ -429,22 +413,12 @@ function buildBtHoldings() {
   dates.forEach((d, i) => {
     const rows = holdings.filter((h) => h.date === d && h.strategy === "composite").sort((a, b) => a.rank - b.rank);
     const avg = rows.map((r) => num(r.period_return)).filter(Number.isFinite);
-    const mean = (xs) => xs.reduce((a, b) => a + b, 0) / (xs.length || 1);
     const det = el("details", { open: i === 0 });
-    det.append(el("summary", { textContent: `${d}: ${rows.map((r) => r.ticker).join(", ")} (average ${pct(mean(avg), 0, true)})` }));
-    const capped = holdings.filter((h) => h.date === d && h.strategy === "composite_cap");
-    if (capped.length) {
-      const inList = new Set(rows.map((r) => r.ticker)), inCap = new Set(capped.map((r) => r.ticker));
-      const out = rows.filter((r) => !inCap.has(r.ticker)), add = capped.filter((r) => !inList.has(r.ticker));
-      det.append(el("p", { className: "note", style: "margin:8px 0 4px", textContent: out.length ?
-        `Max ${S.bt.meta.sector_cap} per sector group: ${out.map((r) => r.ticker).join(", ")} out, ${add.map((r) => `${r.ticker} (${group(r)})`).join(", ")} in; ` +
-        `that list averaged ${pct(mean(capped.map((r) => num(r.period_return)).filter(Number.isFinite)), 0, true)}.` :
-        `No sector group had more than ${S.bt.meta.sector_cap} names: the capped list is the same.` }));
-    }
+    det.append(el("summary", { textContent: `${d}: ${rows.map((r) => r.ticker).join(", ")} (average ${pct(avg.reduce((a, b) => a + b, 0) / (avg.length || 1), 0, true)})` }));
     const t = el("table", { className: "dense" });
     t.append(el("tr", {}, ...["#", "Company", "Sector", "Score", "Return over the year"].map((h, j) => el("th", { className: j === 1 || j === 2 ? "l" : "", textContent: h }))));
     for (const r of rows) t.append(el("tr", {}, el("td", { textContent: r.rank }), nameCell(r),
-      el("td", { className: "l muted", textContent: group(r), title: r.sector }), scoreCell(num(r.metric)), retCell(num(r.period_return))));
+      el("td", { className: "l muted", textContent: r.sector }), scoreCell(num(r.metric)), retCell(num(r.period_return))));
     det.append(el("div", { className: "scroll" }, t)); box.append(det);
   });
 }
