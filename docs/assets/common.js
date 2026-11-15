@@ -10,10 +10,11 @@ const css = (v) => getComputedStyle(document.documentElement).getPropertyValue(v
 const el = (tag, props = {}, ...kids) => { const e = document.createElement(tag); Object.assign(e, props); e.append(...kids.filter((k) => k != null)); return e; };
 const svg = (tag, attrs = {}) => { const e = document.createElementNS("http://www.w3.org/2000/svg", tag); for (const [k, v] of Object.entries(attrs)) e.setAttribute(k, v); return e; };
 const num = (x) => (x === "" || x == null ? NaN : +x);
-const f1 = (x, d = 1) => (Number.isFinite(x) ? x.toFixed(d) : "–");
-const pct = (x, d = 0, sign = false) => (Number.isFinite(x) ? `${sign && x > 0 ? "+" : ""}${(x * 100).toFixed(d)}%` : "–");
-const pts = (x, d = 1) => (Number.isFinite(x) ? `${x > 0 ? "+" : ""}${(x * 100).toFixed(d)} pts` : "–");
-const brl = (x) => !Number.isFinite(x) ? "–" : Math.abs(x) >= 1e9 ? `R$ ${(x / 1e9).toFixed(1)}bn` : `R$ ${(x / 1e6).toFixed(0)}m`;
+// Numbers in the page's language (i18n.js): 12,6% and R$ 1,2 bi in Portuguese, 12.6% and R$ 1.2bn in English.
+const f1 = (x, d = 1) => fmtNum(x, d);
+const pct = (x, d = 0, sign = false) => (Number.isFinite(x) ? `${sign && x > 0 ? "+" : ""}${fmtNum(x * 100, d)}%` : "–");
+const pts = (x, d = 1) => (Number.isFinite(x) ? `${x > 0 ? "+" : ""}${fmtNum(x * 100, d)} ${L("p.p.", "pts")}` : "–");
+const brl = fmtBRL;
 const signed = (x, d = 1) => el("span", { className: x > 0 ? "pos" : x < 0 ? "neg" : "", textContent: pct(x, d, true) });
 // Up/down with a glyph, so the direction never rests on color alone.
 const change = (x, d = 1) => el("span", { className: x > 0 ? "pos" : x < 0 ? "neg" : "muted", textContent: Number.isFinite(x) ? `${x > 0 ? "▲" : x < 0 ? "▼" : ""} ${pct(Math.abs(x), d)}` : "–" });
@@ -62,41 +63,82 @@ const MOON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-
 function syncThemeButton() {
   const b = $("#themeBtn"); if (!b) return;
   b.innerHTML = isDark() ? SUN : MOON;
-  b.setAttribute("aria-label", isDark() ? "Switch to light mode" : "Switch to dark mode");
+  b.setAttribute("aria-label", isDark() ? L("Mudar para o tema claro", "Switch to light mode") : L("Mudar para o tema escuro", "Switch to dark mode"));
   b.title = b.getAttribute("aria-label");
 }
 
 // --------------------------------------------------------------- header
-const TABS = [["overview", "Overview"], ["screener", "Screener"], ["financials", "Financials"], ["backtest", "Backtest"], ["record", "Track record"]];
+const TABS = [["overview", L("Visão geral", "Overview")], ["screener", L("Filtro de ações", "Screener")], ["financials", L("Financeiras", "Financials")],
+  ["backtest", "Backtest"], ["record", L("Histórico ao vivo", "Track record")]];
 const GH = '<svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8a8 8 0 0 0 5.47 7.59c.4.07.55-.17.55-.38v-1.33c-2.23.48-2.7-1.07-2.7-1.07-.36-.92-.89-1.17-.89-1.17-.73-.5.06-.49.06-.49.8.06 1.23.83 1.23.83.72 1.22 1.87.87 2.33.66.07-.52.28-.87.5-1.07-1.78-.2-3.65-.89-3.65-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82a7.6 7.6 0 0 1 4 0c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48v2.2c0 .21.15.46.55.38A8 8 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>';
 const LOGO = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="8" opacity=".55"/><circle cx="12" cy="12" r="3.5"/><path d="M12 12l6-6"/></svg>';
 // ``active``: a tab key (index page) or null (other pages link back to the tabs).
 function shell(active, status) {
+  applyStatic();
   const home = active ? "#/" : "./";
   const head = el("div", { className: "top-in" });
-  const brand = el("a", { className: "brand", href: home, innerHTML: `<span class="logo">${LOGO}</span>B3 Radar` });
-  const asof = el("span", { className: "pill live", id: "asofPill", textContent: status ? `Data · ${status.asof}` : "Loading…" });
+  const brand = el("a", { className: "brand", href: home, innerHTML: `<span class="logo">${LOGO}</span><span class="brand-name">B3 Radar</span>`, ariaLabel: "B3 Radar" });
+  const asof = el("span", { className: "pill live", id: "asofPill", textContent: status ? `${L("Dados", "Data")} · ${fmtDate(status.asof)}` : L("Carregando…", "Loading…") });
   const rules = el("a", { className: "pill rules", id: "rulesPill", href: `${REPO}/blob/main/METHODOLOGY.md#scores`, style: "text-decoration:none",
-    title: "Fingerprint of every rule that decides eligibility and ranking. A change starts a new track record.",
-    textContent: status?.rules ? `rules ${status.rules}` : "" });
-  const tabs = el("nav", { className: "tabs", ariaLabel: "Sections" }, ...TABS.map(([k, label]) => {
+    title: L("Impressão digital de todas as regras que decidem a elegibilidade e o ranking. Uma mudança começa um novo histórico ao vivo.",
+      "Fingerprint of every rule that decides eligibility and ranking. A change starts a new track record."),
+    textContent: status?.rules ? `${L("regras", "rules")} ${status.rules}` : "" });
+  const tabs = el("nav", { className: "tabs", ariaLabel: L("Seções", "Sections") }, ...TABS.map(([k, label]) => {
     const a = el("a", { href: `${active ? "" : "./"}#/${k === "overview" ? "" : k}`, textContent: label });
     a.dataset.tab = k;
     if (k === active) a.setAttribute("aria-current", "page");
     return a;
   }));
-  const gh = el("a", { className: "icon-btn", href: REPO, innerHTML: `${GH}<span class="gh-label">GitHub</span>`, ariaLabel: "Code and data on GitHub" });
-  const theme = el("button", { className: "icon-btn spacer", id: "themeBtn", type: "button" });
+  const gh = el("a", { className: "icon-btn", href: REPO, innerHTML: `${GH}<span class="gh-label">GitHub</span>`, ariaLabel: L("Código e dados no GitHub", "Code and data on GitHub") });
+  const lng = langSwitch(); lng.classList.add("spacer");
+  const theme = el("button", { className: "icon-btn", id: "themeBtn", type: "button" });
   theme.addEventListener("click", toggleTheme);
-  head.append(brand, asof, rules, tabs, gh, theme);
+  head.append(brand, asof, rules, tabs, gh, lng, theme);
   const top = $("#top"); top.className = "top"; top.replaceChildren(head);
   syncThemeButton();
 }
 function setStatus(status) {
   if (!status) return;
-  const a = $("#asofPill"); if (a) { a.textContent = `Data · ${status.asof}`; a.title = `Quotes through the ${status.asof} session; updated every weekday`; }
-  const r = $("#rulesPill"); if (r && status.rules) r.textContent = `rules ${status.rules}`;
+  const d = fmtDate(status.asof);
+  const a = $("#asofPill"); if (a) { a.textContent = `${L("Dados", "Data")} · ${d}`; a.title = L(`Cotações até o pregão de ${d}; atualizado todo dia útil`, `Quotes through the ${d} session; updated every weekday`); }
+  const r = $("#rulesPill"); if (r && status.rules) r.textContent = `${L("regras", "rules")} ${status.rules}`;
 }
+
+// The reasons the Python screen writes to `excluded` (b3radar/screen.py), as the reader's language says them.
+const EXCLUDED = {
+  "financial sector": "setor financeiro",
+  "special trading segment (sanctioned or in recovery)": "segmento especial de negociação (sancionada ou em recuperação)",
+  "registration not active": "registro na CVM não ativo",
+  "not operating normally": "não opera normalmente",
+  "illiquid": "baixa liquidez",
+  "under a year of quotes": "menos de um ano de cotações",
+  "no fundamentals": "sem demonstrações financeiras",
+  "negative equity": "patrimônio líquido negativo",
+  "non-positive EV": "valor da firma (EV) zero ou negativo",
+};
+const excludedText = (x) => (x ? L(EXCLUDED[x] || x, x) : "");
+// The sector groups the Python screen writes to `sector_group` (b3radar/sectors.py), likewise.
+// Anything else (CVM's own label, before the screen has the column) shows as it is.
+const SECTOR_GROUPS = {
+  "Financials": "Financeiro",
+  "Real estate": "Imobiliário",
+  "Retail": "Varejo",
+  "Apparel": "Têxtil e vestuário",
+  "Utilities": "Energia e saneamento",
+  "Oil & gas": "Petróleo e gás",
+  "Mining & steel": "Mineração e siderurgia",
+  "Paper & chemicals": "Papel e química",
+  "Industrials": "Bens industriais",
+  "Transport": "Transporte",
+  "Food & agri": "Alimentos e agro",
+  "Health": "Saúde",
+  "Education": "Educação",
+  "Tech & media": "Tecnologia e mídia",
+  "Telecom": "Telecomunicações",
+  "Leisure & travel": "Lazer e turismo",
+  "Other": "Outros",
+};
+const groupText = (g) => (g ? L(SECTOR_GROUPS[g] || g, g) : "");
 
 // -------------------------------------------------------------- tooltip
 function showTip(ev, kids) {
@@ -199,8 +241,8 @@ function niceTicks(lo, hi, count, fmt = (v) => String(v)) {
 function lineChart(box, dates, series, opts = {}) {
   box.replaceChildren();
   const vals = series.flatMap((s) => s.values).filter(Number.isFinite).filter((v) => !opts.log || v > 0);
-  if (dates.length < 2 || !vals.length) { box.append(el("p", { className: "muted", textContent: "Not enough history." })); return; }
-  const fmt = opts.fmt || ((z, st) => z.toFixed(st ? stepDigits(st) : 0)), tipFmt = opts.tipFmt || opts.fmt || ((z) => z.toFixed(1));
+  if (dates.length < 2 || !vals.length) { box.append(el("p", { className: "muted", textContent: L("Histórico insuficiente.", "Not enough history.") })); return; }
+  const fmt = opts.fmt || ((z, st) => fmtNum(z, st ? stepDigits(st) : 0)), tipFmt = opts.tipFmt || opts.fmt || ((z) => fmtNum(z, 1));
   const w = box.clientWidth || 600, h = opts.h || 200, ml = opts.ml || 46, mt = 10, mb = 20;
   // On a phone, end labels would eat a third of the plot: the legend names the lines instead.
   opts = { ...opts, labels: opts.labels && w >= 520, legend: opts.legend || (opts.labels && w < 520 && series.length > 1) };
@@ -260,8 +302,8 @@ function lineChart(box, dates, series, opts = {}) {
   const move = (ev) => {
     const r = s.getBoundingClientRect(), i = Math.max(0, Math.min(dates.length - 1, Math.round(((ev.clientX - r.left - ml) / (w - ml - mr)) * (dates.length - 1))));
     hair.setAttribute("x1", x(i)); hair.setAttribute("x2", x(i)); hair.setAttribute("opacity", 1);
-    showTip(ev, [el("b", { textContent: dates[i] }), ...series.map((se) => tipRow(css(se.color), Number.isFinite(se.values[i]) ? tipFmt(se.values[i]) : "–", se.label)),
-      ...(Number.isFinite(opts.ref) ? [tipRow(css("--other"), tipFmt(opts.ref), opts.refLabel || "median")] : []), ...(opts.tipExtra ? opts.tipExtra(i) : [])]);
+    showTip(ev, [el("b", { textContent: fmtDate(dates[i]) }), ...series.map((se) => tipRow(css(se.color), Number.isFinite(se.values[i]) ? tipFmt(se.values[i]) : "–", se.label)),
+      ...(Number.isFinite(opts.ref) ? [tipRow(css("--other"), tipFmt(opts.ref), opts.refLabel || L("mediana", "median"))] : []), ...(opts.tipExtra ? opts.tipExtra(i) : [])]);
   };
   hit.addEventListener("pointermove", move); hit.addEventListener("pointerdown", move);
   hit.addEventListener("pointerleave", () => { hair.setAttribute("opacity", 0); hideTip(); });
@@ -275,9 +317,9 @@ function lineChart(box, dates, series, opts = {}) {
 // on the caps when every column has room; otherwise round y ticks carry them.
 // ``fmt(v, step)``: step is given for axis ticks only. Year labels are thinned
 // to round years (every 2, 5, 10...).
-function barChart(box, labels, values, fmt, { h = 170, aria = "", unit = "per share", none = "no payments on file" } = {}) {
+function barChart(box, labels, values, fmt, { h = 170, aria = "", unit = L("por ação", "per share"), none = L("nenhum pagamento registrado", "no payments on file") } = {}) {
   box.replaceChildren();
-  if (!values.some((v) => v > 0)) { box.append(el("p", { className: "muted", textContent: "No payments on file." })); return; }
+  if (!values.some((v) => v > 0)) { box.append(el("p", { className: "muted", textContent: L("Nenhum pagamento registrado.", "No payments on file.") })); return; }
   const w = box.clientWidth || 600, mr = 8, mt = 16, mb = 18;
   const widest = Math.max(...values.filter((v) => v > 0).map((v) => fmt(v).length)) * 6 + 8;   // ~6px a character at 10px
   const capped = (w - 8 - mr) / labels.length >= widest, ml = capped ? 8 : 46, bw = (w - ml - mr) / labels.length;
@@ -321,20 +363,24 @@ function barChart(box, labels, values, fmt, { h = 170, aria = "", unit = "per sh
 
 // ------------------------------------------------------ why this score
 const METRICS = {
-  value: [["earnings_yield", "Earnings yield (EBIT / EV)", (x) => pct(x, 1)], ["book_to_market", "Book / market value", (x) => f1(x, 2)]],
-  quality: [["roic", "Return on invested capital", (x) => pct(x)], ["roe", "Return on equity", (x) => pct(x)],
-            ["net_debt_ebit", "Net debt / EBIT (lower is better)", (x) => f1(x)]],
-  momentum: [["momentum", "12-month return, last month left out", (x) => pct(x, 0, true)]],
-  income: [["dividend_yield", "Dividends of the last 12 months / price", (x) => pct(x, 1)]],
-  growth: [["revenue_growth", "Revenue growth per year, 3 years", (x) => pct(x, 1, true)],
-           ["earnings_growth", "Net income growth per year, 3 years", (x, p) => (Number.isFinite(x) ? pct(x, 1, true) : Number.isFinite(p) ? "loss now" : "–")],
-           ["growth_consistency", "Quarters with revenue above a year before", (x) => pct(x, 0)]],
+  value: [["earnings_yield", L("Earnings yield (EBIT / valor da firma)", "Earnings yield (EBIT / EV)"), (x) => pct(x, 1)],
+          ["book_to_market", L("Patrimônio / valor de mercado", "Book / market value"), (x) => f1(x, 2)]],
+  quality: [["roic", L("Retorno sobre o capital investido (ROIC)", "Return on invested capital"), (x) => pct(x)],
+            ["roe", L("Retorno sobre o patrimônio (ROE)", "Return on equity"), (x) => pct(x)],
+            ["net_debt_ebit", L("Dívida líquida / EBIT (menor é melhor)", "Net debt / EBIT (lower is better)"), (x) => f1(x)]],
+  momentum: [["momentum", L("Retorno em 12 meses, sem o último mês", "12-month return, last month left out"), (x) => pct(x, 0, true)]],
+  income: [["dividend_yield", L("Dividendos dos últimos 12 meses / preço", "Dividends of the last 12 months / price"), (x) => pct(x, 1)]],
+  growth: [["revenue_growth", L("Crescimento da receita ao ano, 3 anos", "Revenue growth per year, 3 years"), (x) => pct(x, 1, true)],
+           ["earnings_growth", L("Crescimento do lucro líquido ao ano, 3 anos", "Net income growth per year, 3 years"),
+            (x, p) => (Number.isFinite(x) ? pct(x, 1, true) : Number.isFinite(p) ? L("prejuízo hoje", "loss now") : "–")],
+           ["growth_consistency", L("Trimestres com receita acima de um ano antes", "Quarters with revenue above a year before"), (x) => pct(x, 0)]],
 };
-const PILLAR = { value: "Value", quality: "Quality", momentum: "Momentum", income: "Income", growth: "Growth" };
+const PILLAR = { value: L("Valor", "Value"), quality: L("Qualidade", "Quality"), momentum: L("Momento", "Momentum"), income: L("Dividendos", "Income"),
+  growth: L("Crescimento", "Growth") };
 const PILLAR_KEYS = ["value", "quality", "momentum", "income"];   // the scored ones
 // Shown for information: a pillar with no weight in the score (METHODOLOGY.md: why growth is out).
-const UNSCORED = { growth: "Not in the score: in the backtest the fastest growers did worst." };
-function breakdown(r, { meta = true, among = " among eligible companies" } = {}) {
+const UNSCORED = { growth: L("Fora da nota: no backtest, as que mais cresciam foram as piores.", "Not in the score: in the backtest the fastest growers did worst.") };
+function breakdown(r, { meta = true, among = L(" entre as empresas elegíveis", " among eligible companies") } = {}) {
   const box = el("div", { className: "bd" });
   for (const [k, ms] of Object.entries(METRICS)) {
     const col = el("div", {}, el("h4", { textContent: `${PILLAR[k]}: ${f1(num(r[k + "_score"]), 0)} / 100` }));
@@ -343,21 +389,23 @@ function breakdown(r, { meta = true, among = " among eligible companies" } = {})
       const p = num(r["p_" + m]);
       col.append(el("div", { className: "m" },
         el("span", { textContent: label }), el("strong", { textContent: fmt(num(r[m]), p) }),
-        el("div", { className: "bar", role: "img", ariaLabel: `percentile ${f1(p, 0)}` }, el("i", { style: `width:${Number.isFinite(p) ? p : 0}%` })),
-        el("span", { className: "pctl", textContent: Number.isFinite(p) ? `percentile ${f1(p, 0)}${among}` : "not scored" })));
+        el("div", { className: "bar", role: "img", ariaLabel: `${L("percentil", "percentile")} ${f1(p, 0)}` }, el("i", { style: `width:${Number.isFinite(p) ? p : 0}%` })),
+        el("span", { className: "pctl", textContent: Number.isFinite(p) ? `${L("percentil", "percentile")} ${f1(p, 0)}${among}` : L("sem nota", "not scored") })));
     }
     box.append(col);
   }
   if (meta) box.append(el("div", { className: "meta", textContent:
-    `Statements up to ${r.fundamentals_date || "–"}, filed with CVM on ${r.filed || "–"}` +
-    (r.growth_base ? ` · growth measured from ${r.growth_base}` : "") + ` · share count from ${(r.shares_source || "–").toUpperCase()} · tickers: ${r.tickers || r.ticker}` +
-    (r.excluded ? ` · not ranked: ${r.excluded}` : "") }));
+    L(`Demonstrações até ${fmtDate(r.fundamentals_date)}, entregues à CVM em ${fmtDate(r.filed)}`, `Statements up to ${fmtDate(r.fundamentals_date)}, filed with CVM on ${fmtDate(r.filed)}`) +
+    (r.growth_base ? L(` · crescimento medido desde ${fmtDate(r.growth_base)}`, ` · growth measured from ${fmtDate(r.growth_base)}`) : "") +
+    L(` · número de ações: ${(r.shares_source || "–").toUpperCase()}`, ` · share count from ${(r.shares_source || "–").toUpperCase()}`) + ` · tickers: ${r.tickers || r.ticker}` +
+    (r.excluded ? L(` · fora do ranking: ${excludedText(r.excluded)}`, ` · not ranked: ${r.excluded}`) : "") }));
   return box;
 }
 
 // Ticker -> its company page; the click must not also expand the row.
 function companyLink(ticker, title) {
-  const a = el("a", { className: "tk", href: `company.html?t=${encodeURIComponent(ticker)}`, textContent: ticker, title: title || `${ticker}: history, valuation, dividends` });
+  const a = el("a", { className: "tk", href: `company.html?t=${encodeURIComponent(ticker)}`, textContent: ticker,
+    title: title || L(`${ticker}: histórico, valuation, dividendos`, `${ticker}: history, valuation, dividends`) });
   a.addEventListener("click", (e) => e.stopPropagation());
   a.addEventListener("keydown", (e) => e.stopPropagation());
   return a;

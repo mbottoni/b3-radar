@@ -1,10 +1,11 @@
 <!doctype html>
-<html lang="en">
+<html lang="pt-BR">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Company · B3 Radar</title>
-<meta name="description" content="One company's long history from official open data: total return, score, valuation, business and dividends since 2010.">
+<title data-en="Company · B3 Radar">Empresa · B3 Radar</title>
+<meta name="description" content="O longo histórico de uma empresa a partir de dados abertos oficiais: retorno total, nota, valuation, resultados e dividendos desde 2010."
+  data-en-content="One company's long history from official open data: total return, score, valuation, business and dividends since 2010.">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='6' fill='%232a78d6'/%3E%3Ccircle cx='12' cy='12' r='3.5' fill='none' stroke='white' stroke-width='2.2'/%3E%3Cpath d='M12 12l6-6' stroke='white' stroke-width='2.2' stroke-linecap='round'/%3E%3C/svg%3E">
 <link rel="stylesheet" href="assets/app.css">
 <style>
@@ -22,22 +23,22 @@
 <body>
 <header id="top"></header>
 <main>
-  <p class="crumb"><a href="./#/screener">Screener</a> / <span id="crumbT">…</span></p>
+  <p class="crumb"><a href="./#/screener" data-en="Screener">Filtro de ações</a> / <span id="crumbT">…</span></p>
   <div class="pagehead" style="margin-bottom:4px">
-    <h1 id="name">Loading…</h1>
+    <h1 id="name" data-en="Loading…">Carregando…</h1>
     <p class="meta" id="meta"></p>
   </div>
   <div class="chips" id="chips"></div>
   <div class="cards" id="cards"></div>
 
   <section class="card">
-    <p class="eyebrow">Why it scores what it does today</p>
+    <p class="eyebrow" data-en="Why it scores what it does today">De onde vem a nota hoje</p>
     <p class="note" id="whyNote"></p>
     <div id="why"></div>
   </section>
 
   <section class="card" id="peersCard">
-    <p class="eyebrow" id="peersHead">Peers</p>
+    <p class="eyebrow" id="peersHead" data-en="Peers">Pares</p>
     <div class="chips" id="peersChips"></div>
     <p class="note" id="peersNote"></p>
     <div class="scroll"><table id="peers" class="dense"></table></div>
@@ -45,47 +46,49 @@
   </section>
 
   <section class="card">
-    <p class="eyebrow">R$100 invested, dividends reinvested</p>
-    <p class="note">Monthly total return of the main ticker against BOVA11 (the Ibovespa), log scale.</p>
+    <p class="eyebrow" data-en="R$100 invested, dividends reinvested">R$ 100 investidos, dividendos reinvestidos</p>
+    <p class="note" data-en="Monthly total return of the main ticker against BOVA11 (the Ibovespa), log scale.">Retorno total mensal do ticker principal contra o BOVA11 (o Ibovespa), em escala logarítmica.</p>
     <div id="price"></div>
   </section>
 
   <section class="card">
-    <p class="eyebrow">The score over time</p>
-    <p class="note">The screen as it stood each quarter (point in time: only what was public then). Gaps: the company was not eligible (illiquid, too new, or failing a filter).</p>
+    <p class="eyebrow" data-en="The score over time">A nota ao longo do tempo</p>
+    <p class="note" data-en="The screen as it stood each quarter (point in time: only what was public then). Gaps: the company was not eligible (illiquid, too new, or failing a filter).">O filtro como estava em cada trimestre (só com o que era público na época). Lacunas: a empresa não era elegível (baixa liquidez, listada há pouco tempo ou reprovada em algum filtro).</p>
     <div id="score"></div>
     <div class="grid5" id="pillars" style="margin-top:12px"></div>
   </section>
 
   <section class="card">
-    <p class="eyebrow">Cheap or expensive against its own history?</p>
-    <p class="note">Each quarter's valuation; the gray line is the company's own median since 2011.</p>
+    <p class="eyebrow" data-en="Cheap or expensive against its own history?">Barata ou cara frente ao próprio histórico?</p>
+    <p class="note" data-en="Each quarter's valuation; the gray line is the company's own median since 2011.">O valuation de cada trimestre; a linha cinza é a mediana da própria empresa desde 2011.</p>
     <div class="grid3" id="valuation"></div>
   </section>
 
   <section class="card">
-    <p class="eyebrow">The business</p>
-    <p class="note">Trailing twelve months at every filing with CVM (consolidated statements when filed), and returns on capital each quarter.</p>
+    <p class="eyebrow" data-en="The business">O negócio</p>
+    <p class="note" data-en="Trailing twelve months at every filing with CVM (consolidated statements when filed), and returns on capital each quarter.">Últimos doze meses a cada entrega à CVM (demonstrações consolidadas, quando houver) e retornos sobre o capital a cada trimestre.</p>
     <div class="grid4" id="business"></div>
   </section>
 
   <div class="half">
     <section class="card">
-      <p class="eyebrow">Dividends and JCP per share, by year</p>
-      <p class="note">By the year the stock went ex; per share as it trades today (earlier years divided through later splits). Capital returns excluded. An empty year paid nothing.</p>
+      <p class="eyebrow" data-en="Dividends and JCP per share, by year">Dividendos e JCP por ação, por ano</p>
+      <p class="note" data-en="By the year the stock went ex; per share as it trades today (earlier years divided through later splits). Capital returns excluded. An empty year paid nothing.">Pelo ano da data ex; por ação como negociada hoje (anos anteriores ajustados pelos desdobramentos seguintes). Restituições de capital excluídas. Um ano vazio não teve pagamento.</p>
       <div id="dividends"></div>
     </section>
     <section class="card">
-      <p class="eyebrow">In the backtest</p>
-      <p class="note">Years it was in the top 10 bought each May, and how it did over the following year.</p>
+      <p class="eyebrow" data-en="In the backtest">No backtest</p>
+      <p class="note" data-en="Years it was in the top 10 bought each May, and how it did over the following year.">Anos em que esteve entre as 10 compradas em maio, e como foi no ano seguinte.</p>
       <div id="backtest"></div>
     </section>
   </div>
 
-  <footer>A rules-based screen of public data (B3, CVM), not investment advice. How every number is made:
-    <a href="https://github.com/mbottoni/b3-radar/blob/main/METHODOLOGY.md">METHODOLOGY.md</a></footer>
+  <footer data-en-html="A rules-based screen of public data (B3, CVM), not investment advice. How every number is made:
+    <a href=&quot;https://github.com/mbottoni/b3-radar/blob/main/METHODOLOGY.md&quot;>METHODOLOGY.md</a>">Um filtro de dados públicos (B3, CVM) baseado em regras, não uma recomendação de investimento. Como cada número é feito:
+    <a href="https://github.com/mbottoni/b3-radar/blob/main/METHODOLOGY.md">METHODOLOGY.md</a> (em inglês)</footer>
 </main>
 <div id="tip" role="tooltip"></div>
+<script src="assets/i18n.js"></script>
 <script src="assets/common.js"></script>
 <script src="assets/financials.js"></script>
 <script>
@@ -104,8 +107,9 @@ function card({ k, sub, value, d, spark, ref, foot = [] }) {
 // without a step (tooltips) ``d`` decimals.
 const axis = (f, unit, d) => (v, st) => f(v, st == null ? d : stepDigits(st * unit));
 const brlAxis = (v, st) => (st == null ? brl(v) : v === 0 ? "R$ 0" : Math.abs(v) >= 1e9
-  ? `R$ ${(v / 1e9).toFixed(stepDigits(st / 1e9))}bn` : `R$ ${(v / 1e6).toFixed(stepDigits(st / 1e6))}m`);
-const perShare = (v, st) => (st != null ? `R$ ${v.toFixed(stepDigits(st))}` : v >= 0.01 ? `R$ ${v.toFixed(2)}` : `R$ ${v.toPrecision(1)}`);
+  ? `R$ ${fmtNum(v / 1e9, stepDigits(st / 1e9))}${L(" bi", "bn")}` : `R$ ${fmtNum(v / 1e6, stepDigits(st / 1e6))}${L(" mi", "m")}`);
+// Under a centavo, one significant digit (R$ 0,004).
+const perShare = (v, st) => `R$ ${fmtNum(v, st != null ? stepDigits(st) : v >= 0.01 ? 2 : stepDigits(+v.toPrecision(1)))}`;
 
 // Every calendar year from the first payment to today's, a year without one as 0:
 // the chart must show the years a company paid nothing.
@@ -127,29 +131,33 @@ function render(d, sp, fin, finMeta) {
   $("#meta").textContent = `${d.sector} · tickers ${d.tickers} · CNPJ ${d.cnpj}`;
   const chips = $("#chips"); chips.replaceChildren();
   if (fin) { chips.append(...finChips(fin, finMeta)); finRetitle(fin, finMeta); }
-  else if (n.excluded) chips.append(el("span", { className: "chip warn", textContent: `Not ranked today: ${n.excluded}` }));
-  else chips.append(el("span", { className: "chip", textContent: `Rank #${n.rank} of today's eligible` }));
-  if (!fin) chips.append(el("span", { className: "chip warn", textContent: `EV/EBIT ${f1(num(n.ev_ebit))} · ROE ${pct(num(n.roe))} · trades ${brl(num(n.liquidity))}/day` }));
+  else if (n.excluded) chips.append(el("span", { className: "chip warn", textContent: L(`Fora do ranking hoje: ${excludedText(n.excluded)}`, `Not ranked today: ${n.excluded}`) }));
+  else chips.append(el("span", { className: "chip", textContent: L(`${n.rank}ª posição entre as elegíveis de hoje`, `Rank #${n.rank} of today's eligible`) }));
+  if (!fin) chips.append(el("span", { className: "chip warn", textContent: `EV/EBIT ${f1(num(n.ev_ebit))} · ROE ${pct(num(n.roe))} · ${L(`negocia ${brl(num(n.liquidity))}/dia`, `trades ${brl(num(n.liquidity))}/day`)}` }));
 
   // Snapshot cards: today's figures, each over its own history.
   const hist = (k) => [...H[k].map(num), num(n[k])];
   const medPE = median(H.pe.map(num).filter((x) => x > 0 && x < 100)), medDY = median(H.dividend_yield.map(num));
   const cards = [];
-  if (sp) cards.push(card({ k: "Price", sub: `${d.ticker} · last 12 months, total return`, value: `R$ ${f1(num(n.price), 2)}`, d: ["1D ", change(sp.r1d)],
-    spark: sp.w, foot: [["1M ", change(sp.r1m)], ["1Y ", change(sp.r1y)]] }));
-  cards.push(card({ k: "Score", sub: "0–100, each quarter since 2011", value: n.excluded ? "not ranked" : `${f1(num(n.score), 0)} · #${n.rank}`, spark: hist("score"), ref: 50,
-    foot: [`V ${f1(num(n.value_score), 0)} · Q ${f1(num(n.quality_score), 0)}`, `M ${f1(num(n.momentum_score), 0)} · I ${f1(num(n.income_score), 0)}`] }));
-  cards.push(card({ k: "P/E", sub: "price / trailing earnings", value: f1(num(n.pe)), d: `median ${f1(medPE)}`,
+  if (sp) cards.push(card({ k: L("Preço", "Price"), sub: L(`${d.ticker} · 12 meses, retorno total`, `${d.ticker} · last 12 months, total return`), value: `R$ ${f1(num(n.price), 2)}`,
+    d: ["1D ", change(sp.r1d)], spark: sp.w, foot: [["1M ", change(sp.r1m)], [L("12M ", "1Y "), change(sp.r1y)]] }));
+  cards.push(card({ k: L("Nota", "Score"), sub: L("0–100, a cada trimestre desde 2011", "0–100, each quarter since 2011"),
+    value: n.excluded ? L("fora do ranking", "not ranked") : `${f1(num(n.score), 0)} · #${n.rank}`, spark: hist("score"), ref: 50,
+    foot: [`V ${f1(num(n.value_score), 0)} · Q ${f1(num(n.quality_score), 0)}`, `M ${f1(num(n.momentum_score), 0)} · ${L("D", "I")} ${f1(num(n.income_score), 0)}`] }));
+  cards.push(card({ k: L("P/L", "P/E"), sub: L("preço / lucro dos últimos 12 meses", "price / trailing earnings"), value: f1(num(n.pe)), d: `${L("mediana", "median")} ${f1(medPE)}`,
     spark: hist("pe").map((x) => (x > 0 && x < 100 ? x : NaN)), ref: medPE, foot: [`EV/EBIT ${f1(num(n.ev_ebit))}`] }));
-  cards.push(card({ k: "Dividend yield", sub: "last 12 months / price", value: pct(num(n.dividend_yield), 1), d: `median ${pct(medDY, 1)}`,
+  cards.push(card({ k: "Dividend yield", sub: L("últimos 12 meses / preço", "last 12 months / price"), value: pct(num(n.dividend_yield), 1), d: `${L("mediana", "median")} ${pct(medDY, 1)}`,
     spark: hist("dividend_yield"), ref: medDY }));
-  cards.push(card({ k: "Market cap", sub: "all share classes", value: brl(num(n.market_cap)), spark: hist("market_cap"),
-    foot: [`statements ${n.fundamentals_date || "–"}`] }));
+  cards.push(card({ k: L("Valor de mercado", "Market cap"), sub: L("todas as classes de ações", "all share classes"), value: brl(num(n.market_cap)), spark: hist("market_cap"),
+    foot: [`${L("demonstrações", "statements")} ${fmtDate(n.fundamentals_date)}`] }));
   $("#cards").replaceChildren(...(fin ? finCards(d, fin, sp, card) : cards));
 
   if (fin) $("#why").replaceChildren(finBreakdown(fin, { among: "" }));
   else {
-    $("#whyNote").textContent = `Percentiles among today's eligible companies (0–100). Statements up to ${n.fundamentals_date || "–"}, filed with CVM ${n.filed || "–"}` + (n.growth_base ? `; growth measured from ${n.growth_base}.` : ".");
+    $("#whyNote").textContent = L(`Percentis entre as empresas elegíveis de hoje (0–100). Demonstrações até ${fmtDate(n.fundamentals_date)}, entregues à CVM em ${fmtDate(n.filed)}` +
+      (n.growth_base ? `; crescimento medido desde ${fmtDate(n.growth_base)}.` : "."),
+    `Percentiles among today's eligible companies (0–100). Statements up to ${fmtDate(n.fundamentals_date)}, filed with CVM ${fmtDate(n.filed)}` +
+      (n.growth_base ? `; growth measured from ${fmtDate(n.growth_base)}.` : "."));
     $("#why").replaceChildren(breakdown(n, { meta: false, among: "" }));
   }
 
@@ -160,44 +168,48 @@ function render(d, sp, fin, finMeta) {
   const draw = () => {
     for (const c of $("#cards").children) c._spark?.();
     lineChart($("#price"), P.dates.slice(i0), [
-      { values: comp.slice(i0), color: "--s1", label: d.ticker, width: 2.5, endLabel: (v) => `${d.ticker} R$${v.toFixed(0)}` },
-      { values: bova.slice(i0), color: "--s2", label: "BOVA11", endLabel: (v) => `BOVA11 R$${v.toFixed(0)}` }],
-      { log: true, h: 280, labels: true, legend: true, fmt: (v) => (Number.isFinite(v) ? `R$${v.toFixed(0)}` : "–"), aria: `${d.ticker} total return against BOVA11` });
+      { values: comp.slice(i0), color: "--s1", label: d.ticker, width: 2.5, endLabel: (v) => `${d.ticker} R$${f1(v, 0)}` },
+      { values: bova.slice(i0), color: "--s2", label: "BOVA11", endLabel: (v) => `BOVA11 R$${f1(v, 0)}` }],
+      { log: true, h: 280, labels: true, legend: true, fmt: (v) => (Number.isFinite(v) ? `R$${f1(v, 0)}` : "–"),
+        aria: L(`Retorno total de ${d.ticker} contra o BOVA11`, `${d.ticker} total return against BOVA11`) });
     const dv = dividendYears(d.dividends, n.asof);
-    barChart($("#dividends"), dv.years, dv.per, perShare, { aria: "Dividends per share by year" });
+    barChart($("#dividends"), dv.years, dv.per, perShare, { aria: L("Dividendos por ação, por ano", "Dividends per share by year") });
     if (fin) { finDraw(d, fin); return; }   // score, valuation and business: the financials screen's own
 
-    const fmtS = (v) => (Number.isFinite(v) ? v.toFixed(0) : "–");
-    lineChart($("#score"), H.dates, [{ values: H.score.map(num), color: "--s1", label: "score", width: 2.5 }],
-      { h: 200, fmt: fmtS, yMin: 0, yMax: 100, fixed: true, ticks: [0, 25, 50, 75, 100], aria: "Score each quarter" });
+    const fmtS = (v) => f1(v, 0);
+    lineChart($("#score"), H.dates, [{ values: H.score.map(num), color: "--s1", label: L("nota", "score"), width: 2.5 }],
+      { h: 200, fmt: fmtS, yMin: 0, yMax: 100, fixed: true, ticks: [0, 25, 50, 75, 100], aria: L("Nota a cada trimestre", "Score each quarter") });
     const pill = $("#pillars"); pill.replaceChildren();
-    for (const [k, key] of [["Value", "value_score"], ["Quality", "quality_score"], ["Momentum", "momentum_score"], ["Income", "income_score"], ["Growth (not scored)", "growth_score"]]) {
-      const cell = el("div", { className: "mini" }, el("h4", { textContent: k }), el("div", { className: "val", textContent: `now ${fmtS(num(n[key]))}` }), el("div"));
+    for (const [k, key] of [[PILLAR.value, "value_score"], [PILLAR.quality, "quality_score"], [PILLAR.momentum, "momentum_score"], [PILLAR.income, "income_score"],
+      [L("Crescimento (fora da nota)", "Growth (not scored)"), "growth_score"]]) {
+      const cell = el("div", { className: "mini" }, el("h4", { textContent: k }), el("div", { className: "val", textContent: `${L("hoje", "now")} ${fmtS(num(n[key]))}` }), el("div"));
       pill.append(cell);
       lineChart(cell.lastChild, H.dates, [{ values: (H[key] || []).map(num), color: "--s1", label: k }], { h: 110, fmt: fmtS, yMin: 0, yMax: 100, fixed: true, ticks: [0, 50, 100] });
     }
 
     const val = $("#valuation"); val.replaceChildren();
-    for (const [label, key, fmt] of [["P/E", "pe", axis(f1, 1, 1)], ["EV / EBIT", "ev_ebit", axis(f1, 1, 1)], ["Dividend yield", "dividend_yield", axis(pct, 100, 1)]]) {
+    for (const [label, key, fmt] of [[L("P/L", "P/E"), "pe", axis(f1, 1, 1)], ["EV / EBIT", "ev_ebit", axis(f1, 1, 1)], ["Dividend yield", "dividend_yield", axis(pct, 100, 1)]]) {
       const v = H[key].map(num).map((x) => (key !== "dividend_yield" && (x <= 0 || x > 100) ? NaN : x));   // P/E > 100: off the scale
       const med = median(v);
-      const cell = el("div", { className: "mini" }, el("h4", { textContent: label }), el("div", { className: "val", textContent: `now ${fmt(num(n[key]))} · own median ${fmt(med)}` +
-        (key !== "dividend_yield" ? " · capped at 4× median" : "") }), el("div"));
+      const cell = el("div", { className: "mini" }, el("h4", { textContent: label }), el("div", { className: "val", textContent:
+        L(`hoje ${fmt(num(n[key]))} · mediana própria ${fmt(med)}`, `now ${fmt(num(n[key]))} · own median ${fmt(med)}`) +
+        (key !== "dividend_yield" ? L(" · teto de 4× a mediana", " · capped at 4× median") : "") }), el("div"));
       val.append(cell);
       // Ceiling at 4x the own median: one quarter of tiny earnings must not flatten the rest.
-      lineChart(cell.lastChild, H.dates, [{ values: v, color: "--s1", label }], { h: 150, fmt, ref: med, refLabel: "own median",
+      lineChart(cell.lastChild, H.dates, [{ values: v, color: "--s1", label }], { h: 150, fmt, ref: med, refLabel: L("mediana própria", "own median"),
         clipHi: key === "dividend_yield" ? undefined : 4 * med, yMin: 0 });
     }
 
     const bus = $("#business"); bus.replaceChildren();
     const F = d.fundamentals;
-    for (const [label, values, dates, fmt] of [
-      ["Revenue (TTM)", F.revenue.map(num), F.dates, brlAxis], ["Net income (TTM)", F.net_income.map(num), F.dates, brlAxis],
-      ["Return on equity", H.roe.map(num), H.dates, axis(pct, 100, 0)], ["Return on invested capital", H.roic.map(num), H.dates, axis(pct, 100, 0)]]) {
+    for (const [label, values, dates, fmt, zero] of [
+      [L("Receita (12M)", "Revenue (TTM)"), F.revenue.map(num), F.dates, brlAxis, false], [L("Lucro líquido (12M)", "Net income (TTM)"), F.net_income.map(num), F.dates, brlAxis, true],
+      [L("Retorno sobre o patrimônio (ROE)", "Return on equity"), H.roe.map(num), H.dates, axis(pct, 100, 0), false],
+      [L("Retorno sobre o capital investido (ROIC)", "Return on invested capital"), H.roic.map(num), H.dates, axis(pct, 100, 0), false]]) {
       const last = values.filter(Number.isFinite).at(-1);
-      const cell = el("div", { className: "mini" }, el("h4", { textContent: label }), el("div", { className: "val", textContent: `latest ${fmt(last)}` }), el("div"));
+      const cell = el("div", { className: "mini" }, el("h4", { textContent: label }), el("div", { className: "val", textContent: `${L("último", "latest")} ${fmt(last)}` }), el("div"));
       bus.append(cell);
-      lineChart(cell.lastChild, dates, [{ values, color: "--s1", label }], { h: 140, fmt, ref: label.startsWith("Net") ? 0 : undefined, refLabel: "zero",
+      lineChart(cell.lastChild, dates, [{ values, color: "--s1", label }], { h: 140, fmt, ref: zero ? 0 : undefined, refLabel: L("zero", "zero"),
         ml: fmt === brlAxis ? 70 : 46 });
     }
   };
@@ -207,11 +219,11 @@ function render(d, sp, fin, finMeta) {
 
   const bt = $("#backtest"); bt.replaceChildren();
   if (fin) bt.append(finBacktestTable(d));
-  else if (!d.backtest.length) bt.append(el("p", { className: "muted", textContent: "Never in the yearly top 10 since 2012." }));
+  else if (!d.backtest.length) bt.append(el("p", { className: "muted", textContent: L("Nunca esteve entre as 10 do ano desde 2012.", "Never in the yearly top 10 since 2012.") }));
   else {
     const t = el("table");
-    t.append(el("tr", {}, ...["Bought", "Rank", "Return over the year"].map((h, i) => el("th", { className: i ? "" : "l", textContent: h }))));
-    for (const b of d.backtest) t.append(el("tr", {}, el("td", { className: "l", textContent: b.date }), el("td", { textContent: `#${b.rank}` }), retCell(num(b.return))));
+    t.append(el("tr", {}, ...[L("Comprada em", "Bought"), L("Posição", "Rank"), L("Retorno no ano", "Return over the year")].map((h, i) => el("th", { className: i ? "" : "l", textContent: h }))));
+    for (const b of d.backtest) t.append(el("tr", {}, el("td", { className: "l", textContent: fmtDate(b.date) }), el("td", { textContent: `#${b.rank}` }), retCell(num(b.return))));
     bt.append(t);
   }
 }
@@ -220,8 +232,8 @@ function render(d, sp, fin, finMeta) {
 // with a sector's holding companies ("Emp. Adm. Part. - Petróleo e Gás") counted
 // in it. (To switch to the screen's normalized sector groups once it has them.)
 const sectorOf = (r) => (r.sector || "").replace(/^Emp\. Adm\. Part\. - /, "");
-const PEER_HEAD = [["#"], ["Company", "l sticky"], ["Score"], ["V", "c", "Value"], ["Q", "c", "Quality"], ["M", "c", "Momentum"], ["I", "c", "Income"],
-  ["P/E"], ["EV/EBIT"], ["ROE"], ["Div. yield"]];
+const PEER_HEAD = [["#"], [L("Empresa", "Company"), "l sticky"], [L("Nota", "Score")], ["V", "c", PILLAR.value], ["Q", "c", PILLAR.quality], ["M", "c", PILLAR.momentum],
+  [L("D", "I"), "c", PILLAR.income], [L("P/L", "P/E")], ["EV/EBIT"], ["ROE"], [L("DY", "Div. yield")]];
 // The one reason none of ``rows`` is ranked, if they share it; "" otherwise.
 const sharedReason = (rows) => { const w = new Set(rows.map((r) => r.excluded)); return w.size === 1 ? [...w][0] : ""; };
 // Score columns only if some row is ranked. Under an unranked name, why it is not
@@ -233,7 +245,7 @@ function peerTable(t, rows, isMe) {
   t.replaceChildren(el("tr", {}, ...head.map(([h, c = "", title = ""]) => el("th", { className: c, textContent: h, title }))));
   rows.forEach((r, i) => {
     const tr = el("tr", { className: isMe(r) ? "me" : "" }, el("td", { textContent: r.excluded ? "–" : i + 1 }),
-      nameCell(r, r.excluded && why ? [el("span", { className: "why", textContent: `not ranked: ${r.excluded}`, title: r.excluded })] : []),
+      nameCell(r, r.excluded && why ? [el("span", { className: "why", textContent: L(`fora do ranking: ${excludedText(r.excluded)}`, `not ranked: ${r.excluded}`), title: excludedText(r.excluded) })] : []),
       ...(scores ? [scoreCell(num(r.score)), ...PILLAR_KEYS.map((k) => scoreCell(num(r[k + "_score"])))] : []),
       el("td", { textContent: f1(num(r.pe)) }), el("td", { textContent: f1(num(r.ev_ebit)) }),
       el("td", { textContent: pct(num(r.roe)) }), el("td", { textContent: pct(num(r.dividend_yield), 1) }));
@@ -248,38 +260,44 @@ function buildPeers(d, latest) {
   // Ranked: by score, ties by the screen's own rank. Not ranked: largest first.
   const ranked = all.filter((r) => !r.excluded).sort((a, b) => num(b.score) - num(a.score) || num(a.rank) - num(b.rank));
   const out = all.filter((r) => r.excluded && !isMe(r)).sort((a, b) => (num(b.market_cap) || 0) - (num(a.market_cap) || 0) || a.ticker.localeCompare(b.ticker));
-  $("#peersHead").textContent = `Peers · ${sector}`;
+  $("#peersHead").textContent = L(`Pares · ${sector}`, `Peers · ${sector}`);
   const chips = $("#peersChips"), t = $("#peers"), more = $("#peersOut");
   chips.replaceChildren(); t.replaceChildren(); more.replaceChildren();
-  if (all.length < 2) { $("#peersNote").textContent = "No other company of this sector is in today's screen."; return; }
+  if (all.length < 2) { $("#peersNote").textContent = L("Nenhuma outra empresa deste setor está no filtro de hoje.", "No other company of this sector is in today's screen."); return; }
   const pos = ranked.findIndex(isMe);
-  chips.append(el("span", { className: pos >= 0 ? "chip" : "chip warn", textContent: pos >= 0 ? `#${pos + 1} of ${ranked.length} ranked in its sector`
-    : `Not ranked today${self ? `: ${self.excluded}` : ""}${ranked.length ? ` · ${ranked.length} ranked in its sector` : ""}` }));
-  const intro = `All ${all.length} companies of this CVM sector in today's screen, its holding companies included`;
+  chips.append(el("span", { className: pos >= 0 ? "chip" : "chip warn", textContent: pos >= 0
+    ? L(`#${pos + 1} de ${ranked.length} no ranking do setor`, `#${pos + 1} of ${ranked.length} ranked in its sector`)
+    : L(`Fora do ranking hoje${self ? `: ${excludedText(self.excluded)}` : ""}${ranked.length ? ` · ${ranked.length} no ranking do setor` : ""}`,
+      `Not ranked today${self ? `: ${self.excluded}` : ""}${ranked.length ? ` · ${ranked.length} ranked in its sector` : ""}`) }));
+  const intro = L(`As ${all.length} empresas deste setor da CVM no filtro de hoje, incluindo as holdings do setor`,
+    `All ${all.length} companies of this CVM sector in today's screen, its holding companies included`);
   const main = [...ranked, ...(self && self.excluded ? [self] : [])];
   // Nothing ranked to compare against (banks: all financials): one open table.
   if (main.length < 2) {
     const none = !ranked.length && sharedReason(all);
-    $("#peersNote").textContent = `${intro}. ` + (none ? `None is ranked today: ${none}.` : "Ranked by score; the others are not ranked today.");
+    $("#peersNote").textContent = `${intro}. ` + (none ? L(`Nenhuma está no ranking hoje: ${excludedText(none)}.`, `None is ranked today: ${none}.`)
+      : L("Ordenadas pela nota; as outras estão fora do ranking hoje.", "Ranked by score; the others are not ranked today."));
     peerTable(t, [...main, ...out], isMe);
     return;
   }
-  $("#peersNote").textContent = `${intro}, ranked by score. Score cells are percentiles among all of today's eligible companies, not only this sector.`;
+  $("#peersNote").textContent = L(`${intro}, ordenadas pela nota. As células de nota são percentis entre todas as empresas elegíveis de hoje, não só as deste setor.`,
+    `${intro}, ranked by score. Score cells are percentiles among all of today's eligible companies, not only this sector.`);
   peerTable(t, main, isMe);
   if (!out.length) return;
   const rest = el("table", { className: "dense" }), same = sharedReason(out);
   peerTable(rest, out, isMe);
-  more.append(el("details", {}, el("summary", { textContent: `${out.length} more in the sector, not ranked today${same ? ` (${same})` : ""}` }), el("div", { className: "scroll" }, rest)));
+  more.append(el("details", {}, el("summary", { textContent: L(`Mais ${out.length} no setor, fora do ranking hoje${same ? ` (${excludedText(same)})` : ""}`,
+    `${out.length} more in the sector, not ranked today${same ? ` (${same})` : ""}`) }), el("div", { className: "scroll" }, rest)));
 }
 
 (async () => {
   shell(null, null);
   const t = (new URLSearchParams(location.search).get("t") || "").toUpperCase();
-  if (!/^[A-Z0-9]{4,6}$/.test(t)) { $("#name").textContent = "Pick a company from the screener"; return; }
+  if (!/^[A-Z0-9]{4,6}$/.test(t)) { $("#name").textContent = L("Escolha uma empresa no filtro de ações", "Pick a company from the screener"); return; }
   const [doc, latest, status, sparks, finRows, finMeta] = await Promise.all([getJSON(`companies/${t}.json`), get("screen/latest.csv"), getJSON("status.json"),
     getJSON("screen/sparks.json"), get("screen/financials.csv"), getJSON("screen/financials.json")]);
   setStatus(status);
-  if (!doc) { $("#name").textContent = `${t}: no page (only companies in today's screen have one)`; return; }
+  if (!doc) { $("#name").textContent = L(`${t}: sem página (só as empresas do filtro de hoje têm uma)`, `${t}: no page (only companies in today's screen have one)`); return; }
   // History is rebuilt monthly; today's numbers come from the daily screen.
   const row = (latest || []).find((x) => x.ticker === t);
   if (row) doc.now = row;

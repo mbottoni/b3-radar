@@ -58,12 +58,22 @@ svg { display: block; }
 .icon-btn:hover { background: var(--raised); }
 .icon-btn:disabled { opacity: 0.5; cursor: default; }
 .icon-btn svg { width: 16px; height: 16px; }
+/* PT | EN (i18n.js) */
+.lang { display: inline-flex; align-items: center; height: 32px; box-sizing: border-box; padding: 3px; border: 1px solid var(--border); border-radius: 999px; flex: none; }
+.lang button { all: unset; cursor: pointer; font-size: 12px; font-weight: 650; letter-spacing: 0.04em; padding: 3px 9px; border-radius: 999px; color: var(--muted); }
+.lang button:hover { color: var(--ink); }
+.lang button[aria-pressed="true"] { background: var(--ink); color: var(--page); }
+.lang button:focus-visible { outline: 2px solid var(--s1); outline-offset: 1px; }
 @media (max-width: 900px) {
   .top-in { flex-wrap: wrap; gap: 8px 10px; padding-top: 8px; }
   .tabs { order: 3; width: 100%; margin-left: 0; }
   .tabs a { padding: 10px 10px 9px; }
   .top .gh-label, .top .pill.rules { display: none; }
   .top .spacer { margin-left: auto; }
+}
+@media (max-width: 480px) {   /* the logo alone and tighter gaps, so the language switch fits on the first row */
+  .top-in { column-gap: 6px; }
+  .top .brand-name { display: none; }
 }
 
 /* -------------------------------------------------------------- layout */
