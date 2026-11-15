@@ -262,3 +262,26 @@ def test_an_empty_year_of_filings_leaves_the_stored_file_alone(tmp_path):
     cvm.store_filings(pd.DataFrame(columns=cols), tmp_path)        # this year's file, nothing in it yet
     back = pd.read_csv(tmp_path / "cvm" / "filings.csv", dtype=str)
     assert back.cnpj.tolist() == ["1"]
+
+
+# ------------------------------------------------------------------ sectors
+
+def test_sector_groups_fold_cvm_labels():
+    from b3radar import sectors
+    # A holding sits under its own label, often abbreviated (JHSF next to Cyrela, Allos next to Renner).
+    assert sectors.group("Emp. Adm. Part. - Const. Civil, Mat. Const. e Decoração") == "Real estate"
+    assert sectors.group("Construção Civil, Mat. Constr. e Decoração") == "Real estate"
+    assert sectors.group("Emp. Adm. Part. - Comércio (Atacado e Varejo)") == sectors.group("Comércio (Atacado e Varejo)") == "Retail"
+    assert sectors.group("Emp. Adm. Part. - Máqs., Equip., Veíc. e Peças") == "Industrials"
+    assert sectors.group("Emp. Adm. Part. - Serviços médicos") == sectors.group("Farmacêutico e Higiene") == "Health"
+    assert sectors.group("Emp. Adm. Part.-Bolsas de Valores/Mercadorias e Futuros") == "Financials"
+    assert sectors.group("Crédito Imobiliário") == "Financials"                 # credit, not real estate
+    assert sectors.group("Energia Elétrica") == sectors.group("Saneamento, Serv. Água e Gás") == "Utilities"
+    assert sectors.group("Telecomunicações") == "Telecom" and sectors.group("Comunicação e Informática") == "Tech & media"
+    assert sectors.group("Emp. Adm. Part. - Sem Setor Principal") == sectors.group("") == sectors.OTHER
+    assert sectors.group("Emp. Adm. Participações") == sectors.OTHER
+
+
+def test_sector_group_is_shown_but_not_a_rule():
+    assert "sector_group" in screen.COLUMNS
+    assert "group" not in str(screen.rules())          # the fingerprint, and so the live record, is untouched
