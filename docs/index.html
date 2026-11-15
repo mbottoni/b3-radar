@@ -33,6 +33,8 @@
       <p class="note" id="mkNote" style="margin:12px 0 0"></p>
     </section>
 
+    <div id="mkSynth"></div>
+
     <div class="two">
       <section class="card">
         <p class="eyebrow">Did it matter? What the next three years paid</p>
@@ -54,8 +56,15 @@
       </div>
       <p class="note" id="listNote"></p>
       <div class="scroll"><table id="list" class="dense"></table></div>
+      <div id="listMoves"></div>
       <p class="note" style="margin:12px 0 6px">Magic Formula baseline (Greenblatt: earnings yield + return on capital):</p>
       <div class="chips" id="magic"></div>
+    </section>
+
+    <section class="card">
+      <p class="eyebrow">Your watchlist</p>
+      <p class="note" id="watchNote"></p>
+      <div class="scroll"><table id="watch" class="dense"></table></div>
     </section>
 
     <section class="card">
@@ -81,6 +90,7 @@
       <label>Sector <select id="sector"><option value="">All sectors</option></select></label>
       <label>Daily volume <select id="liq"><option value="0">Any</option><option value="2e7">Over R$ 20m</option><option value="1e8">Over R$ 100m</option></select></label>
       <span class="count" id="scrCount"></span>
+      <button type="button" class="icon-btn" id="scrCsv" title="The rows shown, with the columns shown, as a CSV file">Download CSV</button>
     </div>
     <div class="card" style="padding:0">
       <div class="tbl-wrap"><table id="screen" class="dense"></table></div>
