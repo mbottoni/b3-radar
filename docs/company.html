@@ -59,7 +59,7 @@
   <div class="half">
     <section class="card">
       <p class="eyebrow">Dividends and JCP per share, by year</p>
-      <p class="note">By the year the stock went ex; per share as it trades today (earlier years divided through later splits). Capital returns excluded.</p>
+      <p class="note">By the year the stock went ex; per share as it trades today (earlier years divided through later splits). Capital returns excluded. An empty year paid nothing.</p>
       <div id="dividends"></div>
     </section>
     <section class="card">
@@ -84,6 +84,24 @@ function card({ k, sub, value, d, spark, ref, foot = [] }) {
     el("div", { className: "foot" }, ...foot.map((f) => el("span", {}, ...[].concat(f)))));
   c._spark = () => fillSpark(box, spark || [], { h: 42, ref });
   return c;
+}
+
+// Axis labels with only the decimals their tick step needs (10, 20, 30; 0.5%, 1.0%);
+// without a step (tooltips) ``d`` decimals.
+const axis = (f, unit, d) => (v, st) => f(v, st == null ? d : stepDigits(st * unit));
+const brlAxis = (v, st) => (st == null ? brl(v) : v === 0 ? "R$ 0" : Math.abs(v) >= 1e9
+  ? `R$ ${(v / 1e9).toFixed(stepDigits(st / 1e9))}bn` : `R$ ${(v / 1e6).toFixed(stepDigits(st / 1e6))}m`);
+const perShare = (v, st) => (st != null ? `R$ ${v.toFixed(stepDigits(st))}` : v >= 0.01 ? `R$ ${v.toFixed(2)}` : `R$ ${v.toPrecision(1)}`);
+
+// Every calendar year from the first payment to today's, a year without one as 0:
+// the chart must show the years a company paid nothing.
+function dividendYears(D, asof) {
+  const by = new Map(D.years.map((y, i) => [+y, num(D.per_share[i])]));
+  if (!by.size) return { years: [], per: [] };
+  const first = Math.min(...by.keys()), last = Math.max(...by.keys(), +String(asof || "").slice(0, 4) || 0);
+  const years = [], per = [];
+  for (let y = first; y <= last; y++) { years.push(String(y)); per.push(by.get(y) ?? 0); }
+  return { years, per };
 }
 
 function render(d, sp) {
@@ -138,7 +156,7 @@ function render(d, sp) {
     }
 
     const val = $("#valuation"); val.replaceChildren();
-    for (const [label, key, fmt] of [["P/E", "pe", (v) => f1(v)], ["EV / EBIT", "ev_ebit", (v) => f1(v)], ["Dividend yield", "dividend_yield", (v) => pct(v, 1)]]) {
+    for (const [label, key, fmt] of [["P/E", "pe", axis(f1, 1, 1)], ["EV / EBIT", "ev_ebit", axis(f1, 1, 1)], ["Dividend yield", "dividend_yield", axis(pct, 100, 1)]]) {
       const v = H[key].map(num).map((x) => (key !== "dividend_yield" && (x <= 0 || x > 100) ? NaN : x));   // P/E > 100: off the scale
       const med = median(v);
       const cell = el("div", { className: "mini" }, el("h4", { textContent: label }), el("div", { className: "val", textContent: `now ${fmt(num(n[key]))} · own median ${fmt(med)}` +
@@ -152,15 +170,16 @@ function render(d, sp) {
     const bus = $("#business"); bus.replaceChildren();
     const F = d.fundamentals;
     for (const [label, values, dates, fmt] of [
-      ["Revenue (TTM)", F.revenue.map(num), F.dates, brl], ["Net income (TTM)", F.net_income.map(num), F.dates, brl],
-      ["Return on equity", H.roe.map(num), H.dates, (v) => pct(v)], ["Return on invested capital", H.roic.map(num), H.dates, (v) => pct(v)]]) {
+      ["Revenue (TTM)", F.revenue.map(num), F.dates, brlAxis], ["Net income (TTM)", F.net_income.map(num), F.dates, brlAxis],
+      ["Return on equity", H.roe.map(num), H.dates, axis(pct, 100, 0)], ["Return on invested capital", H.roic.map(num), H.dates, axis(pct, 100, 0)]]) {
       const last = values.filter(Number.isFinite).at(-1);
       const cell = el("div", { className: "mini" }, el("h4", { textContent: label }), el("div", { className: "val", textContent: `latest ${fmt(last)}` }), el("div"));
       bus.append(cell);
       lineChart(cell.lastChild, dates, [{ values, color: "--s1", label }], { h: 140, fmt, ref: label.startsWith("Net") ? 0 : undefined, refLabel: "zero",
-        ml: fmt === brl ? 70 : 46 });
+        ml: fmt === brlAxis ? 70 : 46 });
     }
-    barChart($("#dividends"), d.dividends.years, d.dividends.per_share.map(num), (v) => `R$ ${v.toFixed(2)}`, { aria: "Dividends per share by year" });
+    const dv = dividendYears(d.dividends, n.asof);
+    barChart($("#dividends"), dv.years, dv.per, perShare, { aria: "Dividends per share by year" });
   };
   draw();
   REDRAW.add(draw);
