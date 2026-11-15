@@ -1,10 +1,11 @@
 name: backtest
 
 # Monthly: the yearly lists only change in May, but prices, dividends and
-# corrections keep moving the results. Second day of the month, 12:00 UTC.
+# corrections keep moving the results. Second day of the month, 12:17 UTC
+# (09:17 in Brasília; GitHub starts it hours later).
 on:
   schedule:
-    - cron: "0 12 2 * *"
+    - cron: "17 12 2 * *"
   workflow_dispatch:
 
 permissions:

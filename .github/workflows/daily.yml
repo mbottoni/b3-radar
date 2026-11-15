@@ -1,11 +1,13 @@
 name: daily
 
 # B3 publishes each session's quote file the same evening and CVM refreshes
-# its filings during the week. 10:00 UTC (07:00 in Brasília), Tuesday to
-# Saturday, picks up the previous session.
+# its filings during the week. 10:17 UTC (07:17 in Brasília), Tuesday to
+# Saturday, picks up the previous session. GitHub starts scheduled runs hours
+# late (6 to 8 in November 2026, see the README), still well before the next
+# session's file. Minute 17 keeps off the top of the hour, GitHub's busiest.
 on:
   schedule:
-    - cron: "0 10 * * 2-6"
+    - cron: "17 10 * * 2-6"
   workflow_dispatch:
 
 permissions:
