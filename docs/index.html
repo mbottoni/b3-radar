@@ -83,7 +83,7 @@
       <h1>Screener</h1>
       <p class="meta" id="scrMeta"></p>
     </div>
-    <p class="lede">Every listed company, scored on four pillars, each a percentile within the eligible universe (0–100; blue above the median, red below). Growth is shown, not scored. Click a column to sort, a row for why it scores what it does, a ticker for its history.</p>
+    <p class="lede">Every listed company, scored on four pillars, each a percentile within the eligible universe (0–100; blue above the median, red below). Growth is shown, not scored. Click a column to sort, a row for why it scores what it does, a ticker for its history. Banks, insurers and their holdings are left out here and ranked apart, in <a href="#/financials">Financials</a>.</p>
     <div class="presets" id="presets"></div>
     <div class="controls">
       <label>Search <input type="search" id="q" placeholder="Ticker or company"></label>
@@ -95,6 +95,37 @@
     <div class="card" style="padding:0">
       <div class="tbl-wrap"><table id="screen" class="dense"></table></div>
     </div>
+  </section>
+
+  <!-- ========================================================== FINANCIALS -->
+  <section data-tab="financials" hidden>
+    <div class="pagehead">
+      <h1>Banks, insurers and their holdings</h1>
+      <p class="meta" id="finMeta"></p>
+    </div>
+    <div id="finCallout"></div>
+    <p class="lede">Ranked on four pillars that fit a financial company, each a percentile among the eligible financials only: <b>value</b> (book / market value), <b>quality</b> (return on equity, and how steady it was over three years), <b>momentum</b> and <b>income</b> (the main screen's 12–1 return and dividend yield). Net income and equity are the controlling shareholders' share, from CVM's filings, point in time. P/E and payout are shown, not scored. Click a row for the breakdown, a ticker for its history.</p>
+    <div class="presets" id="finPresets"></div>
+    <div class="card" style="padding:0">
+      <div class="tbl-wrap"><table id="finTable" class="dense"></table></div>
+    </div>
+
+    <section class="card">
+      <p class="eyebrow">Does this score separate winners from losers?</p>
+      <p class="note" id="finBtNote">Loading…</p>
+      <div id="finQuint" class="quint" style="grid-template-columns:repeat(auto-fit,minmax(160px,1fr))"></div>
+      <p class="note" style="margin-top:12px" id="finBtRead"></p>
+    </section>
+
+    <section class="card">
+      <p class="eyebrow">How it is made, and its limits</p>
+      <ul class="caveats">
+        <li><b>The accounts.</b> Banks, insurers and holdings file different charts of accounts, and the codes move between them (a bank's 2.03 is a liability, an insurer's its equity). Net income is the last line of the income statement before earnings per share; equity is the balance sheet's "Patrimônio Líquido". Consolidated and individual statements are never mixed in a trailing twelve months.</li>
+        <li><b>Who is in.</b> Every company the main screen leaves out as "financial sector" (banks, insurers and brokers, their holdings, card acquirers), under the main screen's own liquidity, history and status filters. Few pass: under 20 in any year since 2012, which makes every result here fragile.</li>
+        <li><b>Insurance brokers</b> (Qualicorp, Wiz) are in, though they file ordinary accounts; their book value means less than a bank's.</li>
+        <li><b>Its own fingerprint.</b> Changing these rules never touches the main score, its fingerprint or its track record.</li>
+      </ul>
+    </section>
   </section>
 
   <!-- ============================================================ BACKTEST -->
@@ -204,5 +235,6 @@
 <div id="tip" role="tooltip"></div>
 <script src="assets/common.js"></script>
 <script src="assets/index.js"></script>
+<script src="assets/financials.js"></script>
 </body>
 </html>

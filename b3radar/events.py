@@ -162,11 +162,13 @@ def load(data_dir: Path) -> tuple[pd.DataFrame, pd.DataFrame]:
     stock = pd.read_csv(ev / "stock.csv", dtype=str, keep_default_na=False) if (ev / "stock.csv").exists() \
         else pd.DataFrame(columns=STOCK_COLUMNS)
     cash["rate"] = pd.to_numeric(cash.rate, errors="coerce")
-    inferred = ev / "stock_inferred.csv"
-    if inferred.exists():
-        stock = pd.concat([stock, pd.read_csv(inferred, dtype=str, keep_default_na=False)], ignore_index=True)
+    # Inferred from B3's ex-markers (infer_stock_events), and corrections by hand (stock_fixes.csv: the half of
+    # Itaú's 2011 reverse split and split of the same day that B3's service leaves out).
+    for extra in ("stock_inferred.csv", "stock_fixes.csv"):
+        if (ev / extra).exists():
+            stock = pd.concat([stock, pd.read_csv(ev / extra, dtype=str, keep_default_na=False)], ignore_index=True)
     stock["factor"] = pd.to_numeric(stock.factor, errors="coerce")
-    stock["mult"] = [share_multiplier(lbl.replace(" (INFERIDO)", ""), f) for lbl, f in zip(stock.label, stock.factor)]
+    stock["mult"] = [share_multiplier(lbl.split(" (")[0], f) for lbl, f in zip(stock.label, stock.factor)]
     return cash, stock
 
 
