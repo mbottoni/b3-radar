@@ -4,8 +4,10 @@ Sources (dados.cvm.gov.br, CIA_ABERTA): ``cad_cia_aberta.csv`` (register),
 FCA ``valor_mobiliario`` (trading codes), DFP (annual) and ITR (quarterly)
 statements. All CVM files are ';'-separated latin-1.
 
-Only standard (non-financial) account codes are extracted; banks and
+``filings`` extracts the standard (non-financial) account codes; banks and
 insurers use a different chart of accounts and are screened out by sector.
+``financial_filings`` finds their net income and equity by their place in
+the statement, for the financials screen (``financials.py``).
 """
 
 from __future__ import annotations
@@ -158,17 +160,130 @@ def filings(kind: str, zip_path: Path) -> pd.DataFrame:
     return out[FILING_COLUMNS].sort_values(["cnpj", "dt_refer"]).reset_index(drop=True)
 
 
-def store_filings(new: pd.DataFrame, data_dir: Path) -> None:
-    """Merge into data/cvm/filings.csv, replacing the (kind, year) blocks rebuilt."""
-    path = data_dir / "cvm" / "filings.csv"
-    if path.exists() and not new.empty:
+def store_filings(new: pd.DataFrame, data_dir: Path, name: str = "filings.csv",
+                  order: tuple[str, ...] = ("cnpj", "kind", "dt_refer")) -> None:
+    """Merge into data/cvm/<name>, replacing the (kind, year) blocks rebuilt.
+    A file with nothing in it (January's files, this year's DFP for the financials)
+    changes nothing."""
+    path = data_dir / "cvm" / name
+    if new.empty:
+        return
+    if path.exists():
         old = pd.read_csv(path, dtype={"cnpj": str, "cd_cvm": str, "kind": str, "dt_refer": str, "dt_receb": str,
                                        "basis": str})
         rebuilt = set(zip(new.kind, new.dt_refer.str[:4]))
         old = old[[(k, d[:4]) not in rebuilt for k, d in zip(old.kind, old.dt_refer)]]
         new = pd.concat([old, new], ignore_index=True)
     path.parent.mkdir(parents=True, exist_ok=True)
-    new.sort_values(["cnpj", "kind", "dt_refer"]).to_csv(path, index=False, lineterminator="\n", float_format="%.0f")
+    new.sort_values(list(order)).to_csv(path, index=False, lineterminator="\n", float_format="%.0f")
+
+
+# ------------------------------------------------- financial statements
+
+# Banks, insurers and their holdings file other charts of accounts, and the
+# codes differ between them: net income is 3.09 (Itaú, and Banco do Brasil
+# until 2019), 3.11 (BB since 2020, Itaúsa, Porto Seguro) or 3.13 (BB
+# Seguridade, IRB, and most banks' individual statements); equity is 2.03
+# (insurers, holdings), 2.05, 2.07 or 2.08 (banks), while a bank's
+# consolidated 2.03 is a liability (Itaú: financial liabilities at
+# amortized cost). What does not
+# move, in every financial company's DFP and ITR since 2010: net income is
+# the last top-level income line before 3.99 (earnings per share), named
+# "Lucro/Prejuízo ... do Período"; equity is the top-level liability line
+# named "Patrimônio Líquido". Both are found that way here, with the
+# parent's share: the net income line's child "Atribuído a Sócios da
+# Empresa Controladora", and equity less its child "... Não Controladores".
+FIN_FIELDS = ["net_income", "net_income_parent", "net_income_prev", "net_income_parent_prev", "equity", "equity_parent"]
+FIN_COLUMNS = ["cnpj", "cd_cvm", "kind", "dt_refer", "versao", "dt_receb", "basis", *FIN_FIELDS]
+
+
+def _level(code: pd.Series) -> pd.Series:
+    return code.str.count(r"\.")
+
+
+def _fin_extract(z: zipfile.ZipFile, year: int, basis: str, cnpjs: set | None) -> pd.DataFrame:
+    """Net income (year to date, this year and the same period a year
+    before) and equity of each filing in one basis (con/ind)."""
+    cols = {"CNPJ_CIA", "DT_REFER", "VERSAO", "ORDEM_EXERC", "DT_INI_EXERC", "CD_CONTA", "DS_CONTA", "VL_CONTA",
+            "ESCALA_MOEDA"}
+    key = ["CNPJ_CIA", "DT_REFER", "VERSAO"]
+    out = []
+    for stmt in ("DRE", "BPP"):
+        f = _member(z, f"_{stmt}_{basis}_{year}.csv")
+        if f is None:
+            return pd.DataFrame()
+        df = _csv(io.TextIOWrapper(f, encoding="latin-1"), usecols=lambda c: c in cols)
+        if cnpjs is not None:
+            df = df[df.CNPJ_CIA.isin(cnpjs)]
+        df = df[_level(df.CD_CONTA) <= 2].copy()
+        df["value"] = _scaled(df)
+        out.append(df)
+    dre, bpp = out
+    # Income: the year-to-date rows (earliest period start in each filing).
+    dre = dre[dre.DT_INI_EXERC == dre.groupby(key + ["ORDEM_EXERC", "CD_CONTA"]).DT_INI_EXERC.transform("min")]
+    top = dre[(_level(dre.CD_CONTA) == 1) & (dre.CD_CONTA != "3.99")]
+    top = top.assign(n=top.CD_CONTA.str.split(".").str[1].astype(int)).sort_values("n", kind="stable")
+    ni = top.groupby(key + ["ORDEM_EXERC"]).tail(1)
+    ni = ni[ni.DS_CONTA.str.contains("lucro|preju", case=False)]
+    sub = dre[_level(dre.CD_CONTA) == 2].assign(parent=lambda d: d.CD_CONTA.str.rsplit(".", n=1).str[0])
+    nci_line = sub.DS_CONTA.str.contains(r"(?i)n[ãa]o controlador")
+    for name, mask in (("parent_value", ~nci_line & sub.DS_CONTA.str.contains("controladora", case=False)),
+                       ("nci_value", nci_line)):
+        part = sub[mask].drop_duplicates(key + ["ORDEM_EXERC", "parent"])
+        ni = ni.merge(part[key + ["ORDEM_EXERC", "parent", "value"]].rename(columns={"parent": "CD_CONTA", "value": name}),
+                      on=key + ["ORDEM_EXERC", "CD_CONTA"], how="left")
+    # The split is used only when its two lines add up to the total: IRB
+    # files zeros in both. Individual statements are the parent's own.
+    adds_up = (ni.parent_value + ni.nci_value.fillna(0) - ni.value).abs() <= np.maximum(0.01 * ni.value.abs(), 1e3)
+    ni["parent_value"] = ni.parent_value.where(adds_up, ni.value)
+    cur, prev = ni[ni.ORDEM_EXERC == "ÚLTIMO"], ni[ni.ORDEM_EXERC != "ÚLTIMO"]
+    inc = cur[key + ["value", "parent_value"]].rename(columns={"value": "net_income", "parent_value": "net_income_parent"}).merge(
+        prev[key + ["value", "parent_value"]].rename(columns={"value": "net_income_prev", "parent_value": "net_income_parent_prev"}),
+        on=key, how="left")
+    # Balance: the top-level "Patrimônio Líquido" line, less non-controlling interests.
+    bpp = bpp[bpp.ORDEM_EXERC == "ÚLTIMO"]
+    eq = bpp[(_level(bpp.CD_CONTA) == 1) & bpp.DS_CONTA.str.match(r"(?i)patrim[oô]nio l[ií]quido")]
+    eq = eq.drop_duplicates(key)
+    nci = bpp[(_level(bpp.CD_CONTA) == 2) & bpp.DS_CONTA.str.contains(r"(?i)n[ãa]o controlador")]
+    nci = nci.assign(parent=nci.CD_CONTA.str.rsplit(".", n=1).str[0])
+    eq = eq.merge(nci[key + ["parent", "value"]].rename(columns={"parent": "CD_CONTA", "value": "nci"}).drop_duplicates(key),
+                  on=key + ["CD_CONTA"], how="left")
+    # Zero equity is a blank (Santander's individual annual reports of 2020 and 2021), not a bank with no capital.
+    total = eq.value.where(eq.value != 0)
+    eq = pd.DataFrame({**{k: eq[k] for k in key}, "equity": total, "equity_parent": total - eq.nci.fillna(0.0)})
+    df = inc.merge(eq, on=key, how="outer")
+    df["basis"] = basis
+    return df
+
+
+def financial_filings(kind: str, zip_path: Path, cnpjs: set | None = None) -> pd.DataFrame:
+    """Net income and equity of the financial companies (``cnpjs``) in one
+    DFP/ITR year file, latest version of each filing. Unlike ``filings``,
+    both bases are kept, one row each: banks' individual statements follow
+    the Banco Central's accounting and their consolidated ones IFRS, so a
+    trailing twelve months must not mix them (ABC Brasil files
+    consolidated statements until 2023, individual ones after)."""
+    year = int(zip_path.stem.split("_")[-1])
+    k = kind.lower()
+    with zipfile.ZipFile(zip_path) as z:
+        idx = _csv(_member(z, f"{k}_cia_aberta_{year}.csv"), usecols=["CNPJ_CIA", "DT_REFER", "VERSAO", "CD_CVM", "DT_RECEB"])
+        parts = [x for x in (_fin_extract(z, year, b, cnpjs) for b in ("con", "ind")) if not x.empty]
+    if not parts:
+        return pd.DataFrame(columns=FIN_COLUMNS)
+    key = ["CNPJ_CIA", "DT_REFER", "VERSAO"]
+    df = pd.concat(parts, ignore_index=True).merge(idx, on=key, how="left")
+    df["VERSAO"] = df.VERSAO.astype(int)
+    df = df.sort_values(["VERSAO", "DT_RECEB"], kind="stable").drop_duplicates(["CNPJ_CIA", "DT_REFER", "basis"], keep="last")
+    out = df.rename(columns={"CNPJ_CIA": "cnpj", "DT_REFER": "dt_refer", "VERSAO": "versao", "CD_CVM": "cd_cvm",
+                             "DT_RECEB": "dt_receb"})
+    out["cd_cvm"] = out.cd_cvm.fillna("").str.lstrip("0")
+    out["kind"] = kind
+    return out[FIN_COLUMNS].sort_values(["cnpj", "dt_refer", "basis"]).reset_index(drop=True)
+
+
+def store_financial_filings(new: pd.DataFrame, data_dir: Path) -> None:
+    """Merge into data/cvm/financials.csv, replacing the (kind, year) blocks rebuilt."""
+    store_filings(new, data_dir, "financials.csv", ("cnpj", "kind", "dt_refer", "basis"))
 
 
 # -------------------------------------------------------- capital timeline

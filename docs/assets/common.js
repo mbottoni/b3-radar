@@ -68,8 +68,8 @@ function syncThemeButton() {
 }
 
 // --------------------------------------------------------------- header
-const TABS = [["overview", L("Visão geral", "Overview")], ["screener", L("Filtro de ações", "Screener")], ["backtest", "Backtest"],
-  ["record", L("Histórico ao vivo", "Track record")]];
+const TABS = [["overview", L("Visão geral", "Overview")], ["screener", L("Filtro de ações", "Screener")], ["financials", "Financials"],
+  ["backtest", "Backtest"], ["record", L("Histórico ao vivo", "Track record")]];
 const GH = '<svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8a8 8 0 0 0 5.47 7.59c.4.07.55-.17.55-.38v-1.33c-2.23.48-2.7-1.07-2.7-1.07-.36-.92-.89-1.17-.89-1.17-.73-.5.06-.49.06-.49.8.06 1.23.83 1.23.83.72 1.22 1.87.87 2.33.66.07-.52.28-.87.5-1.07-1.78-.2-3.65-.89-3.65-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82a7.6 7.6 0 0 1 4 0c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48v2.2c0 .21.15.46.55.38A8 8 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>';
 const LOGO = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="8" opacity=".55"/><circle cx="12" cy="12" r="3.5"/><path d="M12 12l6-6"/></svg>';
 // ``active``: a tab key (index page) or null (other pages link back to the tabs).
@@ -181,15 +181,46 @@ function gauge(value, { size = 200, label = "" } = {}) {
   return s;
 }
 
+// ---------------------------------------------------------------- ticks
+// Decimals that tell ticks ``step`` apart: 0.5 -> 1, 5 -> 0.
+const stepDigits = (step) => Math.max(0, Math.ceil(-Math.log10(step) - 1e-9));
+// Round ticks inside [lo, hi], 1, 2 or 5 x 10^k apart, about ``count`` steps:
+// at least three when a finer step allows, coarser while ``fmt(tick, step)``
+// would print two ticks the same.
+function niceTicks(lo, hi, count, fmt = (v) => String(v)) {
+  const raw = (hi - lo) / Math.max(1, count);
+  if (!(raw > 0) || !Number.isFinite(raw)) return { ticks: [lo], step: undefined };
+  const p = 10 ** Math.floor(Math.log10(raw)), e = raw / p;
+  let step = +(p * (e >= 7.07 ? 10 : e >= 3.16 ? 5 : e >= 1.41 ? 2 : 1)).toPrecision(12);
+  const at = (st) => {
+    const out = [];
+    for (let k = Math.ceil(lo / st - 1e-9); k * st <= hi + st * 1e-9; k++) out.push(+(k * st).toPrecision(12));
+    return out;
+  };
+  const lead = (st) => Math.round(st / 10 ** Math.floor(Math.log10(st)));          // 1, 2 or 5
+  const unique = (ts, st) => new Set(ts.map((t) => fmt(t, st))).size === ts.length;
+  let ticks = at(step);
+  if (ticks.length < 3) {
+    const st = +(step / (lead(step) === 5 ? 2.5 : 2)).toPrecision(12), ts = at(st);   // 5 -> 2 -> 1 -> 0.5
+    if (unique(ts, st)) { step = st; ticks = ts; }
+  }
+  for (let i = 0; i < 6 && !unique(ticks, step); i++) {
+    step = +(step * (lead(step) === 2 ? 2.5 : 2)).toPrecision(12);                    // 1 -> 2 -> 5 -> 10
+    ticks = at(step);
+  }
+  return { ticks, step };
+}
+
 // ----------------------------------------------------------- line chart
 // series: [{values, color (a token), label, width, dash, endLabel(v)}];
-// opts: {h, log, fmt (axis), tipFmt, ticks, ref, refLabel, yMin, yMax, fixed,
-//        clipHi, ml, labels (direct end labels), legend, legendNote, aria, tipExtra(i)}
+// opts: {h, log, fmt (axis: fmt(v, step), step only on automatic ticks), tipFmt,
+//        ticks, ref, refLabel, yMin (a floor the padding does not cross), yMax,
+//        fixed, clipHi, ml, labels (direct end labels), legend, legendNote, aria, tipExtra(i)}
 function lineChart(box, dates, series, opts = {}) {
   box.replaceChildren();
   const vals = series.flatMap((s) => s.values).filter(Number.isFinite).filter((v) => !opts.log || v > 0);
   if (dates.length < 2 || !vals.length) { box.append(el("p", { className: "muted", textContent: L("Histórico insuficiente.", "Not enough history.") })); return; }
-  const fmt = opts.fmt || ((z) => fmtNum(z, 0)), tipFmt = opts.tipFmt || opts.fmt || ((z) => fmtNum(z, 1));
+  const fmt = opts.fmt || ((z, st) => fmtNum(z, st ? stepDigits(st) : 0)), tipFmt = opts.tipFmt || opts.fmt || ((z) => fmtNum(z, 1));
   const w = box.clientWidth || 600, h = opts.h || 200, ml = opts.ml || 46, mt = 10, mb = 20;
   // On a phone, end labels would eat a third of the plot: the legend names the lines instead.
   opts = { ...opts, labels: opts.labels && w >= 520, legend: opts.legend || (opts.labels && w < 520 && series.length > 1) };
@@ -200,17 +231,25 @@ function lineChart(box, dates, series, opts = {}) {
   if (opts.yMax !== undefined) hi = Math.max(hi, opts.yMax);
   if (Number.isFinite(opts.clipHi)) hi = Math.min(hi, opts.clipHi);
   const pad = opts.fixed ? 0 : (T(hi) - T(lo)) * 0.08 || 1;
-  const a = opts.fixed ? T(opts.yMin) : T(lo) - pad, b = opts.fixed ? T(opts.yMax) : T(hi) + pad;
+  let a = opts.fixed ? T(opts.yMin) : T(lo) - pad, b = opts.fixed ? T(opts.yMax) : T(hi) + pad;
+  // Padding never takes the axis past a floor the data respects (yMin, else zero):
+  // a dividend yield's axis does not go to -6%. Likewise a series that is never positive stops at 0.
+  if (!opts.fixed && !opts.log) {
+    const floor = opts.yMin ?? 0;
+    if (lo >= floor && a < floor) a = floor;
+    if (hi <= 0 && b > 0) b = 0;
+  }
   const clip = (v) => (Number.isFinite(opts.clipHi) && v > opts.clipHi ? opts.clipHi : v);
   const x = (i) => ml + (i / (dates.length - 1)) * (w - ml - mr), y = (v) => mt + (1 - (T(v) - a) / (b - a)) * (h - mt - mb);
   const s = svg("svg", { width: w, height: h, role: "img", "aria-label": opts.aria || series.map((z) => z.label).join(", ") });
-  let ticks = opts.ticks;
-  if (!ticks) ticks = opts.log ? [25, 50, 100, 200, 400, 800, 1600, 3200, 6400].filter((v) => T(v) >= a && T(v) <= b) : [0, 0.5, 1].map((f) => a + f * (b - a));
+  let ticks = opts.ticks, step;
+  if (!ticks && opts.log) ticks = [25, 50, 100, 200, 400, 800, 1600, 3200, 6400].filter((v) => T(v) >= a && T(v) <= b);
+  if (!ticks) ({ ticks, step } = niceTicks(a, b, Math.max(3, Math.round((h - mt - mb) / 50)), fmt));
   for (const t of ticks.filter((v) => T(v) >= a - 1e-9 && T(v) <= b + 1e-9)) {
     const yy = y(t);
     s.append(svg("line", { x1: ml, x2: w - mr, y1: yy, y2: yy, stroke: Math.abs(t) < 1e-12 && !opts.log ? css("--axis") : css("--grid") }));
     const tx = svg("text", { x: ml - 6, y: yy + 4, "text-anchor": "end", "font-size": 10, fill: css("--muted") });
-    tx.textContent = fmt(t); s.append(tx);
+    tx.textContent = fmt(t, step); s.append(tx);
   }
   if (Number.isFinite(opts.ref)) s.append(svg("line", { x1: ml, x2: w - mr, y1: y(opts.ref), y2: y(opts.ref), stroke: css("--other"), "stroke-width": 1.5 }));
   const yrs = dates.map((d, i) => [d, i]).filter(([d], i, arr) => i === 0 || d.slice(0, 4) !== arr[i - 1][0].slice(0, 4));
@@ -251,24 +290,52 @@ function lineChart(box, dates, series, opts = {}) {
     ...(opts.legendNote ? [el("span", { className: "muted", textContent: opts.legendNote })] : [])));
 }
 
-function barChart(box, labels, values, fmt, { h = 170, aria = "" } = {}) {
+// Columns from a zero baseline, one slot per label: a missing or zero value
+// leaves its slot empty (still hoverable), so a gap reads as a gap. Values sit
+// on the caps when every column has room; otherwise round y ticks carry them.
+// ``fmt(v, step)``: step is given for axis ticks only. Year labels are thinned
+// to round years (every 2, 5, 10...).
+function barChart(box, labels, values, fmt, { h = 170, aria = "", unit = L("por ação", "per share"), none = "no payments on file" } = {}) {
   box.replaceChildren();
-  if (!values.some(Number.isFinite)) { box.append(el("p", { className: "muted", textContent: L("Nenhum pagamento registrado.", "No payments on file.") })); return; }
-  const w = box.clientWidth || 600, ml = 8, mr = 8, mt = 16, mb = 18;
-  const hi = Math.max(...values.filter(Number.isFinite)) * 1.12, bw = (w - ml - mr) / labels.length;
+  if (!values.some((v) => v > 0)) { box.append(el("p", { className: "muted", textContent: L("Nenhum pagamento registrado.", "No payments on file.") })); return; }
+  const w = box.clientWidth || 600, mr = 8, mt = 16, mb = 18;
+  const widest = Math.max(...values.filter((v) => v > 0).map((v) => fmt(v).length)) * 6 + 8;   // ~6px a character at 10px
+  const capped = (w - 8 - mr) / labels.length >= widest, ml = capped ? 8 : 46, bw = (w - ml - mr) / labels.length;
+  const top = Math.max(...values.filter((v) => v > 0));
+  const hi = top * (capped ? 1.12 : 1.06);
   const y = (v) => mt + (1 - v / hi) * (h - mt - mb);
   const s = svg("svg", { width: w, height: h, role: "img", "aria-label": aria });
-  s.append(svg("line", { x1: ml, x2: w - mr, y1: y(0), y2: y(0), stroke: css("--axis") }));
-  labels.forEach((lab, i) => {
-    const v = values[i], bx = ml + i * bw + Math.min(4, bw * 0.15), bwid = Math.max(bw - 2 * Math.min(4, bw * 0.15), 2);
-    if (Number.isFinite(v) && v > 0) {
-      const r = svg("rect", { x: bx, y: y(v), width: bwid, height: y(0) - y(v), rx: 3, fill: css("--s1") });
-      r.addEventListener("pointermove", (ev) => showTip(ev, [el("b", { textContent: lab }), el("div", { className: "row" }, el("strong", { textContent: fmt(v) }), L("por ação", "per share"))]));
-      r.addEventListener("pointerleave", hideTip); s.append(r);
-      if (bw > 30) { const t = svg("text", { x: bx + bwid / 2, y: y(v) - 4, "text-anchor": "middle", "font-size": 10, fill: css("--ink") }); t.textContent = fmt(v); s.append(t); }
+  if (!capped) {
+    const { ticks, step } = niceTicks(0, hi, 3, fmt);
+    for (const t of ticks.filter((t) => t > 0)) {
+      s.append(svg("line", { x1: ml, x2: w - mr, y1: y(t), y2: y(t), stroke: css("--grid") }));
+      const tx = svg("text", { x: ml - 6, y: y(t) + 4, "text-anchor": "end", "font-size": 10, fill: css("--muted") }); tx.textContent = fmt(t, step); s.append(tx);
     }
-    if (bw > 22 || i % 2 === 0) { const t = svg("text", { x: bx + bwid / 2, y: h - 4, "text-anchor": "middle", "font-size": 10, fill: css("--muted") }); t.textContent = lab.slice(2); s.append(t); }
+  }
+  s.append(svg("line", { x1: ml, x2: w - mr, y1: y(0), y2: y(0), stroke: css("--axis") }));
+  const years = labels.every((l) => /^\d{4}$/.test(l)), every = [1, 2, 5, 10, 20, 50].find((k) => k * bw >= 40) || 100;
+  const hover = svg("rect", { y: mt, width: bw, height: y(0) - mt, fill: css("--grid"), opacity: 0 });
+  s.append(hover);
+  labels.forEach((lab, i) => {
+    const v = values[i], cx = ml + (i + 0.5) * bw, bwid = Math.max(2, Math.min(24, bw - 2 * Math.min(4, bw * 0.15)));
+    if (v > 0) {
+      // Rounded at the data end, square at the baseline.
+      const x0 = cx - bwid / 2, x1 = cx + bwid / 2, y0 = y(v), y1 = y(0), r = Math.min(bwid >= 8 ? 4 : 2, bwid / 2, y1 - y0);
+      s.append(svg("path", { d: `M${x0},${y1}V${y0 + r}Q${x0},${y0} ${x0 + r},${y0}H${x1 - r}Q${x1},${y0} ${x1},${y0 + r}V${y1}Z`, fill: css("--s1") }));
+      if (capped) { const t = svg("text", { x: cx, y: y0 - 4, "text-anchor": "middle", "font-size": 10, fill: css("--ink") }); t.textContent = fmt(v); s.append(t); }
+    }
+    if ((years ? +lab : i) % every === 0) { const t = svg("text", { x: cx, y: h - 4, "text-anchor": "middle", "font-size": 10, fill: css("--muted") }); t.textContent = lab; s.append(t); }
   });
+  // One hit area per slot (bar or not), the full plot height.
+  const hit = svg("rect", { x: ml, y: 0, width: Math.max(0, w - ml - mr), height: h, fill: "transparent" });
+  const move = (ev) => {
+    const i = Math.max(0, Math.min(labels.length - 1, Math.floor((ev.clientX - s.getBoundingClientRect().left - ml) / bw))), v = values[i];
+    hover.setAttribute("x", ml + i * bw); hover.setAttribute("opacity", 0.5);
+    showTip(ev, [el("b", { textContent: labels[i] }), v > 0 ? el("div", { className: "row" }, el("strong", { textContent: fmt(v) }), unit) : el("div", { className: "row muted", textContent: none })]);
+  };
+  hit.addEventListener("pointermove", move); hit.addEventListener("pointerdown", move);
+  hit.addEventListener("pointerleave", () => { hover.setAttribute("opacity", 0); hideTip(); });
+  s.append(hit);
   box.append(s);
 }
 

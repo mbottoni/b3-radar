@@ -14,7 +14,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-from . import cotahist, events
+from . import cotahist, events, sectors
 
 LIQUIDITY_MIN = 5e6          # R$ average daily traded volume, main ticker
 LIQUIDITY_WINDOW = 63        # sessions (~3 months)
@@ -463,6 +463,9 @@ def compute(inp: Inputs, asof: str, pit: bool = False) -> pd.DataFrame:
             b3_on, b3_pn = inp.b3_shares.get(main[:4], (np.nan, np.nan))
             ref_on = b3_on / mult(on_isins, asof, "9999") if b3_on > 0 and len(on) else (b3_on if b3_on > 0 else None)
             ref_pn = b3_pn / mult(pn_isins, asof, "9999") if b3_pn > 0 and len(pn) else (b3_pn if b3_pn > 0 else None)
+            # B3's count carried back, unchecked: not used here, a magnitude check for the financials screen.
+            cap_b3 = np.nansum([x * p if x else np.nan for x, p in ((ref_on, on_px), (ref_pn, pn_px))])
+            r["market_cap_b3"] = cap_b3 if cap_b3 > 0 else np.nan
             if pit:   # carried back through later splits, B3's count is no reference (Gafisa: two reverse splits since 2017)
                 ref_on = ref_on if ref_on and mult(on_isins, asof, "9999") == 1.0 else None
                 ref_pn = ref_pn if ref_pn and mult(pn_isins, asof, "9999") == 1.0 else None
@@ -478,6 +481,8 @@ def compute(inp: Inputs, asof: str, pit: bool = False) -> pd.DataFrame:
         rows.append(r)
     df = pd.DataFrame(rows)
     df["asof"] = asof
+    # Display only (not in the rules): CVM's label folded into a short group.
+    df["sector_group"] = df.sector.fillna("").map(sectors.group) if len(df) else ""
     hist = inp.ttm_hist if inp.ttm_hist is not None else ttm_history(inp.filings)
     df = df.join(growth(hist, asof), on="cnpj")
     return _metrics(df, px, inp.cash, stock, asof, pit, isins)
@@ -571,10 +576,10 @@ def _metrics(df: pd.DataFrame, px, cash, stock, asof, pit: bool = False, isins: 
     return df.sort_values(["rank", "ticker"], na_position="last").reset_index(drop=True)
 
 
-COLUMNS = ["asof", "rank", "ticker", "company", "sector", "score", "value_score", "quality_score", "momentum_score",
-           "income_score", "growth_score", "magic_rank", "price", "market_cap", "ev", "liquidity", "pe", "ev_ebit",
-           "earnings_yield", "book_to_market", "roe", "roic", "net_debt_ebit", "net_margin", "momentum", "dividend_yield",
-           "revenue_growth", "earnings_growth", "growth_consistency", "growth_base",
+COLUMNS = ["asof", "rank", "ticker", "company", "sector", "sector_group", "score", "value_score", "quality_score",
+           "momentum_score", "income_score", "growth_score", "magic_rank", "price", "market_cap", "ev", "liquidity", "pe",
+           "ev_ebit", "earnings_yield", "book_to_market", "roe", "roic", "net_debt_ebit", "net_margin", "momentum",
+           "dividend_yield", "revenue_growth", "earnings_growth", "growth_consistency", "growth_base",
            "fundamentals_date", "filed", "shares_source", "tickers", "cnpj", "excluded",
            "p_earnings_yield", "p_book_to_market", "p_roic", "p_roe", "p_net_debt_ebit", "p_momentum",
            "p_dividend_yield", "p_revenue_growth", "p_earnings_growth", "p_growth_consistency"]

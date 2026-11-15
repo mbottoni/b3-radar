@@ -23,7 +23,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-from . import backtest, cotahist, events, screen
+from . import backtest, cotahist, events, financials, screen
 
 SNAPSHOT_MONTHS = (4, 6, 9, 12)
 FIRST_YEAR = 2011
@@ -76,13 +76,23 @@ def build(data_dir: Path, log=print) -> int:
     latest = pd.read_csv(data_dir / "screen" / "latest.csv", dtype={"ticker": str, "cnpj": str}, keep_default_na=False)
     sessions = np.sort(inp.px.date.unique())
     dates = snapshot_dates(sessions)
-    snaps = []
+    fin = financials.load(data_dir)
+    fin_ttm = financials.ttm_history(fin)
+    snaps, fin_snaps = [], []
     for d in dates:
         s = screen.compute(inp, d, pit=True)
         s["eligible"] = s.excluded.fillna("") == ""
         snaps.append(s[["cnpj", "ticker", "eligible", *HISTORY_FIELDS]].assign(date=d))
-        log(f"[companies] snapshot {d}: {int(s.eligible.sum())} eligible")
+        # The financials screen of that day too (a separate ranking, for banks, insurers and their holdings).
+        f = financials.compute(s, fin, fin_ttm, d, pit=True)
+        f["eligible"] = f.excluded == ""
+        fin_snaps.append(f[["cnpj", "eligible", *financials.HISTORY_FIELDS]].assign(date=d, of=int(f.eligible.sum())))
+        log(f"[companies] snapshot {d}: {int(s.eligible.sum())} eligible, {int(f.eligible.sum())} financials")
     hist = pd.concat(snaps, ignore_index=True)
+    fin_hist = pd.concat(fin_snaps, ignore_index=True)
+    fin_now = financials.ttm(fin, sessions[-1]).basis
+    fin_bt_path = data_dir / "backtest" / "financials_holdings.csv"
+    fin_bt = pd.read_csv(fin_bt_path, dtype={"ticker": str}) if fin_bt_path.exists() else pd.DataFrame(columns=["ticker"])
 
     prices = backtest.Prices(inp.px, inp.cash, inp.stock)
     month_ends = sorted(set(pd.Series(sessions).groupby(pd.Series(sessions).str[:7]).max()))
@@ -132,6 +142,15 @@ def build(data_dir: Path, log=print) -> int:
             "backtest": [{"date": b.date, "rank": int(b.rank), "return": _r(b.period_return)}
                          for b in bt[bt.ticker == t].itertuples()] if len(bt) else [],
         }
+        fh = fin_hist[fin_hist.cnpj == cnpj].sort_values("date")
+        if len(fh):
+            doc["financials"] = {
+                "history": {"dates": list(fh.date), "eligible": [bool(x) for x in fh.eligible], "of": [int(x) for x in fh.of],
+                            **{k: [_r(x) for x in fh[k]] for k in financials.HISTORY_FIELDS}},
+                "fundamentals": financials.company_fundamentals(fin_ttm, cnpj, fin_now.get(cnpj)),
+                "backtest": [{"date": b.date, "rank": int(b.rank), "of": int(b.of), "quintile": int(b.quintile),
+                              "return": _r(b.period_return)} for b in fin_bt[fin_bt.ticker == t].itertuples()],
+            }
         name = f"{t}.json"
         (out_dir / name).write_text(json.dumps(doc, ensure_ascii=False, separators=(",", ":"), default=str) + "\n")
         keep.add(name)
