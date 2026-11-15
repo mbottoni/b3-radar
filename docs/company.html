@@ -12,6 +12,11 @@
   .crumb a { color: var(--muted); }
   .chips { margin: 8px 0 14px; }
   .chip.warn { background: transparent; border: 1px solid var(--border); color: var(--ink2); font-weight: 500; }
+  #peers tr.me td, #peersOut tr.me td { background: color-mix(in srgb, var(--s1) 10%, var(--surface)); }
+  #peers tr.me td:first-child { box-shadow: inset 3px 0 0 var(--s1); font-weight: 700; }
+  td.name .why { display: block; font-size: 12px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; max-width: 240px; }
+  #peersOut { margin-top: 8px; }
+  #peersOut summary { font-size: 13px; color: var(--ink2); }
 </style>
 </head>
 <body>
@@ -29,6 +34,14 @@
     <p class="eyebrow">Why it scores what it does today</p>
     <p class="note" id="whyNote"></p>
     <div id="why"></div>
+  </section>
+
+  <section class="card" id="peersCard">
+    <p class="eyebrow" id="peersHead">Peers</p>
+    <div class="chips" id="peersChips"></div>
+    <p class="note" id="peersNote"></p>
+    <div class="scroll"><table id="peers" class="dense"></table></div>
+    <div id="peersOut"></div>
   </section>
 
   <section class="card">
@@ -59,7 +72,7 @@
   <div class="half">
     <section class="card">
       <p class="eyebrow">Dividends and JCP per share, by year</p>
-      <p class="note">By the year the stock went ex; per share as it trades today (earlier years divided through later splits). Capital returns excluded.</p>
+      <p class="note">By the year the stock went ex; per share as it trades today (earlier years divided through later splits). Capital returns excluded. An empty year paid nothing.</p>
       <div id="dividends"></div>
     </section>
     <section class="card">
@@ -85,6 +98,24 @@ function card({ k, sub, value, d, spark, ref, foot = [] }) {
     el("div", { className: "foot" }, ...foot.map((f) => el("span", {}, ...[].concat(f)))));
   c._spark = () => fillSpark(box, spark || [], { h: 42, ref });
   return c;
+}
+
+// Axis labels with only the decimals their tick step needs (10, 20, 30; 0.5%, 1.0%);
+// without a step (tooltips) ``d`` decimals.
+const axis = (f, unit, d) => (v, st) => f(v, st == null ? d : stepDigits(st * unit));
+const brlAxis = (v, st) => (st == null ? brl(v) : v === 0 ? "R$ 0" : Math.abs(v) >= 1e9
+  ? `R$ ${(v / 1e9).toFixed(stepDigits(st / 1e9))}bn` : `R$ ${(v / 1e6).toFixed(stepDigits(st / 1e6))}m`);
+const perShare = (v, st) => (st != null ? `R$ ${v.toFixed(stepDigits(st))}` : v >= 0.01 ? `R$ ${v.toFixed(2)}` : `R$ ${v.toPrecision(1)}`);
+
+// Every calendar year from the first payment to today's, a year without one as 0:
+// the chart must show the years a company paid nothing.
+function dividendYears(D, asof) {
+  const by = new Map(D.years.map((y, i) => [+y, num(D.per_share[i])]));
+  if (!by.size) return { years: [], per: [] };
+  const first = Math.min(...by.keys()), last = Math.max(...by.keys(), +String(asof || "").slice(0, 4) || 0);
+  const years = [], per = [];
+  for (let y = first; y <= last; y++) { years.push(String(y)); per.push(by.get(y) ?? 0); }
+  return { years, per };
 }
 
 // ``fin``: today's row of the financials screen (banks, insurers, holdings: a separate ranking; see financials.js).
@@ -132,7 +163,8 @@ function render(d, sp, fin, finMeta) {
       { values: comp.slice(i0), color: "--s1", label: d.ticker, width: 2.5, endLabel: (v) => `${d.ticker} R$${v.toFixed(0)}` },
       { values: bova.slice(i0), color: "--s2", label: "BOVA11", endLabel: (v) => `BOVA11 R$${v.toFixed(0)}` }],
       { log: true, h: 280, labels: true, legend: true, fmt: (v) => (Number.isFinite(v) ? `R$${v.toFixed(0)}` : "–"), aria: `${d.ticker} total return against BOVA11` });
-    barChart($("#dividends"), d.dividends.years, d.dividends.per_share.map(num), (v) => `R$ ${v.toFixed(2)}`, { aria: "Dividends per share by year" });
+    const dv = dividendYears(d.dividends, n.asof);
+    barChart($("#dividends"), dv.years, dv.per, perShare, { aria: "Dividends per share by year" });
     if (fin) { finDraw(d, fin); return; }   // score, valuation and business: the financials screen's own
 
     const fmtS = (v) => (Number.isFinite(v) ? v.toFixed(0) : "–");
@@ -146,7 +178,7 @@ function render(d, sp, fin, finMeta) {
     }
 
     const val = $("#valuation"); val.replaceChildren();
-    for (const [label, key, fmt] of [["P/E", "pe", (v) => f1(v)], ["EV / EBIT", "ev_ebit", (v) => f1(v)], ["Dividend yield", "dividend_yield", (v) => pct(v, 1)]]) {
+    for (const [label, key, fmt] of [["P/E", "pe", axis(f1, 1, 1)], ["EV / EBIT", "ev_ebit", axis(f1, 1, 1)], ["Dividend yield", "dividend_yield", axis(pct, 100, 1)]]) {
       const v = H[key].map(num).map((x) => (key !== "dividend_yield" && (x <= 0 || x > 100) ? NaN : x));   // P/E > 100: off the scale
       const med = median(v);
       const cell = el("div", { className: "mini" }, el("h4", { textContent: label }), el("div", { className: "val", textContent: `now ${fmt(num(n[key]))} · own median ${fmt(med)}` +
@@ -160,13 +192,13 @@ function render(d, sp, fin, finMeta) {
     const bus = $("#business"); bus.replaceChildren();
     const F = d.fundamentals;
     for (const [label, values, dates, fmt] of [
-      ["Revenue (TTM)", F.revenue.map(num), F.dates, brl], ["Net income (TTM)", F.net_income.map(num), F.dates, brl],
-      ["Return on equity", H.roe.map(num), H.dates, (v) => pct(v)], ["Return on invested capital", H.roic.map(num), H.dates, (v) => pct(v)]]) {
+      ["Revenue (TTM)", F.revenue.map(num), F.dates, brlAxis], ["Net income (TTM)", F.net_income.map(num), F.dates, brlAxis],
+      ["Return on equity", H.roe.map(num), H.dates, axis(pct, 100, 0)], ["Return on invested capital", H.roic.map(num), H.dates, axis(pct, 100, 0)]]) {
       const last = values.filter(Number.isFinite).at(-1);
       const cell = el("div", { className: "mini" }, el("h4", { textContent: label }), el("div", { className: "val", textContent: `latest ${fmt(last)}` }), el("div"));
       bus.append(cell);
       lineChart(cell.lastChild, dates, [{ values, color: "--s1", label }], { h: 140, fmt, ref: label.startsWith("Net") ? 0 : undefined, refLabel: "zero",
-        ml: fmt === brl ? 70 : 46 });
+        ml: fmt === brlAxis ? 70 : 46 });
     }
   };
   draw();
@@ -184,6 +216,62 @@ function render(d, sp, fin, finMeta) {
   }
 }
 
+// Peers: the companies of the same sector in today's screen. The sector is CVM's,
+// with a sector's holding companies ("Emp. Adm. Part. - Petróleo e Gás") counted
+// in it. (To switch to the screen's normalized sector groups once it has them.)
+const sectorOf = (r) => (r.sector || "").replace(/^Emp\. Adm\. Part\. - /, "");
+const PEER_HEAD = [["#"], ["Company", "l sticky"], ["Score"], ["V", "c", "Value"], ["Q", "c", "Quality"], ["M", "c", "Momentum"], ["I", "c", "Income"],
+  ["P/E"], ["EV/EBIT"], ["ROE"], ["Div. yield"]];
+// The one reason none of ``rows`` is ranked, if they share it; "" otherwise.
+const sharedReason = (rows) => { const w = new Set(rows.map((r) => r.excluded)); return w.size === 1 ? [...w][0] : ""; };
+// Score columns only if some row is ranked. Under an unranked name, why it is not
+// ranked, unless every row shares one reason (then the caption says it once).
+function peerTable(t, rows, isMe) {
+  const scores = rows.some((r) => !r.excluded), reasons = new Set(rows.filter((r) => r.excluded).map((r) => r.excluded));
+  const why = reasons.size > 1 || (reasons.size === 1 && scores);
+  const head = scores ? PEER_HEAD : PEER_HEAD.filter((h, i) => i < 2 || i > 6);
+  t.replaceChildren(el("tr", {}, ...head.map(([h, c = "", title = ""]) => el("th", { className: c, textContent: h, title }))));
+  rows.forEach((r, i) => {
+    const tr = el("tr", { className: isMe(r) ? "me" : "" }, el("td", { textContent: r.excluded ? "–" : i + 1 }),
+      nameCell(r, r.excluded && why ? [el("span", { className: "why", textContent: `not ranked: ${r.excluded}`, title: r.excluded })] : []),
+      ...(scores ? [scoreCell(num(r.score)), ...PILLAR_KEYS.map((k) => scoreCell(num(r[k + "_score"])))] : []),
+      el("td", { textContent: f1(num(r.pe)) }), el("td", { textContent: f1(num(r.ev_ebit)) }),
+      el("td", { textContent: pct(num(r.roe)) }), el("td", { textContent: pct(num(r.dividend_yield), 1) }));
+    if (isMe(r)) tr.setAttribute("aria-current", "true");
+    t.append(tr);
+  });
+}
+function buildPeers(d, latest) {
+  const isMe = (r) => r.cnpj === d.cnpj || r.ticker === d.ticker;
+  const self = latest.find(isMe), sector = sectorOf(self || d);
+  const all = latest.filter((r) => sectorOf(r) === sector);
+  // Ranked: by score, ties by the screen's own rank. Not ranked: largest first.
+  const ranked = all.filter((r) => !r.excluded).sort((a, b) => num(b.score) - num(a.score) || num(a.rank) - num(b.rank));
+  const out = all.filter((r) => r.excluded && !isMe(r)).sort((a, b) => (num(b.market_cap) || 0) - (num(a.market_cap) || 0) || a.ticker.localeCompare(b.ticker));
+  $("#peersHead").textContent = `Peers · ${sector}`;
+  const chips = $("#peersChips"), t = $("#peers"), more = $("#peersOut");
+  chips.replaceChildren(); t.replaceChildren(); more.replaceChildren();
+  if (all.length < 2) { $("#peersNote").textContent = "No other company of this sector is in today's screen."; return; }
+  const pos = ranked.findIndex(isMe);
+  chips.append(el("span", { className: pos >= 0 ? "chip" : "chip warn", textContent: pos >= 0 ? `#${pos + 1} of ${ranked.length} ranked in its sector`
+    : `Not ranked today${self ? `: ${self.excluded}` : ""}${ranked.length ? ` · ${ranked.length} ranked in its sector` : ""}` }));
+  const intro = `All ${all.length} companies of this CVM sector in today's screen, its holding companies included`;
+  const main = [...ranked, ...(self && self.excluded ? [self] : [])];
+  // Nothing ranked to compare against (banks: all financials): one open table.
+  if (main.length < 2) {
+    const none = !ranked.length && sharedReason(all);
+    $("#peersNote").textContent = `${intro}. ` + (none ? `None is ranked today: ${none}.` : "Ranked by score; the others are not ranked today.");
+    peerTable(t, [...main, ...out], isMe);
+    return;
+  }
+  $("#peersNote").textContent = `${intro}, ranked by score. Score cells are percentiles among all of today's eligible companies, not only this sector.`;
+  peerTable(t, main, isMe);
+  if (!out.length) return;
+  const rest = el("table", { className: "dense" }), same = sharedReason(out);
+  peerTable(rest, out, isMe);
+  more.append(el("details", {}, el("summary", { textContent: `${out.length} more in the sector, not ranked today${same ? ` (${same})` : ""}` }), el("div", { className: "scroll" }, rest)));
+}
+
 (async () => {
   shell(null, null);
   const t = (new URLSearchParams(location.search).get("t") || "").toUpperCase();
@@ -196,6 +284,7 @@ function render(d, sp, fin, finMeta) {
   const row = (latest || []).find((x) => x.ticker === t);
   if (row) doc.now = row;
   render(doc, sparks?.tickers?.[t], (finRows || []).find((x) => x.ticker === t), finMeta);
+  if (latest) buildPeers(doc, latest); else $("#peersCard").hidden = true;
 })();
 </script>
 </body>

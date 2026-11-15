@@ -1,15 +1,19 @@
 name: daily
 
 # B3 publishes each session's quote file the same evening and CVM refreshes
-# its filings during the week. 10:00 UTC (07:00 in Brasília), Tuesday to
-# Saturday, picks up the previous session.
+# its filings during the week. 10:17 UTC (07:17 in Brasília), Tuesday to
+# Saturday, picks up the previous session. GitHub starts scheduled runs hours
+# late (6 to 8 in November 2026, see the README), still well before the next
+# session's file. Minute 17 keeps off the top of the hour, GitHub's busiest.
 on:
   schedule:
-    - cron: "0 10 * * 2-6"
+    - cron: "17 10 * * 2-6"
   workflow_dispatch:
 
 permissions:
   contents: write
+  issues: write    # job-alert: open, comment on and close the failure issue
+  actions: read    # job-alert: name the step that failed
 
 concurrency:
   group: data          # shared with weekly.yml: never two writers at once
@@ -20,9 +24,9 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 45
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: astral-sh/setup-uv@v5
+      - uses: astral-sh/setup-uv@v10.3.3
         with:
           enable-cache: true
 
@@ -46,3 +50,16 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git commit -m "data: session of $(jq -r .asof data/status.json)"
           git push || { git pull --rebase && git push; }
+
+      # Last: open or update the "<workflow> job failing" issue, or close it once a run succeeds.
+      - name: Report the failure in an issue
+        if: failure()
+        uses: ./.github/actions/job-alert
+        with:
+          outcome: failure
+
+      - name: Close the failure issue
+        if: success()
+        uses: ./.github/actions/job-alert
+        with:
+          outcome: success

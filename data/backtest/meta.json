@@ -5,5 +5,11 @@
   "top_n": 10,
   "rules": "876ebe1a",
   "rebalance": "first session of month 5",
-  "costs": "none"
+  "costs": "none",
+  "cost_per_side": 0.001,
+  "cadences": [
+    "yearly",
+    "quarterly",
+    "monthly"
+  ]
 }

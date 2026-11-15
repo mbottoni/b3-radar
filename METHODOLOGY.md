@@ -152,6 +152,46 @@ A company is eligible if all of these hold:
 
 Each excluded company is still listed on the page with its reason.
 
+### Sector groups
+
+CVM's activity sector (`SETOR_ATIV`) splits one business across labels: a
+holding company gets "Emp. Adm. Part. - " in front of its subsidiaries'
+sector, often abbreviated, so JHSF ("Emp. Adm. Part. - Const. Civil, Mat.
+Const. e Decoração") sits apart from Cyrela ("Construção Civil, Mat.
+Constr. e Decoração"), and Allos ("Emp. Adm. Part. - Comércio…") apart
+from Lojas Renner ("Comércio…"). `b3radar/sectors.py` folds the labels
+into 17 groups (`sector_group` in the screen): the holding prefix is
+removed, accents dropped, and the first group whose keyword appears in the
+label wins.
+
+| group | CVM labels (with or without the holding prefix) |
+|---|---|
+| Financials | Bancos, Intermediação Financeira, Seguradoras e Corretoras, Arrendamento Mercantil, Securitização de Recebíveis, Crédito Imobiliário, Bolsas de Valores/Mercadorias e Futuros, Factoring |
+| Real estate | Construção Civil, Mat. Constr. e Decoração (homebuilders, developers, malls and building materials) |
+| Retail | Comércio (Atacado e Varejo), Comércio Exterior |
+| Apparel | Têxtil e Vestuário |
+| Utilities | Energia Elétrica; Saneamento, Serv. Água e Gás |
+| Oil & gas | Petróleo e Gás |
+| Mining & steel | Extração Mineral, Metalurgia e Siderurgia |
+| Paper & chemicals | Papel e Celulose, Petroquímicos e Borracha, Embalagens, Reflorestamento |
+| Industrials | Máquinas, Equipamentos, Veículos e Peças; Outras Atividades Industriais |
+| Transport | Serviços Transporte e Logística |
+| Food & agri | Alimentos; Agricultura (Açúcar, Álcool e Cana); Bebidas e Fumo; Pesca |
+| Health | Serviços Médicos, Farmacêutico e Higiene |
+| Education | Educação |
+| Tech & media | Comunicação e Informática, Gráficas e Editoras |
+| Telecom | Telecomunicações |
+| Leisure & travel | Hospedagem e Turismo, Brinquedos e Lazer |
+| Other | Emp. Adm. Participações with no main sector ("Sem Setor Principal"), Serviços Diversos, Serviços em Geral, blank |
+
+The groups follow CVM's label, not a judgement of each business: malls
+filed under commerce (Allos, Iguatemi) are Retail, Multiplan, filed under
+construction, is Real estate, and Vibra (fuel distribution) is Retail.
+The groups are for reading and for measuring concentration only. They
+are not in the rules fingerprint, and the financial exclusion above still
+reads CVM's own label. CVM's register gives today's sector, which the
+backtest also uses for past dates (sectors rarely change).
+
 ## Metrics
 
 - **Market cap:** shares outstanding per class (ON, PN) times that class's
@@ -402,6 +442,11 @@ with their prices. Nothing is ever removed, and a session's list, once
 recorded, is never replaced: a re-run of the weekly job on the same session
 keeps (and emails) the first one.
 
+**The avoid list** (the page's overview, and the "Bottom fifth" preset
+of the screener) is today's bottom 10 by score, and the bottom fifth of
+the eligible universe cut as in the backtest. It is shown, not logged:
+it is not written to `data/picks/` and has no live track record.
+
 The track record holds each list as an **equal-weight portfolio until the
 next list**, on adjusted prices (dividends reinvested), and compares it with
 BOVA11 over the same sessions. A ticker that stops trading keeps its last
@@ -427,6 +472,83 @@ replays the screen as a long-term investor would use it:
   (Banco Central series 12, compounded daily: what cash earns) and **every
   eligible stock in equal weights**, which isolates what the picking adds
   over simply owning the universe.
+- **The avoid list**: the 10 lowest scores (`composite_bottom`) and the
+  score's bottom fifth (`score_q5`, the Q5 below), each held a year like
+  the top 10, against every eligible stock; and every eligible stock but
+  that fifth (`eligible_ex_q5`), which is what avoiding it adds to owning
+  the universe. Through November 2026: the bottom 10 returned −6.1% a
+  year and the bottom fifth 0.7%, against 6.2% for all eligible stocks
+  and 7.4% without the bottom fifth. The bottom 10 trailed the universe in
+  10 of 15 years and the bottom fifth in 9, and both led it in the sharp
+  rebounds of 2016 and 2020.
+
+**How often to rebalance, and what trading costs** (`data/backtest/cadence.csv`).
+The live record holds each weekly list one week; the backtest holds each
+May list a year. To compare cadences, the score's top 10 is also set back
+to equal weights on the current list every quarter (first session of
+February, May, August and November) and every month (first session), with
+a point-in-time screen on each date:
+
+- Between rebalances the holdings drift with their returns; a rebalance
+  trades the gap between those weights and equal weights on the new list.
+  **Turnover** is the share of the portfolio sold at a rebalance (one way).
+- **Net** series (`composite_net`, `composite_q_net`, `composite_m_net`)
+  charge a cost on every amount bought or sold: 0.10% per side by default
+  (`python -m b3radar backtest --cost 0.10`, in %), for brokerage (zero at
+  many brokers), B3's trading and settlement fees and half the bid-ask
+  spread of a liquid stock. The first purchase pays one side; the value on
+  a rebalance date is before that day's trades.
+- `--weekly` adds the live record's cadence (the last session of each
+  week). It needs a screen per week, about 750 since 2012, so the monthly
+  job does not run it.
+
+Through November 2026 (gross / net a year; share of the portfolio sold
+per rebalance and per year; costs a year):
+
+| cadence | gross | net | sold per rebalance | sold per year | costs |
+|---|---|---|---|---|---|
+| yearly (May) | 9.0% | 8.9% | 70% | 67% | 0.15 pts |
+| quarterly | 7.7% | 7.4% | 39% | 155% | 0.34 pts |
+| monthly | 9.3% | 8.6% | 25% | 304% | 0.67 pts |
+| weekly (`--weekly`, one local run) | 11.9% | 10.4% | 13% | 683% | 1.53 pts |
+
+Costs grow with turnover, but the cadences differ more by timing than by
+cost. Weekly did best, and buying a session later (at the next close, not
+the close that made the list) moves no cadence by more than a third of a
+point (weekly net 10.6%). Its edge rests on a few years (+69% from May
+2020 and +43% from May 2025, against +31% and +22% for the yearly list).
+It beat the yearly list in 8 of 15 years, and its worst fall was deeper
+(−44% against −35%). Quarterly did worst. In some years the cadences are
+20 to 40 points apart (May 2019: +14% yearly, −9% quarterly, −6% monthly,
+−10% weekly; May 2020: +31%, +70%, +58%, +69%).
+
+**Taxes, and why they are not modelled.** An individual in Brazil pays 15%
+on a month's net gain from selling stocks on the regular market (20% for
+day trades), losses carrying forward to later gains. A month whose stock
+sales total R$ 20,000 or less (all brokers together) is exempt; above that
+the whole month's gain is taxed. Dividends are exempt, except that since
+January 2026 a company paying one person more than R$ 50,000 in a month
+withholds 10% (Law 15.270/2025); JCP pays 15% at source, and the backtest
+reinvests the amounts B3 lists, before that tax. Taxes are left out of
+the curves because they depend on the investor more than on the strategy:
+
+- The exemption is on sales, not gains. At the turnover above, a month's
+  rebalancing stays under R$ 20,000 of sales for a portfolio up to about
+  R$ 29,000 rebalanced yearly (all in May), R$ 51,000 quarterly,
+  R$ 79,000 monthly and R$ 35,000 weekly. A small portfolio may pay
+  nothing; a large one pays on every gain. One curve cannot be right for
+  both.
+- The tax base is the gain over each stock's average purchase cost, and
+  reinvested dividends change that average. The backtest follows
+  total-return prices, which do not keep the split between price gains and
+  reinvested dividends that the base needs.
+- Losses carried forward, and the 2026 dividend rules, depend on the rest
+  of the investor's holdings and income.
+
+As a rough ceiling for an investor always above the exemption: taxing each
+year's whole return at 15%, losses carried forward, takes the yearly list
+from 8.9% to 7.4% a year. That overstates the tax, since dividends are
+exempt and names kept from one list to the next are not sold.
 
 **Does each score separate winners from losers?** At every yearly date the
 eligible universe is cut into fifths by the composite and by each pillar
@@ -458,7 +580,8 @@ History behind it:
 - Registration and issuer status are only known as of today, so they are
   not applied to past dates (the special trading segments still are).
 
-What it does not include: brokerage, taxes, slippage; dividends of
+What it does not include: brokerage, fees and slippage (except in the
+net series above), taxes; dividends of
 companies that have since delisted (B3 only serves listed companies'
 history), which understates returns slightly; the fact that a May close is
 not always where you would have bought.
@@ -469,5 +592,6 @@ not always where you would have bought.
   sales). Percentiles cap their effect on the score but not on the display.
 - Units' market caps use their ON and PN prices; spin-offs and rights
   issues leave a small gap in momentum.
-- No transaction costs, taxes or slippage in the track record.
+- No transaction costs, taxes or slippage in the track record, which
+  rebalances every week (see the cadences in the backtest).
 - The scores know nothing about news, governance or guidance.

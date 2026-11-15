@@ -6,14 +6,16 @@ A daily screen of Brazilian stocks built only from official open data (B3,
 CVM, Banco Central), a shortlist emailed every Monday, and a public track
 record of every shortlist against BOVA11, losers included.
 
-- **Daily** (Tue–Sat, 07:00 Brasília): new quotes, filings and corporate events
-  are committed to `data/`; the screen is rebuilt and the track record
-  marked to the close.
-- **Weekly** (Mon, 11:00 Brasília): the top 10 is logged, the track record
-  updated, and the email sent.
+- **Daily** (Tue–Sat, scheduled for 07:17 Brasília, in practice early
+  afternoon; see [When the jobs run](#when-the-jobs-run)): new quotes,
+  filings and corporate events are committed to `data/`; the screen is
+  rebuilt and the track record marked to the close.
+- **Weekly** (Mon, scheduled for 11:17 Brasília, likely evening): the top 10
+  is logged, the track record updated, and the email sent.
 - **The page** has five tabs: **Overview** (BOVA11, the CDI, inflation and
   the typical stock's earnings yield, a gauge of how cheap the market is
-  against its own history and against cash, and this week's shortlist),
+  against its own history and against cash, this week's shortlist, and
+  the avoid list: today's bottom 10 by score, shown but not logged),
   **Screener** (every company with presets, 1-year sparklines and
   heat-shaded scores), **Financials**, **Backtest** and **Track record**.
 - **Financials** (daily): banks, insurers and their holdings, left out of
@@ -23,7 +25,9 @@ record of every shortlist against BOVA11, losers included.
   since 2015.
 - **Backtest** (monthly): the yearly list since 2012, bought each May and
   held, point in time, against BOVA11, the CDI and all eligible stocks; also
-  each list held untouched for 1, 3 and 5 years.
+  each list held untouched for 1, 3 and 5 years, the list capped at two
+  names per sector group, the score's bottom 10 and bottom fifth, and the
+  top 10 rebalanced quarterly and monthly, gross and net of trading costs.
 - **The market against cash** (monthly): the typical stock's earnings yield
   at every month end since 2011 against the CDI, before and after
   inflation, and what stocks paid over cash in the three years that
@@ -35,6 +39,23 @@ record of every shortlist against BOVA11, losers included.
   its years in the backtest.
 - **[METHODOLOGY.md](METHODOLOGY.md)**: every rule, and every problem found in
   the data with how it is handled.
+
+## When the jobs run
+
+GitHub starts scheduled workflows when it has capacity, not at the time in
+the cron, and may drop a run under heavy load. In November 2026 every
+scheduled run, here and in the sibling project political-eye, started 4 to
+10.5 hours late (median 7.6 hours), least on weekends and most on Mondays.
+
+| job | scheduled (Brasília) | what happened (Nov 7–14, 2026) |
+|---|---|---|
+| daily | Tue–Sat 07:17 | started between 13:10 and 14:58 (6h10 to 7h58 late), while the cron said 07:00; it still reads the previous session |
+| weekly | Mon 11:17 | no scheduled run yet. Late by as much as the Mondays measured (8 to 10.5 hours), the email would arrive between about 19:15 and 22:00. B3 posts each session's files at about 20:30–21:00, so a run after that would make the list from Monday's close instead of Friday's |
+| backtest | 2nd of the month, 09:17 | first scheduled run on Dec 2 |
+
+To get the email at a set time, start it by hand (Actions → weekly → Run
+workflow): manual runs start within seconds. On-time options are discussed
+in [#30](https://github.com/mbottoni/b3-radar/issues/30).
 
 ## Email setup
 
@@ -54,7 +75,7 @@ rendered email is kept as a workflow artifact.
 uv sync
 uv run python -m b3radar daily     # fetch and rebuild data/
 uv run python -m b3radar weekly    # list, track record, email (dry run without the env vars)
-uv run python -m b3radar backtest  # yearly buy-and-hold backtest from data/
+uv run python -m b3radar backtest  # backtest from data/ (--cost 0.10: % per side; --weekly: slow)
 uv run pytest -q
 ```
 
