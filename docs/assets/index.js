@@ -161,13 +161,45 @@ function expandable(table, open, key, cells, row, span, rerender) {
   table.append(tr);
   if (open.has(key)) table.append(el("tr", { className: "detail" }, el("td", { colSpan: span }, breakdown(row))));
 }
+// The weekly lists' dates, and the screen each was made from (data/screen/history/,
+// eligible companies only) by ticker, for the last two lists.
+const listDates = (picks = S.picks) => [...new Set((picks || []).filter((p) => p.strategy === "composite").map((p) => p.date))].sort();
+async function loadListScreens(picks) {
+  const ds = listDates(picks).slice(-2), files = await Promise.all(ds.map((d) => get(`screen/history/${d}.csv`)));
+  // Also by each of a company's tickers: its most-traded one can change between weeks.
+  const index = (rows) => { const m = new Map(rows.map((r) => [r.ticker, r])); for (const r of rows) for (const t of (r.tickers || "").split(" ")) if (t && !m.has(t)) m.set(t, r); return m; };
+  return Object.fromEntries(ds.map((d, i) => [d, files[i] && index(files[i])]));
+}
+// What changed between the last two lists: the same comparison as the email
+// (picks.changes), with each name's rank and score in both screens.
+function listChanges() {
+  const picks = S.picks || [], ds = listDates(), cur = ds.at(-1), prev = ds.at(-2);
+  if (!prev) return null;
+  const at = (d) => new Map(picks.filter((p) => p.date === d && p.strategy === "composite").map((p) => [p.ticker, p]));
+  const P = at(prev), C = at(cur), sp = S.listScreens?.[prev], sc = S.listScreens?.[cur];
+  // In a list: its rank and score there. Out of it: the screen of that date, if it was eligible then.
+  const where = (list, scr, t) => { const r = list.get(t) || scr?.get(t); return r ? { rank: num(r.rank), score: num(r.score) } : { known: !!scr }; };
+  const move = (t) => ({ ticker: t, company: (C.get(t) || P.get(t)).company, from: where(P, sp, t), to: where(C, sc, t) });
+  return { prev, cur, entered: [...C.keys()].filter((t) => !P.has(t)).map(move), left: [...P.keys()].filter((t) => !C.has(t)).map(move) };
+}
+const rankTxt = (w) => (Number.isFinite(w.rank) ? `#${w.rank}` : w.known ? "not eligible" : "–");
+const moveTxt = (m) => `${rankTxt(m.from)} → ${rankTxt(m.to)}` +
+  (Number.isFinite(m.from.score) && Number.isFinite(m.to.score) ? `, score ${f1(m.from.score)} → ${f1(m.to.score)}` : "");
+function buildChanges(ch) {
+  const box = $("#listMoves");
+  if (!ch) { box.replaceChildren(); return; }
+  if (!ch.entered.length) { box.replaceChildren(el("p", { className: "note", textContent: `Same ten names as the list of ${ch.prev}.` })); return; }
+  const line = (label, ms) => el("div", { className: "mv-row" }, el("span", { className: "mv-k", textContent: label }),
+    ...ms.map((m) => el("span", { className: "mv" }, companyLink(m.ticker, m.company), el("span", { className: "muted", textContent: moveTxt(m) }))));
+  box.replaceChildren(el("p", { className: "note", textContent: `Changes since the list of ${ch.prev} (rank and score in each week's screen):` }),
+    line("Entered", ch.entered), line("Left", ch.left));
+}
 function buildList() {
   const by = new Map(S.screen.map((r) => [r.ticker, r])), picks = S.picks || [];
-  const dates = [...new Set(picks.map((p) => p.date))].sort();
-  const cur = dates.at(-1), prev = dates.at(-2);
+  const cur = listDates().at(-1), ch = listChanges();
   const now = picks.filter((p) => p.date === cur && p.strategy === "composite").sort((a, b) => a.rank - b.rank);
-  const before = new Set(picks.filter((p) => p.date === prev && p.strategy === "composite").map((p) => p.ticker));
-  $("#listNote").textContent = cur ? `List of ${cur} (closing prices), the top 10 by score. Score cells: percentile in the eligible universe. Click a row for the full breakdown.` : "No list yet: the first one is made on Monday.";
+  const fresh = new Map((ch?.entered || []).map((m) => [m.ticker, m]));
+  $("#listNote").textContent = cur ? `List of ${cur} (closing prices), the top 10 by score.${ch ? ` NEW: not in the list of ${ch.prev}.` : ""} Score cells: percentile in the eligible universe. Click a row for the full breakdown.` : "No list yet: the first one is made on Monday.";
   const head = [["#"], ["Company", "l sticky"], ["1Y"], ["Score"], ["V", "c", "Value"], ["Q", "c", "Quality"], ["M", "c", "Momentum"], ["I", "c", "Income"],
     ["P/E"], ["EV/EBIT"], ["ROE"], ["Div. yield"], ["Price"]];
   const t = $("#list");
@@ -177,7 +209,7 @@ function buildList() {
       const s = by.get(p.ticker) || { ticker: p.ticker, company: p.company };
       expandable(t, OPEN.list, p.ticker, [
         el("td", { textContent: p.rank }),
-        nameCell({ ...s, company: p.company }, prev && !before.has(p.ticker) ? [el("span", { className: "new", textContent: "NEW" })] : []),
+        nameCell({ ...s, company: p.company }, fresh.has(p.ticker) ? [el("span", { className: "new", textContent: "NEW", title: `Not in the list of ${ch.prev}: ${moveTxt(fresh.get(p.ticker))}` })] : []),
         trendCell(SPARK()[p.ticker]), scoreCell(num(p.score)),
         ...PILLAR_KEYS.map((k) => scoreCell(num(s[k + "_score"]))),
         el("td", { textContent: f1(num(s.pe)) }), el("td", { textContent: f1(num(s.ev_ebit)) }),
@@ -186,6 +218,7 @@ function buildList() {
     }
   };
   render();
+  buildChanges(ch);
   const magic = picks.filter((p) => p.date === cur && p.strategy === "magic").sort((a, b) => a.rank - b.rank);
   $("#magic").replaceChildren(...magic.map((m) => el("a", { className: "chip", href: `company.html?t=${m.ticker}`, style: "text-decoration:none", textContent: `${m.rank}. ${m.ticker}`, title: m.company })));
 }
@@ -433,13 +466,14 @@ const DRAW = { overview: drawOverview, backtest: drawBacktest, record: drawRecor
 (async () => {
   shell(tabFromHash(), null);
   show();
-  const [status, screen, picks, perf, cohorts, sparks, mkHist, mkToday, meta, summary, curve, periods, btCohorts, holdings, quintiles] = await Promise.all([
-    getJSON("status.json"), get("screen/latest.csv"), get("picks/picks.csv"), get("picks/performance.csv"), get("picks/cohorts.csv"),
+  const picksP = get("picks/picks.csv");
+  const [status, screen, picks, listScreens, perf, cohorts, sparks, mkHist, mkToday, meta, summary, curve, periods, btCohorts, holdings, quintiles] = await Promise.all([
+    getJSON("status.json"), get("screen/latest.csv"), picksP, picksP.then(loadListScreens), get("picks/performance.csv"), get("picks/cohorts.csv"),
     getJSON("screen/sparks.json"), get("market/history.csv"), getJSON("market/today.json"),
     getJSON("backtest/meta.json"), get("backtest/summary.csv"), get("backtest/curve.csv"), get("backtest/periods.csv"),
     get("backtest/cohorts.csv"), get("backtest/holdings.csv"), get("backtest/quintiles.csv")]);
   if (!screen) { $("#status").textContent = "Could not load the data."; return; }
-  Object.assign(S, { status, screen, picks, perf, cohorts, sparks, mkHist, mkToday, bt: { meta: meta || {}, summary, curve, periods, cohorts: btCohorts, holdings, quintiles }, ready: true });
+  Object.assign(S, { status, screen, picks, listScreens, perf, cohorts, sparks, mkHist, mkToday, bt: { meta: meta || {}, summary, curve, periods, cohorts: btCohorts, holdings, quintiles }, ready: true });
   setStatus(status);
   show();
   onResize($("main"), () => current && DRAW[current]?.());
