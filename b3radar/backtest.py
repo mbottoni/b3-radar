@@ -28,6 +28,7 @@ REBALANCE_MONTH = 5
 FIRST_YEAR = 2012          # needs a year of quotes and TTM statements, which start in 2010-2011
 TOP_N = 10
 HORIZONS = (1, 3, 5)
+SECTOR_CAP = 2             # "max 2 per sector group" variant: shown, not used for the weekly list
 STRATEGIES = {             # column, ascending
     "composite": ("score", False),
     "magic": ("magic_rank", True),
@@ -36,6 +37,8 @@ STRATEGIES = {             # column, ascending
     "momentum": ("momentum_score", False),
     "income": ("income_score", False),
 }
+# Variants of a strategy above: (base strategy, most names from one sector group).
+CAPPED = {"composite_cap": ("composite", SECTOR_CAP)}
 BENCHMARKS = ("eligible", "bova11", "cdi")
 QUINTILE_FACTORS = {"score": "score", "value": "value_score", "quality": "quality_score",
                     "momentum": "momentum_score", "income": "income_score", "growth": "growth_score"}
@@ -51,12 +54,25 @@ def rebalance_dates(sessions: np.ndarray, first_year: int = FIRST_YEAR) -> list[
     return sorted(set(out))
 
 
-def pick(snap: pd.DataFrame, col: str, ascending: bool, n: int = TOP_N) -> pd.DataFrame:
+def strategies() -> dict[str, tuple[str, bool, int | None]]:
+    """Every list the backtest follows: column, ascending, sector cap."""
+    out = {k: (col, asc, None) for k, (col, asc) in STRATEGIES.items()}
+    out.update({k: (*STRATEGIES[base], cap) for k, (base, cap) in CAPPED.items()})
+    return out
+
+
+def pick(snap: pd.DataFrame, col: str, ascending: bool, n: int = TOP_N, cap: int | None = None) -> pd.DataFrame:
+    """The best ``n`` eligible names by ``col``. With ``cap``, at most that
+    many from one sector group: a name past its group's cap is skipped and
+    the next best fills its place."""
     ok = snap[(snap.excluded.fillna("") == "") & snap[col].notna()]
     # Pillar scores are means of percentiles, so exact ties are common. An
     # unstable sort orders them differently on x86 and ARM (numpy uses
     # different SIMD sorts): break ties explicitly, with a stable sort.
-    return ok.sort_values([col, "score", "ticker"], ascending=[ascending, False, True], kind="stable").head(n)
+    ok = ok.sort_values([col, "score", "ticker"], ascending=[ascending, False, True], kind="stable")
+    if cap is not None:
+        ok = ok[ok.groupby("sector_group", sort=False).cumcount() < cap]
+    return ok.head(n)
 
 
 class Prices:
@@ -116,19 +132,20 @@ def run(data_dir: Path, first_year: int = FIRST_YEAR, log=print) -> dict[str, pd
             q = pd.qcut(e[col].rank(method="first", ascending=False), 5, labels=[1, 2, 3, 4, 5])
             for k in range(1, 6):
                 buckets[(d, f, k)] = list(e.ticker[q == k])
-        for name, (col, asc) in STRATEGIES.items():
-            top = pick(snap, col, asc)
+        for name, (col, asc, cap) in strategies().items():
+            top = pick(snap, col, asc, cap=cap)
             lists[d][name] = list(top.ticker)
             for rank, r in enumerate(top.itertuples(), 1):
                 holdings.append({"date": d, "strategy": name, "rank": rank, "ticker": r.ticker, "company": r.company,
-                                 "sector": r.sector, "metric": round(float(getattr(r, col)), 4)})
+                                 "sector": r.sector, "sector_group": r.sector_group,
+                                 "metric": round(float(getattr(r, col)), 4)})
         log(f"[backtest] {d}: {len(eligible)} eligible; composite {', '.join(lists[d]['composite'])}")
 
     # Monthly checkpoints (last session of each month) plus rebalance dates.
     s = pd.Series(sessions)
     checkpoints = sorted(set(s.groupby(s.str[:7]).max()) | set(dates) | {end})
     checkpoints = [c for c in checkpoints if c >= dates[0]]
-    series = list(STRATEGIES) + list(BENCHMARKS)
+    series = list(strategies()) + list(BENCHMARKS)
     value = {k: 100.0 for k in series}
     curve, periods = [], []
     for k in series:
@@ -193,7 +210,7 @@ def run(data_dir: Path, first_year: int = FIRST_YEAR, log=print) -> dict[str, pd
                        for d in qdates[f])) for f in QUINTILE_FACTORS}
     quintiles["top_beat_bottom"] = quintiles.factor.map(lambda f: f"{wins[f]}/{len(qdates[f])}")
     meta = {"first": dates[0], "last": end, "rebalances": len(dates), "top_n": TOP_N, "rules": screen.rules_hash(),
-            "rebalance": f"first session of month {REBALANCE_MONTH}", "costs": "none"}
+            "rebalance": f"first session of month {REBALANCE_MONTH}", "costs": "none", "sector_cap": SECTOR_CAP}
     return {"curve": curve, "periods": periods, "holdings": hold, "cohorts": cohorts, "summary": summary, "meta": meta,
             "quintiles": quintiles, "quintile_periods": qper}
 

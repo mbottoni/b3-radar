@@ -324,6 +324,16 @@ replays the screen as a long-term investor would use it:
   (Banco Central series 12, compounded daily: what cash earns) and **every
   eligible stock in equal weights**, which isolates what the picking adds
   over simply owning the universe.
+- **Score, max 2 per sector group** (`composite_cap`): the same ranking,
+  with at most two names from one [sector group](#sector-groups); a name
+  past its group's cap is skipped and the next best fills its place.
+  Shown to measure what concentration costs or pays; the weekly list is
+  not capped. The uncapped top 10 had three or more names from one group
+  in 13 of the 15 lists (eight utilities in 2019, seven real estate in
+  2026); the cap replaced 2.2 names a year on average. Through November
+  2026 it returned 9.1% a year against 9.0% uncapped, with volatility of
+  20.1% against 21.8% and about the same worst year (−22.2% against
+  −22.4%, both the list of May 2026).
 
 **Does each score separate winners from losers?** At every yearly date the
 eligible universe is cut into fifths by the composite and by each pillar
