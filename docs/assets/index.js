@@ -135,20 +135,43 @@ function drawMkScatter() {
   }
   box.append(s);
 }
+// The months split into thirds by the gap at the start (smallest first).
+function mkThirds() {
+  const P = mkPoints().sort((a, b) => a.gap - b.gap), n = P.length;
+  return [["Smallest third", 0, Math.round(n / 3)], ["Middle third", Math.round(n / 3), Math.round((2 * n) / 3)], ["Largest third", Math.round((2 * n) / 3), n]]
+    .map(([label, a, b]) => ({ label, g: P.slice(a, b) })).filter((x) => x.g.length)
+    .map((x) => ({ ...x, avg: x.g.reduce((s, p) => s + p.out, 0) / x.g.length, wins: x.g.filter((p) => p.out > 0).length / x.g.length }));
+}
+const todayGap = () => { const t = S.mkToday; return t && t.earnings_yield != null && t.real_cdi != null ? t.earnings_yield - t.real_cdi : NaN; };
+// The third today's gap falls in (cut halfway between neighbouring thirds).
+const todayThird = (th, gap) => (!Number.isFinite(gap) || th.length < 3 ? -1 : th.slice(1).filter((x, i) => gap > (th[i].g.at(-1).gap + x.g[0].gap) / 2).length);
 function buildThirds() {
-  const P = mkPoints().sort((a, b) => a.gap - b.gap), t = $("#mkThirds");
+  const P = mkPoints().sort((a, b) => a.gap - b.gap), t = $("#mkThirds"), th = mkThirds(), now = todayThird(th, todayGap());
   t.replaceChildren(el("tr", {}, ...[["Gap at the start"], ["Months"], ["Stocks − CDI", "Stocks minus CDI, per year, next 3 years"], ["Beat CDI", "Share of months in which stocks beat the CDI over the next 3 years"]]
     .map(([h, title], i) => el("th", { className: i ? "" : "l", textContent: h, title: title || "" }))));
   const n = P.length;
-  for (const [label, a, b] of [["Smallest third", 0, Math.round(n / 3)], ["Middle third", Math.round(n / 3), Math.round((2 * n) / 3)], ["Largest third", Math.round((2 * n) / 3), n]]) {
-    const g = P.slice(a, b);
-    if (!g.length) continue;
-    const avg = g.reduce((s, p) => s + p.out, 0) / g.length, wins = g.filter((p) => p.out > 0).length / g.length;
-    t.append(el("tr", {}, el("td", { className: "l" }, el("div", { textContent: label }), el("span", { className: "muted", style: "font-size:12px", textContent: `${pts(g[0].gap, 0)} to ${pts(g.at(-1).gap, 0)}` })),
+  th.forEach(({ label, g, avg, wins }, i) => {
+    t.append(el("tr", {}, el("td", { className: "l" }, el("div", {}, label, i === now ? el("span", { className: "new", textContent: "TODAY", title: `Today's gap: ${pts(todayGap())}` }) : null),
+      el("span", { className: "muted", style: "font-size:12px", textContent: `${pts(g[0].gap, 0)} to ${pts(g.at(-1).gap, 0)}` })),
       el("td", { textContent: g.length }), retCell(avg, 0.15, 1), el("td", { textContent: pct(wins) })));
-  }
+  });
   const dates = P.map((p) => p.date).sort();
   $("#mkCaveat").textContent = n ? `${n} monthly starts, ${dates[0].slice(0, 7)} to ${dates.at(-1).slice(0, 7)}. They overlap: consecutive months share almost all of their three years, so this is closer to four or five independent periods than to ${n}. It describes the past, not a forecast.` : "";
+}
+
+// One sentence that reconciles the gauge (stocks against their own past) with
+// the table (stocks against cash, and what came next), from the numbers.
+function buildSynthesis() {
+  const box = $("#mkSynth"), T = S.mkToday || {}, th = mkThirds(), gap = todayGap(), i = todayThird(th, gap);
+  const v = Number.isFinite(T.cheaper_than) ? T.cheaper_than * 100 : NaN;
+  if (!Number.isFinite(v) || i < 0) { box.replaceChildren(); return; }
+  const hist = v >= 67 ? 2 : v >= 33 ? 1 : 0;                       // the gauge's own zones
+  const word = ["expensive", "near its usual level", "cheap"][hist], third = ["smallest", "middle", "largest"][i];
+  const lo = th[0], hi = th.at(-1), since = mkPoints().map((p) => p.date).sort()[0].slice(0, 4);
+  const by = (x, it, unit) => `${x.avg >= 0 ? "beat" : "trailed"} ${it} by ${f1(Math.abs(x.avg) * 100)}${unit ? " pts a year" : ""}`;
+  box.replaceChildren(callout(`The gauge compares stocks with their own past, the table with cash: ${word} by the gauge (cheaper than ${f1(v, 0)}% of month ends), ` +
+    `${i === hist ? "and" : "but"} today's gap over cash after inflation (${pts(gap)}) is ${i < hist ? "only " : ""}in the table's ${third} third${i === hist ? " too" : ""}; ` +
+    `and since ${since}, a wider gap has ${hi.avg > lo.avg ? "gone with better" : "not meant better"} three years (the largest third ${by(hi, "the CDI", true)}, the smallest ${by(lo, "it")}).`));
 }
 
 // Expandable row (click / Enter) showing the score breakdown.
@@ -228,7 +251,7 @@ function buildList() {
 function buildOverview() {
   const st = S.status;
   $("#status").textContent = st ? `Closing prices of ${st.asof} · ${st.eligible} of ${st.companies} listed companies pass the filters · updated every weekday` : "";
-  buildCards(); buildWhy(); buildThirds(); buildList(); buildWatch();
+  buildCards(); buildWhy(); buildThirds(); buildSynthesis(); buildList(); buildWatch();
 }
 
 // ============================================================== WATCHLIST
