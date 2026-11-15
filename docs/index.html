@@ -63,15 +63,15 @@
     </section>
 
     <section class="card">
-      <p class="eyebrow">Your watchlist</p>
+      <p class="eyebrow" data-en="Your watchlist">Suas favoritas</p>
       <p class="note" id="watchNote"></p>
       <div class="scroll"><table id="watch" class="dense"></table></div>
     </section>
 
     <section class="card">
       <div class="pagehead" style="margin:0 0 6px">
-        <p class="eyebrow" style="margin:0">The avoid list: bottom 10 by score</p>
-        <a href="#/backtest" class="meta">How the bottom did in the backtest →</a>
+        <p class="eyebrow" style="margin:0" data-en="The avoid list: bottom 10 by score">A lista a evitar: as 10 piores pela nota</p>
+        <a href="#/backtest" class="meta" data-en="How the bottom did in the backtest →">Como as piores foram no backtest →</a>
       </div>
       <p class="note" id="avoidNote"></p>
       <div class="scroll"><table id="avoid" class="dense"></table></div>
@@ -84,14 +84,14 @@
       <h1 data-en="Screener">Filtro de ações</h1>
       <p class="meta" id="scrMeta"></p>
     </div>
-    <p class="lede">Every listed company, scored on four pillars, each a percentile within the eligible universe (0–100; blue above the median, red below). Growth is shown, not scored. Click a column to sort, a row for why it scores what it does, a ticker for its history. Banks, insurers and their holdings are left out here and ranked apart, in <a href="#/financials">Financials</a>.</p>
+    <p class="lede" data-en-html="Every listed company, scored on four pillars, each a percentile within the eligible universe (0–100; blue above the median, red below). Growth is shown, not scored. Click a column to sort, a row for why it scores what it does, a ticker for its history. Banks, insurers and their holdings are left out here and ranked apart, in <a href=&quot;#/financials&quot;>Financials</a>.">Todas as empresas listadas, avaliadas em quatro pilares, cada um como percentil no universo elegível (0–100; azul acima da mediana, vermelho abaixo). Crescimento aparece, mas não entra na nota. Clique numa coluna para ordenar, numa linha para ver de onde vem a nota, num ticker para o histórico. Bancos, seguradoras e suas holdings ficam de fora aqui e têm um ranking à parte, em <a href="#/financials">Financeiras</a>.</p>
     <div class="presets" id="presets"></div>
     <div class="controls">
       <label><span data-en="Search">Buscar</span> <input type="search" id="q" placeholder="Ticker ou empresa" data-en-placeholder="Ticker or company"></label>
       <label><span data-en="Sector">Setor</span> <select id="sector"><option value="" data-en="All sectors">Todos os setores</option></select></label>
       <label><span data-en="Daily volume">Volume diário</span> <select id="liq"><option value="0" data-en="Any">Qualquer</option><option value="2e7" data-en="Over R$ 20m">Acima de R$ 20 mi</option><option value="1e8" data-en="Over R$ 100m">Acima de R$ 100 mi</option></select></label>
       <span class="count" id="scrCount"></span>
-      <button type="button" class="icon-btn" id="scrCsv" title="The rows shown, with the columns shown, as a CSV file">Download CSV</button>
+      <button type="button" class="icon-btn" id="scrCsv" title="As linhas na tela, com as colunas na tela, num arquivo CSV" data-en-title="The rows shown, with the columns shown, as a CSV file" data-en="Download CSV">Baixar CSV</button>
     </div>
     <div class="card" style="padding:0">
       <div class="tbl-wrap"><table id="screen" class="dense"></table></div>
@@ -101,30 +101,30 @@
   <!-- ========================================================== FINANCIALS -->
   <section data-tab="financials" hidden>
     <div class="pagehead">
-      <h1>Banks, insurers and their holdings</h1>
+      <h1 data-en="Banks, insurers and their holdings">Bancos, seguradoras e suas holdings</h1>
       <p class="meta" id="finMeta"></p>
     </div>
     <div id="finCallout"></div>
-    <p class="lede">Ranked on four pillars that fit a financial company, each a percentile among the eligible financials only: <b>value</b> (book / market value), <b>quality</b> (return on equity, and how steady it was over three years), <b>momentum</b> and <b>income</b> (the main screen's 12–1 return and dividend yield). Net income and equity are the controlling shareholders' share, from CVM's filings, point in time. P/E and payout are shown, not scored. Click a row for the breakdown, a ticker for its history.</p>
+    <p class="lede" data-en-html="Ranked on four pillars that fit a financial company, each a percentile among the eligible financials only: <b>value</b> (book / market value), <b>quality</b> (return on equity, and how steady it was over three years), <b>momentum</b> and <b>income</b> (the main screen's 12–1 return and dividend yield). Net income and equity are the controlling shareholders' share, from CVM's filings, point in time. P/E and payout are shown, not scored. Click a row for the breakdown, a ticker for its history.">Avaliadas em quatro pilares adequados a uma empresa financeira, cada um como percentil só entre as financeiras elegíveis: <b>valor</b> (patrimônio / valor de mercado), <b>qualidade</b> (retorno sobre o patrimônio, e quão estável ele foi em três anos), <b>momento</b> e <b>dividendos</b> (o retorno 12–1 e o dividend yield do filtro principal). Lucro líquido e patrimônio são a parte dos controladores, das demonstrações entregues à CVM, só com o que era público em cada data. P/L e payout aparecem, mas não entram na nota. Clique numa linha para ver a nota em detalhe, num ticker para o histórico.</p>
     <div class="presets" id="finPresets"></div>
     <div class="card" style="padding:0">
       <div class="tbl-wrap"><table id="finTable" class="dense"></table></div>
     </div>
 
     <section class="card">
-      <p class="eyebrow">Does this score separate winners from losers?</p>
+      <p class="eyebrow" data-en="Does this score separate winners from losers?">Esta nota separa as vencedoras das perdedoras?</p>
       <p class="note" id="finBtNote" data-en="Loading…">Carregando…</p>
       <div id="finQuint" class="quint" style="grid-template-columns:repeat(auto-fit,minmax(160px,1fr))"></div>
       <p class="note" style="margin-top:12px" id="finBtRead"></p>
     </section>
 
     <section class="card">
-      <p class="eyebrow">How it is made, and its limits</p>
+      <p class="eyebrow" data-en="How it is made, and its limits">Como é feito, e seus limites</p>
       <ul class="caveats">
-        <li><b>The accounts.</b> Banks, insurers and holdings file different charts of accounts, and the codes move between them (a bank's 2.03 is a liability, an insurer's its equity). Net income is the last line of the income statement before earnings per share; equity is the balance sheet's "Patrimônio Líquido". Consolidated and individual statements are never mixed in a trailing twelve months.</li>
-        <li><b>Who is in.</b> Every company the main screen leaves out as "financial sector" (banks, insurers and brokers, their holdings, card acquirers), under the main screen's own liquidity, history and status filters. Few pass: under 20 in any year since 2012, which makes every result here fragile.</li>
-        <li><b>Insurance brokers</b> (Qualicorp, Wiz) are in, though they file ordinary accounts; their book value means less than a bank's.</li>
-        <li><b>Its own fingerprint.</b> Changing these rules never touches the main score, its fingerprint or its track record.</li>
+        <li data-en-html="<b>The accounts.</b> Banks, insurers and holdings file different charts of accounts, and the codes move between them (a bank's 2.03 is a liability, an insurer's its equity). Net income is the last line of the income statement before earnings per share; equity is the balance sheet's &quot;Patrimônio Líquido&quot;. Consolidated and individual statements are never mixed in a trailing twelve months."><b>As contas.</b> Bancos, seguradoras e holdings entregam planos de contas diferentes, e os códigos mudam de um para outro (o 2.03 de um banco é um passivo; o de uma seguradora, o patrimônio líquido). O lucro líquido é a última linha da demonstração de resultado antes do lucro por ação; o patrimônio é o “Patrimônio Líquido” do balanço. Demonstrações consolidadas e individuais nunca se misturam num mesmo período de doze meses.</li>
+        <li data-en-html="<b>Who is in.</b> Every company the main screen leaves out as &quot;financial sector&quot; (banks, insurers and brokers, their holdings, card acquirers), under the main screen's own liquidity, history and status filters. Few pass: under 20 in any year since 2012, which makes every result here fragile."><b>Quem entra.</b> Todas as empresas que o filtro principal deixa de fora como “setor financeiro” (bancos, seguradoras e corretoras, suas holdings, adquirentes de cartão), sob os mesmos filtros de liquidez, histórico e situação do filtro principal. Poucas passam: menos de 20 em qualquer ano desde 2012, o que torna frágil todo resultado aqui.</li>
+        <li data-en-html="<b>Insurance brokers</b> (Qualicorp, Wiz) are in, though they file ordinary accounts; their book value means less than a bank's."><b>Corretoras de seguros</b> (Qualicorp, Wiz) entram, embora entreguem demonstrações comuns; o valor patrimonial delas diz menos que o de um banco.</li>
+        <li data-en-html="<b>Its own fingerprint.</b> Changing these rules never touches the main score, its fingerprint or its track record."><b>Impressão digital própria.</b> Mudar estas regras nunca mexe na nota principal, na sua impressão digital nem no seu histórico ao vivo.</li>
       </ul>
     </section>
   </section>
@@ -145,10 +145,10 @@
     </section>
 
     <section class="card" id="cadenceCard">
-      <p class="eyebrow">How often to rebalance, and what trading costs</p>
+      <p class="eyebrow" data-en="How often to rebalance, and what trading costs">Com que frequência rebalancear, e quanto custa negociar</p>
       <p class="note" id="cadNote"></p>
       <div class="scroll"><table id="cadTable"></table></div>
-      <details style="margin-top:12px"><summary>Year by year, net of costs</summary><div class="scroll"><table id="cadYears" style="max-width:720px"></table></div></details>
+      <details style="margin-top:12px"><summary data-en="Year by year, net of costs">Ano a ano, líquido de custos</summary><div class="scroll"><table id="cadYears" style="max-width:720px"></table></div></details>
       <p class="note" style="margin:12px 0 0" id="cadTax"></p>
     </section>
 
@@ -159,8 +159,8 @@
     </section>
 
     <section class="card">
-      <p class="eyebrow">The avoid list: does the bottom of the score lose?</p>
-      <p class="note">Each May, the 10 lowest scores and the lowest fifth (Q5 above) as the screen stood that day, held a year like the top 10, against all eligible stocks; and all eligible stocks with that fifth left out, which is what avoiding it would have added to owning the whole universe. Shown on the page, not logged as a live strategy.</p>
+      <p class="eyebrow" data-en="The avoid list: does the bottom of the score lose?">A lista a evitar: as piores notas perdem?</p>
+      <p class="note" data-en="Each May, the 10 lowest scores and the lowest fifth (Q5 above) as the screen stood that day, held a year like the top 10, against all eligible stocks; and all eligible stocks with that fifth left out, which is what avoiding it would have added to owning the whole universe. Shown on the page, not logged as a live strategy.">Todo mês de maio, as 10 notas mais baixas e o quinto inferior (o Q5 acima) como o filtro estava naquele dia, mantidos por um ano como as 10 primeiras, contra todas as ações elegíveis; e todas as ações elegíveis sem esse quinto, o que mostra quanto evitá-lo teria acrescentado a ter o universo inteiro. Só aparecem na página: não são registrados como estratégia ao vivo.</p>
       <div id="btAvoid"></div>
       <div class="scroll" style="margin-top:12px"><table id="btAvoidSummary"></table></div>
       <details style="margin-top:12px"><summary data-en="Year by year">Ano a ano</summary><div class="scroll"><table id="btAvoidYears" style="max-width:860px"></table></div></details>
@@ -189,7 +189,7 @@
       <p class="eyebrow" data-en="How much to trust the backtest">Quanto confiar no backtest</p>
       <ul class="caveats">
         <li data-en-html="<b>Point in time:</b> each list uses only quotes, filings and events public on its date, through the same code as the live screen; share counts are the ones filed at the time."><b>Só o que era público na data:</b> cada lista usa apenas cotações, demonstrações e eventos já públicos naquele dia, com o mesmo código do filtro ao vivo; o número de ações é o informado na época.</li>
-        <li><b>Costs and taxes:</b> the main figures have none. The rebalancing table charges a cost on every trade; taxes on gains depend on the investor's size (the R$ 20,000 monthly exemption), so they are left out.</li>
+        <li data-en-html="<b>Costs and taxes:</b> the main figures have none. The rebalancing table charges a cost on every trade; taxes on gains depend on the investor's size (the R$ 20,000 monthly exemption), so they are left out."><b>Custos e impostos:</b> os números principais não têm nenhum dos dois. A tabela de rebalanceamento cobra um custo em cada operação; o imposto sobre o ganho depende do tamanho do investidor (a isenção de R$ 20 mil em vendas por mês), por isso fica de fora.</li>
         <li data-en-html="<b>Survivors:</b> companies that went bankrupt or into recovery stay in, and their quotes follow them into the special segments. Companies that delisted keep their quotes but lose their dividends (B3 only serves listed companies' history), which slightly understates returns."><b>Sobreviventes:</b> empresas que faliram ou entraram em recuperação continuam na conta, e suas cotações as acompanham nos segmentos especiais. Empresas que fecharam o capital mantêm as cotações mas perdem os dividendos (a B3 só fornece o histórico das empresas listadas), o que subestima um pouco os retornos.</li>
         <li data-en-html="<b>Approximations before 2020:</b> share counts come from the yearly Reference Form, dated by when CVM received it; registration status is today's, so it is not used as a filter in the past."><b>Aproximações antes de 2020:</b> o número de ações vem do Formulário de Referência anual, datado pelo recebimento na CVM; a situação do registro é a de hoje, por isso não serve de filtro no passado.</li>
         <li data-en-html="<b>One path:</b> fifteen yearly decisions are a small sample. A strategy that beat the market here can lag for years; compare it with &quot;all eligible stocks&quot; to see what the picking itself added."><b>Um só caminho:</b> quinze decisões anuais são uma amostra pequena. Uma estratégia que bateu o mercado aqui pode ficar para trás por anos; compare com “todas as ações elegíveis” para ver o que a seleção em si acrescentou.</li>
@@ -208,7 +208,7 @@
       <ul class="caveats">
         <li data-en-html="Every Monday the top 10 by score (and by the Magic Formula) is appended to <code>data/picks/picks.csv</code> with its prices. Nothing is ever removed, and a recorded list is never replaced (a re-run on the same session keeps the first).">Toda segunda-feira as 10 primeiras pela nota (e pela Fórmula Mágica) são acrescentadas a <code>data/picks/picks.csv</code> com seus preços. Nada é apagado, e uma lista registrada nunca é substituída (se a rotina rodar de novo no mesmo pregão, fica a primeira).</li>
         <li data-en="Each list is held as an equal-weight portfolio until the next one, on dividend- and split-adjusted prices, against BOVA11 over the same days.">Cada lista é mantida como carteira de pesos iguais até a seguinte, com preços ajustados por dividendos e desdobramentos, contra o BOVA11 nos mesmos dias.</li>
-        <li>That is a weekly rebalance with no trading costs, while the backtest buys once a year. The backtest's <a href="#/backtest">rebalancing table</a> shows what trading more often did and cost.</li>
+        <li data-en-html="That is a weekly rebalance with no trading costs, while the backtest buys once a year. The backtest's <a href=&quot;#/backtest&quot;>rebalancing table</a> shows what trading more often did and cost.">Isso é um rebalanceamento semanal sem custos de negociação, enquanto o backtest compra uma vez por ano. A <a href="#/backtest">tabela de rebalanceamento</a> do backtest mostra o que negociar com mais frequência rendeu e custou.</li>
         <li data-en="Lists are stamped with the scoring rules' fingerprint: a rule change ends one record and starts another, it never rewrites the past.">Cada lista leva a impressão digital das regras da nota: uma mudança de regra encerra um histórico e começa outro, nunca reescreve o passado.</li>
       </ul>
     </section>

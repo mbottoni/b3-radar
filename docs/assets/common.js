@@ -68,7 +68,7 @@ function syncThemeButton() {
 }
 
 // --------------------------------------------------------------- header
-const TABS = [["overview", L("Visão geral", "Overview")], ["screener", L("Filtro de ações", "Screener")], ["financials", "Financials"],
+const TABS = [["overview", L("Visão geral", "Overview")], ["screener", L("Filtro de ações", "Screener")], ["financials", L("Financeiras", "Financials")],
   ["backtest", "Backtest"], ["record", L("Histórico ao vivo", "Track record")]];
 const GH = '<svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8a8 8 0 0 0 5.47 7.59c.4.07.55-.17.55-.38v-1.33c-2.23.48-2.7-1.07-2.7-1.07-.36-.92-.89-1.17-.89-1.17-.73-.5.06-.49.06-.49.8.06 1.23.83 1.23.83.72 1.22 1.87.87 2.33.66.07-.52.28-.87.5-1.07-1.78-.2-3.65-.89-3.65-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82a7.6 7.6 0 0 1 4 0c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48v2.2c0 .21.15.46.55.38A8 8 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>';
 const LOGO = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="8" opacity=".55"/><circle cx="12" cy="12" r="3.5"/><path d="M12 12l6-6"/></svg>';
@@ -117,6 +117,28 @@ const EXCLUDED = {
   "non-positive EV": "valor da firma (EV) zero ou negativo",
 };
 const excludedText = (x) => (x ? L(EXCLUDED[x] || x, x) : "");
+// The sector groups the Python screen writes to `sector_group` (b3radar/sectors.py), likewise.
+// Anything else (CVM's own label, before the screen has the column) shows as it is.
+const SECTOR_GROUPS = {
+  "Financials": "Financeiro",
+  "Real estate": "Imobiliário",
+  "Retail": "Varejo",
+  "Apparel": "Têxtil e vestuário",
+  "Utilities": "Energia e saneamento",
+  "Oil & gas": "Petróleo e gás",
+  "Mining & steel": "Mineração e siderurgia",
+  "Paper & chemicals": "Papel e química",
+  "Industrials": "Bens industriais",
+  "Transport": "Transporte",
+  "Food & agri": "Alimentos e agro",
+  "Health": "Saúde",
+  "Education": "Educação",
+  "Tech & media": "Tecnologia e mídia",
+  "Telecom": "Telecomunicações",
+  "Leisure & travel": "Lazer e turismo",
+  "Other": "Outros",
+};
+const groupText = (g) => (g ? L(SECTOR_GROUPS[g] || g, g) : "");
 
 // -------------------------------------------------------------- tooltip
 function showTip(ev, kids) {
@@ -295,7 +317,7 @@ function lineChart(box, dates, series, opts = {}) {
 // on the caps when every column has room; otherwise round y ticks carry them.
 // ``fmt(v, step)``: step is given for axis ticks only. Year labels are thinned
 // to round years (every 2, 5, 10...).
-function barChart(box, labels, values, fmt, { h = 170, aria = "", unit = L("por ação", "per share"), none = "no payments on file" } = {}) {
+function barChart(box, labels, values, fmt, { h = 170, aria = "", unit = L("por ação", "per share"), none = L("nenhum pagamento registrado", "no payments on file") } = {}) {
   box.replaceChildren();
   if (!values.some((v) => v > 0)) { box.append(el("p", { className: "muted", textContent: L("Nenhum pagamento registrado.", "No payments on file.") })); return; }
   const w = box.clientWidth || 600, mr = 8, mt = 16, mb = 18;

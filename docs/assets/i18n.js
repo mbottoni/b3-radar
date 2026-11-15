@@ -14,23 +14,27 @@
 //   Text that is the same in both languages (a brand, a file name) goes in an element with translate="no".
 //   In scripts: L("Nota", "Score"), and L(`${n} lista${n === 1 ? "" : "s"}`, `${n} list${n === 1 ? "" : "s"}`).
 //   Numbers and dates the reader sees go through f1, pct, pts, brl (common.js) or fmtNum, fmtDate (here),
-//   never toFixed. Strings written by the Python package (exclusion reasons) are translated on the page:
-//   EXCLUDED in common.js. tests/test_site_i18n.py fails on HTML text left without its English.
+//   never toFixed. Strings written by the Python package are translated on the page: exclusion reasons
+//   (EXCLUDED) and sector groups (SECTOR_GROUPS) in common.js. tests/test_site_i18n.py fails on HTML text
+//   left without its English.
 //
 // Glossary (English -> Portuguese), so every page says the same thing:
 //   score -> nota · pillar -> pilar · value, quality, momentum, income, growth -> valor, qualidade,
 //     momento, dividendos, crescimento (V Q M I G -> V Q M D C)
 //   screener -> filtro de ações · shortlist -> lista da semana · track record -> histórico ao vivo ·
 //     backtest -> backtest · Magic Formula -> Fórmula Mágica · rules fingerprint -> impressão digital das regras
+//   watchlist -> favoritas (to watch -> acompanhar) · avoid list -> lista a evitar · bottom 10 -> as 10 piores ·
+//     bottom fifth -> quinto inferior · peers -> pares · rebalance -> rebalanceamento · turnover -> giro ·
+//     financials (banks, insurers, holdings) -> financeiras · ranked / not ranked -> no ranking / fora do ranking
 //   earnings yield -> earnings yield (EBIT / valor da firma) · dividend yield -> dividend yield (DY in tables) ·
-//     EV -> valor da firma · P/E -> P/L · EV/EBIT, ROE, ROIC, JCP, CDI, IPCA -> unchanged
+//     EV -> valor da firma · P/E -> P/L · P/B -> P/VP · EV/EBIT, ROE, ROIC, JCP, CDI, IPCA, payout -> unchanged
 //   market cap -> valor de mercado · daily volume -> volume diário · net debt -> dívida líquida ·
-//     revenue -> receita · net income -> lucro líquido · TTM -> 12M · statements -> demonstrações ·
+//     revenue -> receita · net income -> lucro líquido · equity -> patrimônio líquido · TTM -> 12M · statements -> demonstrações ·
 //     filed with CVM -> entregue à CVM · eligible -> elegível · illiquid -> baixa liquidez
 //   cash -> CDI · after inflation -> real · percentage points (pts) -> p.p. · per year -> ao ano ·
 //     1D 1M 1Y -> 1D 1M 12M · worst fall -> maior queda · fifths -> quintos · point in time ->
 //     só o que era público na data
-//   Tickers, company names and CVM's sector names stay as they are.
+//   Tickers, company names and CVM's sector names stay as they are (the short sector groups do not: SECTOR_GROUPS).
 "use strict";
 
 const LANGS = { pt: { label: "PT", name: "Português", tag: "pt-BR" }, en: { label: "EN", name: "English", tag: "en" } };

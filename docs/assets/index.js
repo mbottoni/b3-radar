@@ -161,8 +161,8 @@ function buildThirds() {
     .map(([h, title], i) => el("th", { className: i ? "" : "l", textContent: h, title: title || "" }))));
   const n = P.length;
   th.forEach(({ label, g, avg, wins }, i) => {
-    t.append(el("tr", {}, el("td", { className: "l" }, el("div", {}, label, i === now ? el("span", { className: "new", textContent: "TODAY",
-      title: `Today's gap: ${pts(todayGap())}` }) : null),
+    t.append(el("tr", {}, el("td", { className: "l" }, el("div", {}, label, i === now ? el("span", { className: "new", textContent: L("HOJE", "TODAY"),
+      title: L(`Diferença de hoje: ${pts(todayGap())}`, `Today's gap: ${pts(todayGap())}`) }) : null),
       el("span", { className: "muted", style: "font-size:12px", textContent: `${pts(g[0].gap, 0)} ${L("a", "to")} ${pts(g.at(-1).gap, 0)}` })),
       el("td", { textContent: g.length }), retCell(avg, 0.15, 1), el("td", { textContent: pct(wins) })));
   });
@@ -179,6 +179,15 @@ function buildSynthesis() {
   if (!Number.isFinite(v) || i < 0) { box.replaceChildren(); return; }
   const hist = v >= 67 ? 2 : v >= 33 ? 1 : 0;                       // the gauge's own zones
   const lo = th[0], hi = th.at(-1), since = mkPoints().map((p) => p.date).sort()[0].slice(0, 4);
+  if (lang() === "pt") {
+    const word = ["cara", "perto do nível de costume", "barata"][hist], third = ["menor", "do meio", "maior"][i];
+    // "rendeu 5,2 p.p. ao ano acima do CDI" for the largest third, "1,3 abaixo" for the smallest.
+    const by = (x, first) => `${first ? "rendeu " : ""}${f1(Math.abs(x.avg) * 100)}${first ? " p.p. ao ano" : ""} ${x.avg >= 0 ? "acima" : "abaixo"}${first ? " do CDI" : ""}`;
+    box.replaceChildren(callout(`O medidor compara as ações com o próprio passado; a tabela, com o CDI: ${word} pelo medidor (mais barata que em ${f1(v, 0)}% dos fechamentos de mês), ` +
+      `${i === hist ? "e" : "mas"} a diferença de hoje sobre o CDI real (${pts(gap)}) ${i === hist ? "também " : ""}está ${i < hist ? "só " : ""}no terço ${third} da tabela; ` +
+      `e, desde ${since}, uma diferença maior ${hi.avg > lo.avg ? "veio acompanhada de" : "não significou"} três anos melhores (o terço maior ${by(hi, true)}, o menor ${by(lo, false)}).`));
+    return;
+  }
   const word = ["expensive", "near its usual level", "cheap"][hist], third = ["smallest", "middle", "largest"][i];
   const by = (x, it, unit) => `${x.avg >= 0 ? "beat" : "trailed"} ${it} by ${f1(Math.abs(x.avg) * 100)}${unit ? " pts a year" : ""}`;
   box.replaceChildren(callout(`The gauge compares stocks with their own past, the table with cash: ${word} by the gauge (cheaper than ${f1(v, 0)}% of month ends), ` +
@@ -219,17 +228,18 @@ function listChanges() {
   const move = (t) => ({ ticker: t, company: (C.get(t) || P.get(t)).company, from: where(P, sp, t), to: where(C, sc, t) });
   return { prev, cur, entered: [...C.keys()].filter((t) => !P.has(t)).map(move), left: [...P.keys()].filter((t) => !C.has(t)).map(move) };
 }
-const rankTxt = (w) => (Number.isFinite(w.rank) ? `#${w.rank}` : w.known ? "not eligible" : "–");
+const rankTxt = (w) => (Number.isFinite(w.rank) ? `#${w.rank}` : w.known ? L("não elegível", "not eligible") : "–");
 const moveTxt = (m) => `${rankTxt(m.from)} → ${rankTxt(m.to)}` +
   (Number.isFinite(m.from.score) && Number.isFinite(m.to.score) ? `, ${L("nota", "score")} ${f1(m.from.score)} → ${f1(m.to.score)}` : "");
 function buildChanges(ch) {
   const box = $("#listMoves");
   if (!ch) { box.replaceChildren(); return; }
-  if (!ch.entered.length) { box.replaceChildren(el("p", { className: "note", textContent: `Same ten names as the list of ${ch.prev}.` })); return; }
+  if (!ch.entered.length) { box.replaceChildren(el("p", { className: "note", textContent: L(`Os mesmos dez nomes da lista de ${fmtDate(ch.prev)}.`, `Same ten names as the list of ${ch.prev}.`) })); return; }
   const line = (label, ms) => el("div", { className: "mv-row" }, el("span", { className: "mv-k", textContent: label }),
     ...ms.map((m) => el("span", { className: "mv" }, companyLink(m.ticker, m.company), el("span", { className: "muted", textContent: moveTxt(m) }))));
-  box.replaceChildren(el("p", { className: "note", textContent: `Changes since the list of ${ch.prev} (rank and score in each week's screen):` }),
-  line("Entered", ch.entered), line("Left", ch.left));
+  box.replaceChildren(el("p", { className: "note", textContent: L(`Mudanças desde a lista de ${fmtDate(ch.prev)} (posição e nota no filtro de cada semana):`,
+    `Changes since the list of ${ch.prev} (rank and score in each week's screen):`) }),
+  line(L("Entraram", "Entered"), ch.entered), line(L("Saíram", "Left"), ch.left));
 }
 // The shortlist and the avoid list: one company per row (with its watchlist star), score cells shaded,
 // click for the breakdown.
@@ -258,12 +268,13 @@ function buildList() {
   const now = picks.filter((p) => p.date === cur && p.strategy === "composite").sort((a, b) => a.rank - b.rank);
   const fresh = new Map((ch?.entered || []).map((m) => [m.ticker, m]));
   $("#listNote").textContent = cur
-    ? `List of ${cur} (closing prices), the top 10 by score.${ch ? ` NEW: not in the list of ${ch.prev}.` : ""} Score cells: percentile in the eligible universe. Click a row for the full breakdown.`
+    ? L(`Lista de ${fmtDate(cur)} (preços de fechamento), as 10 primeiras pela nota.${ch ? ` NOVA: não estava na lista de ${fmtDate(ch.prev)}.` : ""} Células de nota: percentil no universo elegível. Clique numa linha para ver a nota em detalhe.`,
+      `List of ${cur} (closing prices), the top 10 by score.${ch ? ` NEW: not in the list of ${ch.prev}.` : ""} Score cells: percentile in the eligible universe. Click a row for the full breakdown.`)
     : L("Ainda sem lista: a primeira sai na segunda-feira.", "No list yet: the first one is made on Monday.");
   listTable($("#list"), OPEN.list, now.map((p) => ({ rank: p.rank, score: num(p.score), price: num(p.price),
     row: { ...(by.get(p.ticker) || { ticker: p.ticker }), company: p.company },
     badge: fresh.has(p.ticker) ? [el("span", { className: "new", textContent: L("NOVA", "NEW"),
-      title: `Not in the list of ${ch.prev}: ${moveTxt(fresh.get(p.ticker))}` })] : [] })),
+      title: L(`Não estava na lista de ${fmtDate(ch.prev)}: ${moveTxt(fresh.get(p.ticker))}`, `Not in the list of ${ch.prev}: ${moveTxt(fresh.get(p.ticker))}`) })] : [] })),
   [[L("Preço", "Price")], (it) => el("td", { textContent: `R$ ${f1(it.price, 2)}` })]);
   buildChanges(ch);
   const magic = picks.filter((p) => p.date === cur && p.strategy === "magic").sort((a, b) => a.rank - b.rank);
@@ -275,12 +286,16 @@ function buildAvoid() {
   const elig = S.screen.filter((r) => !r.excluded), n = elig.length;
   const rows = elig.filter((r) => Number.isFinite(num(r.rank))).sort((a, b) => num(b.rank) - num(a.rank)).slice(0, 10);
   const bt = Object.fromEntries((S.bt.summary || []).map((r) => [r.series, r])), y = (k) => pct(num(bt[k]?.cagr), 1);
-  $("#avoidNote").textContent = `The lowest scores of today's screen: ranks ${n - rows.length + 1}–${n} of ${n} eligible companies, closing prices of ${S.status?.asof || "–"}. ` +
+  $("#avoidNote").textContent = L(`As notas mais baixas do filtro de hoje: posições ${n - rows.length + 1}–${n} de ${n} empresas elegíveis, fechamento de ${fmtDate(S.status?.asof)}. ` +
+    "Aparece aqui, mas não é registrada: ao contrário da lista da semana, não vai para data/picks e não tem histórico ao vivo." +
+    (bt.score_q5 && bt.composite_bottom ? ` No backtest, a nota separou as perdedoras melhor do que as vencedoras: desde 2012, o quinto inferior rendeu ${y("score_q5")} ao ano e as 10 piores, ${y("composite_bottom")}, ` +
+      `contra ${y("eligible")} do conjunto das ações elegíveis e ${y("eligible_ex_q5")} de todas elas menos o quinto inferior. As piores também lideraram as recuperações fortes (2016, 2020): evitar não é o mesmo que apostar contra.` : ""),
+  `The lowest scores of today's screen: ranks ${n - rows.length + 1}–${n} of ${n} eligible companies, closing prices of ${S.status?.asof || "–"}. ` +
     "Shown, not logged: unlike the shortlist it is not recorded in data/picks and has no live track record." +
     (bt.score_q5 && bt.composite_bottom ? ` In the backtest the score told losers apart better than winners: since 2012 its bottom fifth returned ${y("score_q5")} a year and its bottom 10 ${y("composite_bottom")}, ` +
-      `against ${y("eligible")} for all eligible stocks and ${y("eligible_ex_q5")} for all of them but the bottom fifth. The bottom also led the sharp rebounds (2016, 2020): avoiding is not the same as betting against.` : "");
+      `against ${y("eligible")} for all eligible stocks and ${y("eligible_ex_q5")} for all of them but the bottom fifth. The bottom also led the sharp rebounds (2016, 2020): avoiding is not the same as betting against.` : ""));
   listTable($("#avoid"), OPEN.avoid, rows.map((r) => ({ rank: r.rank, score: num(r.score), row: r })),
-    [[L("Setor", "Sector"), "l"], (it) => el("td", { className: "l muted", textContent: group(it.row), title: it.row.sector || "" })]);
+    [[L("Setor", "Sector"), "l"], (it) => el("td", { className: "l muted", textContent: groupText(group(it.row)), title: it.row.sector || "" })]);
 }
 
 function buildOverview() {
@@ -309,12 +324,12 @@ function toggleWatch(r) {
 function syncStar(b) {
   const on = isWatched(b._row);
   b.textContent = on ? "★" : "☆"; b.setAttribute("aria-pressed", String(on));
-  b.title = on ? "In your watchlist (click to remove)" : "Add to your watchlist";
+  b.title = on ? L("Nas suas favoritas (clique para tirar)", "In your watchlist (click to remove)") : L("Adicionar às suas favoritas", "Add to your watchlist");
 }
 // A company cell with a star; the click must not also expand the row.
 function watchName(r, extra) {
   const b = el("button", { className: "star", type: "button" });
-  b._row = r; b.setAttribute("aria-label", `Watch ${r.ticker}`); syncStar(b);
+  b._row = r; b.setAttribute("aria-label", L(`Acompanhar ${r.ticker}`, `Watch ${r.ticker}`)); syncStar(b);
   b.addEventListener("click", (e) => { e.stopPropagation(); toggleWatch(r); });
   b.addEventListener("keydown", (e) => e.stopPropagation());
   const td = nameCell(r, extra); td.classList.add("watchable"); td.prepend(b);
@@ -330,25 +345,27 @@ function buildWatch() {
   const inList = new Set((S.picks || []).filter((p) => p.date === cur && p.strategy === "composite").map((p) => p.ticker));
   const fresh = new Set((ch?.entered || []).map((m) => m.ticker)), left = new Set((ch?.left || []).map((m) => m.ticker));
   $("#watchNote").textContent = !rows.length
-    ? "Star a company (☆) here or in the screener to follow it. The list is kept in this browser only."
-    : `Score today and its change since the list of ${cur || "–"}; ▲ / ▼ mark a company that entered or left the top 10 since then. Kept in this browser only.`;
+    ? L("Marque uma empresa com a estrela (☆) aqui ou no filtro de ações para acompanhá-la. A lista fica só neste navegador.",
+      "Star a company (☆) here or in the screener to follow it. The list is kept in this browser only.")
+    : L(`A nota de hoje e quanto ela mudou desde a lista de ${fmtDate(cur)}; ▲ / ▼ marcam uma empresa que entrou nas 10 primeiras ou saiu delas desde então. Guardada só neste navegador.`,
+      `Score today and its change since the list of ${cur || "–"}; ▲ / ▼ mark a company that entered or left the top 10 since then. Kept in this browser only.`);
   t.hidden = !rows.length;
   if (!rows.length) { t.replaceChildren(); return; }
   t.replaceChildren(el("tr", {}, ...[[L("Empresa", "Company"), "l sticky"], [L("Nota", "Score")],
-    ["Since the list", "", "Score today minus its score in the screen of the last weekly list"],
-    [L("Posição", "Rank")], ["Top 10", "l", `Against the list of ${cur}`]]
+    [L("Desde a lista", "Since the list"), "", L("A nota de hoje menos a nota no filtro da última lista da semana", "Score today minus its score in the screen of the last weekly list")],
+    [L("Posição", "Rank")], [L("10 primeiras", "Top 10"), "l", L(`Em relação à lista de ${fmtDate(cur)}`, `Against the list of ${cur}`)]]
     .map(([h, c = "", title = ""]) => el("th", { className: c, textContent: h, title }))));
   for (const r of rows) {
     const any = tickersOf(r), has = (set) => any.some((x) => set.has(x));
     const before = then && any.map((x) => then.get(x)).find(Boolean), d = num(r.score) - num(before?.score);
     const rank = num(r.rank), top = rank <= 10, listed = has(inList);
-    const [txt, cls] = r.gone ? ["no longer in the screen", "muted"] : listed && top ? ["in the list", ""]
-      : listed ? ["▼ left the top 10", "neg"] : top ? ["▲ entered the top 10", "pos"]
-      : has(left) ? [`left the list of ${cur}`, "muted"] : ["–", "muted"];
+    const [txt, cls] = r.gone ? [L("não está mais no filtro", "no longer in the screen"), "muted"] : listed && top ? [L("na lista", "in the list"), ""]
+      : listed ? [L("▼ saiu das 10 primeiras", "▼ left the top 10"), "neg"] : top ? [L("▲ entrou nas 10 primeiras", "▲ entered the top 10"), "pos"]
+      : has(left) ? [L(`saiu na lista de ${fmtDate(cur)}`, `left the list of ${cur}`), "muted"] : ["–", "muted"];
     t.append(el("tr", {}, watchName(r, listed && has(fresh) ? [el("span", { className: "new", textContent: L("NOVA", "NEW") })] : []), scoreCell(num(r.score)),
       el("td", {}, Number.isFinite(d) ? el("span", { className: d > 0 ? "pos" : d < 0 ? "neg" : "muted", textContent: `${d > 0 ? "▲ " : d < 0 ? "▼ " : ""}${f1(Math.abs(d))}` }) : "–"),
-      el("td", { className: Number.isFinite(rank) ? "" : "muted", textContent: Number.isFinite(rank) ? `#${rank}` : r.excluded ? "not eligible" : "–",
-        title: r.excluded || "" }),
+      el("td", { className: Number.isFinite(rank) ? "" : "muted", textContent: Number.isFinite(rank) ? `#${rank}` : r.excluded ? L("não elegível", "not eligible") : "–",
+        title: excludedText(r.excluded) }),
       el("td", { className: `l ${cls}`, textContent: txt })));
   }
 }
@@ -364,9 +381,9 @@ let Q5_CUT;
 const bottomFifth = (r) => !r.excluded && num(r.rank) > (Q5_CUT ??= 1 + 0.8 * (S.screen.filter((x) => !x.excluded).length - 1));
 const PRESETS = [
   ["all", L("Todas as elegíveis", "All eligible"), (r) => !r.excluded],
-  ["watch", "Watchlist", (r) => isWatched(r)],
+  ["watch", L("Favoritas", "Watchlist"), (r) => isWatched(r)],
   ["top", L("20 maiores notas", "Top 20 score"), (r) => !r.excluded && num(r.rank) <= 20],
-  ["bottom", "Bottom fifth", (r) => bottomFifth(r), "The score's bottom fifth among eligible companies: the avoid list"],
+  ["bottom", L("Quinto inferior", "Bottom fifth"), (r) => bottomFifth(r), L("O quinto inferior da nota entre as empresas elegíveis: a lista a evitar", "The score's bottom fifth among eligible companies: the avoid list")],
   ["magic", L("Fórmula Mágica 20", "Magic Formula 20"), (r) => !r.excluded && num(r.magic_rank) <= 20],
   ["value", `${PILLAR.value} ≥ 80`, (r) => !r.excluded && num(r.value_score) >= 80],
   ["quality", `${PILLAR.quality} ≥ 80`, (r) => !r.excluded && num(r.quality_score) >= 80],
@@ -384,7 +401,7 @@ const COLS = [
   ["momentum", "12–1m", "n", "", L("Retorno de 12 meses atrás até 1 mês atrás", "Return from 12 months to 1 month ago")],
   ["market_cap", L("Valor de mercado", "Mkt cap"), "n"],
   ["liquidity", L("Vol. diário", "Daily vol."), "n", "", L("Volume médio diário negociado, 3 meses", "Average daily traded volume, 3 months")],
-  ["sector_group", L("Setor", "Sector"), "s", "l", "Sector group; hover for CVM's own label"],
+  ["sector_group", L("Setor", "Sector"), "s", "l", L("Grupo do setor; passe o mouse para ver a classificação da própria CVM", "Sector group; hover for CVM's own label")],
   ["excluded", L("Excluída por", "Excluded because"), "s", "l"],
 ];
 const FMT = { pe: f1, ev_ebit: f1, roe: (x) => pct(x), dividend_yield: (x) => pct(x, 1), market_cap: brl, liquidity: brl };
@@ -397,8 +414,9 @@ function buildScreener() {
   const st = S.status;
   $("#scrMeta").textContent = !st ? "" : L(`${st.companies} empresas · ${st.eligible} elegíveis · fechamento de ${fmtDate(st.asof)}`,
     `${st.companies} companies · ${st.eligible} eligible · closing prices of ${st.asof}`);
-  const groups = [...new Set(S.screen.map(group))].filter(Boolean).sort((a, b) => (a === "Other") - (b === "Other") || a.localeCompare(b));
-  $("#sector").append(...groups.map((s) => el("option", { value: s, textContent: s })));
+  // Values stay the data's group names (and the URL's ?sector=); the reader sees them in the page's language.
+  const groups = [...new Set(S.screen.map(group))].filter(Boolean).sort((a, b) => (a === "Other") - (b === "Other") || groupText(a).localeCompare(groupText(b)));
+  $("#sector").append(...groups.map((s) => el("option", { value: s, textContent: groupText(s) })));
   for (const id of ["#q", "#sector", "#liq"]) $(id).addEventListener("input", renderScreen);
   $("#presets").replaceChildren(...PRESETS.map(([k, label, f, title = ""]) => {
     const b = el("button", { className: "preset", type: "button", title }, label, el("span", { className: "n", textContent: S.screen.filter(f).length }));
@@ -480,7 +498,7 @@ function renderScreen() {
     return th;
   })));
   if (!rows.length) { t.append(el("tr", {}, el("td", { className: "l muted", colSpan: cols.length, textContent: SCR.preset === "watch" && !WATCH.size
-    ? "No company starred yet: click ☆ next to a ticker to watch it."
+    ? L("Nenhuma favorita ainda: clique em ☆ ao lado de um ticker para acompanhá-lo.", "No company starred yet: click ☆ next to a ticker to watch it.")
     : L("Nenhuma empresa encontrada.", "No company matches.") }))); return; }
   for (const r of rows) {
     expandable(t, OPEN.screen, r.ticker, cols.map(([k, , ty]) => {
@@ -490,7 +508,7 @@ function renderScreen() {
       if (k.endsWith("_score") || k === "score") return scoreCell(num(v));
       if (k === "momentum") return el("td", {}, signed(num(v), 0));
       if (k === "rank") return el("td", { className: "muted", textContent: v || "–" });
-      if (k === "sector_group") return el("td", { className: "l", textContent: group(r), title: r.sector || "" });
+      if (k === "sector_group") return el("td", { className: "l", textContent: groupText(group(r)), title: r.sector || "" });
       if (ty === "s") { const tx = k === "excluded" ? excludedText(v) : v; return el("td", { className: `l ${k === "excluded" ? "muted" : ""}`, textContent: tx, title: tx, style: "max-width:220px;overflow:hidden;text-overflow:ellipsis" }); }
       return el("td", { textContent: (FMT[k] || ((x) => (Number.isFinite(x) ? x : "–")))(num(v)) });
     }), r, cols.length, renderScreen);
@@ -512,8 +530,10 @@ function buildBacktest() {
   const by = Object.fromEntries(summary.map((r) => [r.series, r]));
   $("#btMeta").textContent = L(`${fmtDate(meta.first)} a ${fmtDate(meta.last)} · ${meta.rebalances} listas anuais · regras ${meta.rules}`,
     `${meta.first} to ${meta.last} · ${meta.rebalances} yearly lists · rules ${meta.rules}`);
-  $("#btNote").textContent = `Every May, the top ${meta.top_n} by score as the screen stood that day, bought in equal weights and held a year with dividends reinvested; no costs or taxes (the rebalancing table below charges costs). ` +
-    "Compared with BOVA11, with the CDI (cash) and with owning every eligible stock, which isolates what the picking adds.";
+  $("#btNote").textContent = L(`Todo mês de maio, as ${meta.top_n} primeiras pela nota como o filtro estava naquele dia, compradas em pesos iguais e mantidas por um ano com dividendos reinvestidos; sem custos nem impostos (a tabela de rebalanceamento abaixo cobra custos). ` +
+    "Comparadas com o BOVA11, com o CDI (caixa) e com a compra de todas as ações elegíveis, o que isola o que a seleção acrescenta.",
+  `Every May, the top ${meta.top_n} by score as the screen stood that day, bought in equal weights and held a year with dividends reinvested; no costs or taxes (the rebalancing table below charges costs). ` +
+    "Compared with BOVA11, with the CDI (cash) and with owning every eligible stock, which isolates what the picking adds.");
   $("#btTiles").replaceChildren(...["composite", "bova11", "cdi", "eligible"].filter((k) => by[k]).map((k) => {
     const r = by[k];
     return el("div", { className: `tile ${k === "composite" ? "lead" : ""}` }, el("div", { className: "k", textContent: BT_LABEL[k] }),
@@ -625,20 +645,23 @@ function buildBtHoldings() {
   });
 }
 // Rebalancing cadence: the top 10 set back to the current list yearly, quarterly, monthly (weekly on request), gross and net.
-const CAD_LABEL = { yearly: "Yearly (May)", quarterly: "Quarterly", monthly: "Monthly",
-  weekly: "Weekly (as the live record)" };
+const CAD_LABEL = { yearly: L("Anual (maio)", "Yearly (May)"), quarterly: L("Trimestral", "Quarterly"), monthly: L("Mensal", "Monthly"),
+  weekly: L("Semanal (como o histórico ao vivo)", "Weekly (as the live record)") };
 const CAD_PER_MONTH = { yearly: 1, quarterly: 1, monthly: 1, weekly: 52 / 12 };   // rebalances in a month that has one
 function buildCadence() {
   const cad = S.bt.cadence, card = $("#cadenceCard");
   if (!cad || !cad.length) { card.hidden = true; return; }
   const by = Object.fromEntries((S.bt.summary || []).map((r) => [r.series, r])), cost = num(cad[0].cost_per_side);
-  $("#cadNote").textContent = "The score's top 10 set back to equal weights on the current list every year (first session of May), quarter (February, May, August, November) or month, " +
+  $("#cadNote").textContent = L("As 10 primeiras pela nota, levadas de volta a pesos iguais na lista do momento a cada ano (primeiro pregão de maio), trimestre (fevereiro, maio, agosto, novembro) ou mês, " +
+    `só com o que era público na data, como o resto. Os números líquidos cobram ${pct(cost, 2)} de cada valor comprado ou vendido (corretagem, emolumentos e metade do spread entre compra e venda; um parâmetro). ` +
+    "Vendido por rebalanceamento: a fração da carteira trocada, depois que as posições se afastam dos pesos iguais. Volatilidade, maior queda, pior ano e anos acima do BOVA11 são líquidos de custos.",
+  "The score's top 10 set back to equal weights on the current list every year (first session of May), quarter (February, May, August, November) or month, " +
     `point in time like the rest. Net figures charge ${pct(cost, 2)} of every amount bought or sold (brokerage, exchange fees and half the bid-ask spread; a parameter). ` +
-    "Sold per rebalance: the share of the portfolio replaced, after the holdings drift. Per year, worst fall and volatility are net.";
+    "Sold per rebalance: the share of the portfolio replaced, after the holdings drift. Per year, worst fall and volatility are net.");
   const t = $("#cadTable");
-  t.replaceChildren(el("tr", {}, ...[["Rebalance"], ["Rebalances"], ["Sold per rebalance"],
-    ["Sold per year", "Share of the portfolio sold in a year (one way)"],
-    ["Per year, gross"], ["Per year, net"], ["Costs per year"], [L("Volatilidade", "Volatility")],
+  t.replaceChildren(el("tr", {}, ...[[L("Rebalanceamento", "Rebalance")], [L("Rebalanceamentos", "Rebalances")], [L("Vendido por rebalanceamento", "Sold per rebalance")],
+    [L("Vendido por ano", "Sold per year"), L("Fração da carteira vendida em um ano (só as vendas)", "Share of the portfolio sold in a year (one way)")],
+    [L("Ao ano, bruto", "Per year, gross")], [L("Ao ano, líquido", "Per year, net")], [L("Custos ao ano", "Costs per year")], [L("Volatilidade", "Volatility")],
     [L("Maior queda", "Worst fall")], [L("Pior ano", "Worst year")], [L("Anos acima do BOVA11", "Years beating BOVA11")]]
     .map(([h, title = ""], i) => el("th", { className: i ? "" : "l", textContent: h, title }))));
   for (const c of cad) {
@@ -655,18 +678,21 @@ function buildCadence() {
   y.replaceChildren(el("tr", {}, el("th", { className: "l", textContent: L("Comprada em", "Held from") }), ...cad.map((c) => el("th", { className: "c", textContent: CAD_LABEL[c.cadence] || c.cadence }))));
   for (const d of starts) y.append(el("tr", {}, el("td", { className: "l", textContent: fmtDate(d.slice(0, 7)) }), ...cad.map((c) => retCell(ret[`${c.series}_net`]?.[d]))));
   // The R$ 20,000 exemption is on a month's sales: the portfolio size a month's rebalancing stays under it.
-  const thousand = (x) => (!Number.isFinite(x) ? "–" : `R$ ${fmtNum(Math.round(x / 1000) * 1000, 0)}`);
+  const thousand = (x) => (!Number.isFinite(x) ? "–" : L(`R$ ${fmtNum(Math.round(x / 1000), 0)} mil`, `R$ ${fmtNum(Math.round(x / 1000) * 1000, 0)}`));
   const word = (c) => (CAD_LABEL[c.cadence] || c.cadence).split(" ")[0].toLowerCase(), top = (c) => thousand(20000 / (num(c.turnover_per_rebalance) * CAD_PER_MONTH[c.cadence]));
-  $("#cadTax").textContent = "Taxes are not in these numbers. An individual pays 15% on a month's net gain from selling stocks, unless that month's sales total R$ 20,000 or less, " +
+  $("#cadTax").textContent = L("Os impostos não estão nestes números. Uma pessoa física paga 15% sobre o ganho líquido do mês na venda de ações, a não ser que as vendas do mês somem R$ 20 mil ou menos, " +
+    "e os prejuízos podem ser compensados depois. Se um rebalanceamento paga imposto depende do tamanho da carteira, não da estratégia: com o giro acima, as vendas de um mês ficam abaixo de R$ 20 mil " +
+    `para uma carteira de até cerca de ${cad.map((c) => `${top(c)} (${word(c)})`).join(", ")}. Um rebalanceamento anual vende quase toda a carteira num só mês; uma carteira pequena pode espalhar essas vendas por vários meses. O METHODOLOGY.md (em inglês) traz os detalhes.`,
+  "Taxes are not in these numbers. An individual pays 15% on a month's net gain from selling stocks, unless that month's sales total R$ 20,000 or less, " +
     "and losses carry forward. Whether a rebalance is taxed depends on the size of the portfolio, not on the strategy: at the turnover above, a month's sales stay under R$ 20,000 " +
-    `for a portfolio ${cad.map((c) => `${word(c)} up to about ${top(c)}`).join(", ")}. A yearly rebalance sells most of the portfolio in one month; a small portfolio can spread those sales over several months. METHODOLOGY.md has the details.`;
+    `for a portfolio ${cad.map((c) => `${word(c)} up to about ${top(c)}`).join(", ")}. A yearly rebalance sells most of the portfolio in one month; a small portfolio can spread those sales over several months. METHODOLOGY.md has the details.`);
 }
 
 // The avoid list: the score's bottom 10 and bottom fifth against all eligible stocks.
-const AV = [["eligible_ex_q5", "--s1", "All eligible but the bottom fifth", "Ex bottom 5th"],
+const AV = [["eligible_ex_q5", "--s1", L("Elegíveis sem o quinto inferior", "All eligible but the bottom fifth"), L("Sem Q5", "Ex bottom 5th")],
   ["eligible", "--other", BT_LABEL.eligible, BT_SHORT.eligible], ["cdi", "--s3", BT_LABEL.cdi, "CDI"],
-  ["score_q5", "--s2", "Bottom fifth by score", "Bottom 5th", true],
-  ["composite_bottom", "--s2", "Bottom 10 by score", "Bottom 10"]];
+  ["score_q5", "--s2", L("Quinto inferior pela nota", "Bottom fifth by score"), L("Q5", "Bottom 5th"), true],
+  ["composite_bottom", "--s2", L("10 piores pela nota", "Bottom 10 by score"), L("10 piores", "Bottom 10")]];
 function drawBtAvoid() {
   const curve = S.bt.curve, box = $("#btAvoid"); if (!curve) return;
   const by = {}; for (const r of curve) (by[r.series] ||= new Map()).set(r.date, +r.value);
@@ -675,7 +701,8 @@ function drawBtAvoid() {
   lineChart(box, dates, AV.map(([k, c, label, short, dash]) => ({ values: dates.map((d) => by[k]?.get(d) ?? NaN), color: c, label, dash,
     width: k === "eligible_ex_q5" ? 2.5 : 2, endLabel: (v) => `${short} R$${f1(v, 0)}` })),
   { log: true, h: 300, ml: 48, labels: true, mr: 124, legend: true, legendNote: L("· escala logarítmica", "· log scale"), fmt: (v) => `R$${f1(v, 0)}`, tipFmt: (v) => `R$ ${f1(v, 0)}`,
-    aria: "Growth of R$100: the score's bottom 10 and bottom fifth against all eligible stocks, log scale" });
+    aria: L("Evolução de R$ 100: as 10 piores e o quinto inferior pela nota contra todas as ações elegíveis, escala logarítmica",
+      "Growth of R$100: the score's bottom 10 and bottom fifth against all eligible stocks, log scale") });
 }
 function buildBtAvoid() {
   const { summary, periods } = S.bt; if (!summary || !summary.some((r) => r.series === "score_q5")) return;
@@ -685,7 +712,7 @@ function buildBtAvoid() {
   const below = (k) => `${starts.filter((d) => ret[k]?.[d] < ret.eligible[d]).length}/${starts.length}`;
   const t = $("#btAvoidSummary");
   t.replaceChildren(el("tr", {}, ...["", L("R$ 100 viraram", "R$100 became"), L("Ao ano", "Per year"), L("Volatilidade", "Volatility"), L("Maior queda", "Worst fall"),
-    L("Melhor ano", "Best year"), L("Pior ano", "Worst year"), "Years below all eligible"]
+    L("Melhor ano", "Best year"), L("Pior ano", "Worst year"), L("Anos abaixo das elegíveis", "Years below all eligible")]
     .map((h, i) => el("th", { className: i ? "" : "l", textContent: h }))));
   for (const [k, , label] of [AV[4], AV[3], AV[1], AV[0], AV[2]]) {
     const r = by[k]; if (!r) continue;
