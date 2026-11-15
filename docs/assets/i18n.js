@@ -71,7 +71,8 @@ const NUMBER_FORMATS = {};
 function fmtNum(x, d = 0) {
   if (!Number.isFinite(x)) return "–";
   const f = (NUMBER_FORMATS[d] ||= new Intl.NumberFormat(LANGS[LANG].tag, { minimumFractionDigits: d, maximumFractionDigits: d }));
-  return f.format(x);
+  const r = f.format(x);
+  return /^-[0.,]+$/.test(r) ? r.slice(1) : r;   // -0,0 rounds to zero: no minus sign
 }
 /** Reais with a scale word: R$ 1,2 bi / R$ 120 mi (pt), R$ 1.2bn / R$ 120m (en). */
 function fmtBRL(x) {
