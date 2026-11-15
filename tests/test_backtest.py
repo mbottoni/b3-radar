@@ -10,6 +10,20 @@ def test_rebalance_is_first_session_of_may_each_year():
     assert backtest.rebalance_dates(sessions, 2012) == ["2012-05-02", "2013-05-06"]
 
 
+def test_the_avoid_list_is_the_bottom_of_the_same_ranking():
+    snap = pd.DataFrame({"ticker": ["A3", "B3", "C3", "D3"], "excluded": ["", "", "", "illiquid"],
+                         "score": [90.0, 20.0, 50.0, 1.0], "sector_group": "Retail"})
+    assert list(backtest.pick(snap, *backtest.STRATEGIES["composite_bottom"], n=2).ticker) == ["B3", "C3"]
+
+
+def test_the_pages_bottom_fifth_cut_matches_the_backtests_fifths():
+    # docs/assets/index.js: rank > 1 + 0.8 (n - 1) is the bottom fifth, as pandas.qcut cuts it
+    for n in (25, 124, 129, 130, 131, 180):
+        rank = pd.Series(range(1, n + 1))
+        q = pd.qcut(rank, 5, labels=[1, 2, 3, 4, 5])
+        assert list(rank[q == 5]) == list(rank[rank > 1 + 0.8 * (n - 1)])
+
+
 def prices():
     px = pd.DataFrame({
         "date": ["2020-05-04", "2020-06-01", "2021-05-03"] * 2 + ["2020-05-04", "2020-06-01"],

@@ -66,6 +66,15 @@
       <p class="note" id="watchNote"></p>
       <div class="scroll"><table id="watch" class="dense"></table></div>
     </section>
+
+    <section class="card">
+      <div class="pagehead" style="margin:0 0 6px">
+        <p class="eyebrow" style="margin:0">The avoid list: bottom 10 by score</p>
+        <a href="#/backtest" class="meta">How the bottom did in the backtest →</a>
+      </div>
+      <p class="note" id="avoidNote"></p>
+      <div class="scroll"><table id="avoid" class="dense"></table></div>
+    </section>
   </section>
 
   <!-- ============================================================ SCREENER -->
@@ -107,6 +116,14 @@
       <p class="eyebrow">Does the score separate winners from losers?</p>
       <p class="note">Each May, every eligible company split into fifths by each score (Q1 = best), each fifth held as an equal-weight portfolio for the year. Bars: return per year, 2012–today (growth: 2013–today, it needs three years of statements). A working factor steps down from Q1 to Q5; the gray line is all eligible stocks. Growth failed this test, so it is shown but not counted in the score.</p>
       <div id="quintiles" class="quint"></div>
+    </section>
+
+    <section class="card">
+      <p class="eyebrow">The avoid list: does the bottom of the score lose?</p>
+      <p class="note">Each May, the 10 lowest scores and the lowest fifth (Q5 above) as the screen stood that day, held a year like the top 10, against all eligible stocks; and all eligible stocks with that fifth left out, which is what avoiding it would have added to owning the whole universe. Shown on the page, not logged as a live strategy.</p>
+      <div id="btAvoid"></div>
+      <div class="scroll" style="margin-top:12px"><table id="btAvoidSummary"></table></div>
+      <details style="margin-top:12px"><summary>Year by year</summary><div class="scroll"><table id="btAvoidYears"></table></div></details>
     </section>
 
     <div>

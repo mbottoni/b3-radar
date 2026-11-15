@@ -299,6 +299,11 @@ with their prices. Nothing is ever removed, and a session's list, once
 recorded, is never replaced: a re-run of the weekly job on the same session
 keeps (and emails) the first one.
 
+**The avoid list** (the page's overview, and the "Bottom fifth" preset
+of the screener) is today's bottom 10 by score, and the bottom fifth of
+the eligible universe cut as in the backtest. It is shown, not logged:
+it is not written to `data/picks/` and has no live track record.
+
 The track record holds each list as an **equal-weight portfolio until the
 next list**, on adjusted prices (dividends reinvested), and compares it with
 BOVA11 over the same sessions. A ticker that stops trading keeps its last
@@ -324,6 +329,15 @@ replays the screen as a long-term investor would use it:
   (Banco Central series 12, compounded daily: what cash earns) and **every
   eligible stock in equal weights**, which isolates what the picking adds
   over simply owning the universe.
+- **The avoid list**: the 10 lowest scores (`composite_bottom`) and the
+  score's bottom fifth (`score_q5`, the Q5 below), each held a year like
+  the top 10, against every eligible stock; and every eligible stock but
+  that fifth (`eligible_ex_q5`), which is what avoiding it adds to owning
+  the universe. Through November 2026: the bottom 10 returned −6.1% a
+  year and the bottom fifth 0.7%, against 6.2% for all eligible stocks
+  and 7.4% without the bottom fifth. The bottom 10 trailed the universe in
+  10 of 15 years and the bottom fifth in 9, and both led it in the sharp
+  rebounds of 2016 and 2020.
 
 **Does each score separate winners from losers?** At every yearly date the
 eligible universe is cut into fifths by the composite and by each pillar
