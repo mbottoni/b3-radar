@@ -1,0 +1,25 @@
+name: job-alert
+description: >-
+  One open issue per failing workflow. Called last in a job: on failure it
+  opens "<workflow> job failing" (or comments on it if it is already open)
+  with the run link and the failed step; on success it closes that issue with
+  a link to the run that recovered. Never changes the job's own result. Needs
+  `issues: write` and `actions: read`.
+
+inputs:
+  outcome:
+    description: "failure (call with if: failure()) or success (call with if: success())"
+    required: true
+  label:
+    description: Label of the alert issues; created if missing
+    default: job-failure
+
+runs:
+  using: composite
+  steps:
+    - shell: bash
+      env:
+        GH_TOKEN: ${{ github.token }}
+        OUTCOME: ${{ inputs.outcome }}
+        LABEL: ${{ inputs.label }}
+      run: bash "$GITHUB_ACTION_PATH/alert.sh"
