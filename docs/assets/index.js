@@ -481,7 +481,7 @@ function buildBacktest() {
   if (!summary) { $("#btNote").textContent = "The backtest has not been run yet."; return; }
   const by = Object.fromEntries(summary.map((r) => [r.series, r]));
   $("#btMeta").textContent = `${meta.first} to ${meta.last} · ${meta.rebalances} yearly lists · rules ${meta.rules}`;
-  $("#btNote").textContent = `Every May, the top ${meta.top_n} by score as the screen stood that day, bought in equal weights and held a year with dividends reinvested; no costs or taxes. ` +
+  $("#btNote").textContent = `Every May, the top ${meta.top_n} by score as the screen stood that day, bought in equal weights and held a year with dividends reinvested; no costs or taxes (the rebalancing table below charges costs). ` +
     "Compared with BOVA11, with the CDI (cash) and with owning every eligible stock, which isolates what the picking adds.";
   $("#btTiles").replaceChildren(...["composite", "bova11", "cdi", "eligible"].filter((k) => by[k]).map((k) => {
     const r = by[k];
@@ -501,7 +501,7 @@ function buildBacktest() {
       el("td", {}, signed(num(r.max_drawdown), 0)), el("td", {}, signed(num(r.best_year), 0)), el("td", {}, signed(num(r.worst_year), 0)),
       el("td", { textContent: r.years_beating_bova11 || "–" }), el("td", {}, signed(num(r.excess_over_cdi)))));
   }
-  buildBtYears(); buildBtCohorts(); buildBtHoldings(); buildBtAvoid();
+  buildBtYears(); buildBtCohorts(); buildBtHoldings(); buildBtAvoid(); buildCadence();
 }
 function drawBtChart() {
   const curve = S.bt.curve; if (!curve) return;
@@ -589,6 +589,41 @@ function buildBtHoldings() {
     det.append(el("div", { className: "scroll" }, t)); box.append(det);
   });
 }
+// Rebalancing cadence: the top 10 set back to the current list yearly, quarterly, monthly (weekly on request), gross and net.
+const CAD_LABEL = { yearly: "Yearly (May)", quarterly: "Quarterly", monthly: "Monthly", weekly: "Weekly (as the live record)" };
+const CAD_PER_MONTH = { yearly: 1, quarterly: 1, monthly: 1, weekly: 52 / 12 };   // rebalances in a month that has one
+function buildCadence() {
+  const cad = S.bt.cadence, card = $("#cadenceCard");
+  if (!cad || !cad.length) { card.hidden = true; return; }
+  const by = Object.fromEntries((S.bt.summary || []).map((r) => [r.series, r])), cost = num(cad[0].cost_per_side);
+  $("#cadNote").textContent = "The score's top 10 set back to equal weights on the current list every year (first session of May), quarter (February, May, August, November) or month, " +
+    `point in time like the rest. Net figures charge ${pct(cost, 2)} of every amount bought or sold (brokerage, exchange fees and half the bid-ask spread; a parameter). ` +
+    "Sold per rebalance: the share of the portfolio replaced, after the holdings drift. Per year, worst fall and volatility are net.";
+  const t = $("#cadTable");
+  t.replaceChildren(el("tr", {}, ...[["Rebalance"], ["Rebalances"], ["Sold per rebalance"], ["Sold per year", "Share of the portfolio sold in a year (one way)"],
+    ["Per year, gross"], ["Per year, net"], ["Costs per year"], ["Volatility"], ["Worst fall"], ["Worst year"], ["Years beating BOVA11"]]
+    .map(([h, title = ""], i) => el("th", { className: i ? "" : "l", textContent: h, title }))));
+  for (const c of cad) {
+    const n = by[`${c.series}_net`] || {};
+    t.append(el("tr", {}, el("td", { className: "l" }, c.cadence === "yearly" ? el("b", { textContent: CAD_LABEL[c.cadence] }) : CAD_LABEL[c.cadence] || c.cadence),
+      el("td", { textContent: c.rebalances }), el("td", { textContent: pct(num(c.turnover_per_rebalance)) }), el("td", { textContent: pct(num(c.turnover_per_year)) }),
+      el("td", {}, signed(num(c.gross_cagr))), el("td", {}, signed(num(c.net_cagr))), el("td", { textContent: pct(num(c.cost_per_year), 2) }),
+      el("td", { textContent: pct(num(n.volatility)) }), el("td", {}, signed(num(n.max_drawdown), 0)), el("td", {}, signed(num(n.worst_year), 0)),
+      el("td", { textContent: n.years_beating_bova11 || "–" })));
+  }
+  const ret = {}; for (const p of S.bt.periods || []) (ret[p.series] ||= {})[p.start] = num(p.return);
+  const starts = Object.keys(ret.composite || {}).sort().reverse();
+  const y = $("#cadYears");
+  y.replaceChildren(el("tr", {}, el("th", { className: "l", textContent: "Held from" }), ...cad.map((c) => el("th", { className: "c", textContent: CAD_LABEL[c.cadence] || c.cadence }))));
+  for (const d of starts) y.append(el("tr", {}, el("td", { className: "l", textContent: d.slice(0, 7) }), ...cad.map((c) => retCell(ret[`${c.series}_net`]?.[d]))));
+  // The R$ 20,000 exemption is on a month's sales: the portfolio size a month's rebalancing stays under it.
+  const thousand = (x) => (Number.isFinite(x) ? `R$ ${(Math.round(x / 1000) * 1000).toLocaleString("en-US")}` : "–");
+  const under = cad.map((c) => `${(CAD_LABEL[c.cadence] || c.cadence).split(" ")[0].toLowerCase()} up to about ${thousand(20000 / (num(c.turnover_per_rebalance) * CAD_PER_MONTH[c.cadence]))}`);
+  $("#cadTax").textContent = "Taxes are not in these numbers. An individual pays 15% on a month's net gain from selling stocks, unless that month's sales total R$ 20,000 or less, " +
+    "and losses carry forward. Whether a rebalance is taxed depends on the size of the portfolio, not on the strategy: at the turnover above, a month's sales stay under R$ 20,000 " +
+    `for a portfolio ${under.join(", ")}. A yearly rebalance sells most of the portfolio in one month; a small portfolio can spread those sales over several months. METHODOLOGY.md has the details.`;
+}
+
 // The avoid list: the score's bottom 10 and bottom fifth against all eligible stocks.
 const AV = [["eligible_ex_q5", "--s1", "All eligible but the bottom fifth", "Ex bottom 5th"], ["eligible", "--other", "All eligible stocks", "All elig."],
   ["cdi", "--s3", "CDI (cash)", "CDI"], ["score_q5", "--s2", "Bottom fifth by score", "Bottom 5th", true], ["composite_bottom", "--s2", "Bottom 10 by score", "Bottom 10"]];
@@ -660,13 +695,13 @@ const DRAW = { overview: drawOverview, backtest: drawBacktest, record: drawRecor
   shell(tabFromHash(), null);
   show();
   const picksP = get("picks/picks.csv");
-  const [status, screen, picks, listScreens, perf, cohorts, sparks, mkHist, mkToday, meta, summary, curve, periods, btCohorts, holdings, quintiles] = await Promise.all([
+  const [status, screen, picks, listScreens, perf, cohorts, sparks, mkHist, mkToday, meta, summary, curve, periods, btCohorts, holdings, quintiles, cadence] = await Promise.all([
     getJSON("status.json"), get("screen/latest.csv"), picksP, picksP.then(loadListScreens), get("picks/performance.csv"), get("picks/cohorts.csv"),
     getJSON("screen/sparks.json"), get("market/history.csv"), getJSON("market/today.json"),
     getJSON("backtest/meta.json"), get("backtest/summary.csv"), get("backtest/curve.csv"), get("backtest/periods.csv"),
-    get("backtest/cohorts.csv"), get("backtest/holdings.csv"), get("backtest/quintiles.csv")]);
+    get("backtest/cohorts.csv"), get("backtest/holdings.csv"), get("backtest/quintiles.csv"), get("backtest/cadence.csv")]);
   if (!screen) { $("#status").textContent = "Could not load the data."; return; }
-  Object.assign(S, { status, screen, picks, listScreens, perf, cohorts, sparks, mkHist, mkToday, bt: { meta: meta || {}, summary, curve, periods, cohorts: btCohorts, holdings, quintiles }, ready: true });
+  Object.assign(S, { status, screen, picks, listScreens, perf, cohorts, sparks, mkHist, mkToday, bt: { meta: meta || {}, summary, curve, periods, cohorts: btCohorts, holdings, quintiles, cadence }, ready: true });
   setStatus(status);
   show();
   onResize($("main"), () => current && DRAW[current]?.());

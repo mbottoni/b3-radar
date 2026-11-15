@@ -167,7 +167,8 @@ def cmd_email(a) -> int:
 
 
 def cmd_backtest(a) -> int:
-    res = backtest.run(a.data, a.first_year, log=lambda m: print(m, file=sys.stderr))
+    cadences = tuple(backtest.CADENCES) + (("weekly",) if a.weekly else ())
+    res = backtest.run(a.data, a.first_year, log=lambda m: print(m, file=sys.stderr), cost=a.cost / 100, cadences=cadences)
     backtest.save(res, a.data)
     print(res["summary"].round(3).to_string(index=False), file=sys.stderr)
     return 0
@@ -234,6 +235,9 @@ def main(argv: list[str] | None = None) -> int:
 
     t = sub.add_parser("backtest", help="yearly buy-and-hold backtest of the screen, point in time")
     t.add_argument("--first-year", type=int, default=backtest.FIRST_YEAR)
+    t.add_argument("--cost", type=float, default=backtest.COST_PER_SIDE * 100,
+                   help="trading cost per side, in %% of the amount traded (default %(default)s)")
+    t.add_argument("--weekly", action="store_true", help="also rebalance weekly, as the live record does (slow: a screen per week)")
     t.set_defaults(fn=cmd_backtest)
 
     c = sub.add_parser("companies", help="one JSON per company with its long history, for the company pages")
