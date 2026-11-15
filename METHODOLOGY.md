@@ -329,24 +329,15 @@ replays the screen as a long-term investor would use it:
   (Banco Central series 12, compounded daily: what cash earns) and **every
   eligible stock in equal weights**, which isolates what the picking adds
   over simply owning the universe.
-- **Score, max 2 per sector group** (`composite_cap`): the same ranking,
-  with at most two names from one [sector group](#sector-groups); a name
-  past its group's cap is skipped and the next best fills its place.
-  Shown to measure what concentration costs or pays; the weekly list is
-  not capped. The uncapped top 10 had three or more names from one group
-  in 13 of the 15 lists (eight utilities in 2019, seven real estate in
-  2026); the cap replaced 2.2 names a year on average. Through November
-  2026 it returned 9.1% a year against 9.0% uncapped, with volatility of
-  20.1% against 21.8% and about the same worst year (−22.2% against
-  −22.4%, both the list of May 2026).
 - **The avoid list**: the 10 lowest scores (`composite_bottom`) and the
   score's bottom fifth (`score_q5`, the Q5 below), each held a year like
   the top 10, against every eligible stock; and every eligible stock but
   that fifth (`eligible_ex_q5`), which is what avoiding it adds to owning
-  the universe. Through November 2026: the bottom 10 returned −5.9% a
-  year and the bottom fifth −0.4%, against 6.0% for all eligible stocks
-  and 7.4% without the bottom fifth. Both trailed the universe in 9 of 15
-  years, and led it in the sharp rebounds of 2016 and 2020.
+  the universe. Through November 2026: the bottom 10 returned −6.1% a
+  year and the bottom fifth 0.7%, against 6.2% for all eligible stocks
+  and 7.4% without the bottom fifth. The bottom 10 trailed the universe in
+  10 of 15 years and the bottom fifth in 9, and both led it in the sharp
+  rebounds of 2016 and 2020.
 
 **How often to rebalance, and what trading costs** (`data/backtest/cadence.csv`).
 The live record holds each weekly list one week; the backtest holds each

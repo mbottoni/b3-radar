@@ -1,12 +1,11 @@
 {
   "first": "2012-05-02",
-  "last": "2026-11-13",
+  "last": "2026-11-06",
   "rebalances": 15,
   "top_n": 10,
   "rules": "876ebe1a",
   "rebalance": "first session of month 5",
   "costs": "none",
-  "sector_cap": 2,
   "cost_per_side": 0.001,
   "cadences": [
     "yearly",
