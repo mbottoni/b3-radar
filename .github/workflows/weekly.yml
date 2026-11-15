@@ -13,6 +13,8 @@ on:
 
 permissions:
   contents: write
+  issues: write    # job-alert: open, comment on and close the failure issue
+  actions: read    # job-alert: name the step that failed
 
 concurrency:
   group: data
@@ -23,9 +25,9 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 45
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: astral-sh/setup-uv@v5
+      - uses: astral-sh/setup-uv@v10.3.3
         with:
           enable-cache: true
 
@@ -44,7 +46,7 @@ jobs:
         run: uv run python -m b3radar weekly
 
       - name: Keep the rendered email
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: email
           path: out/
@@ -61,3 +63,16 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git commit -m "picks: list of $(jq -r .asof data/status.json)"
           git push || { git pull --rebase && git push; }
+
+      # Last: open or update the "<workflow> job failing" issue, or close it once a run succeeds.
+      - name: Report the failure in an issue
+        if: failure()
+        uses: ./.github/actions/job-alert
+        with:
+          outcome: failure
+
+      - name: Close the failure issue
+        if: success()
+        uses: ./.github/actions/job-alert
+        with:
+          outcome: success

@@ -10,6 +10,8 @@ on:
 
 permissions:
   contents: write
+  issues: write    # job-alert: open, comment on and close the failure issue
+  actions: read    # job-alert: name the step that failed
 
 concurrency:
   group: data
@@ -20,8 +22,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 90
     steps:
-      - uses: actions/checkout@v4
-      - uses: astral-sh/setup-uv@v5
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v10.3.3
         with:
           enable-cache: true
       - run: uv sync --frozen
@@ -41,3 +43,16 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git commit -m "backtest: through $(jq -r .last data/backtest/meta.json)"
           git push || { git pull --rebase && git push; }
+
+      # Last: open or update the "<workflow> job failing" issue, or close it once a run succeeds.
+      - name: Report the failure in an issue
+        if: failure()
+        uses: ./.github/actions/job-alert
+        with:
+          outcome: failure
+
+      - name: Close the failure issue
+        if: success()
+        uses: ./.github/actions/job-alert
+        with:
+          outcome: success
