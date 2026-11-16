@@ -19,3 +19,23 @@ date,strategy,rank,ticker,company,sector,score,price,rules
 2026-11-06,magic,8,CURY3,CURY CONSTRUTORA E INCORPORADORA S.A.,"Construção Civil, Mat. Constr. e Decoração",65.38,27.1,876ebe1a
 2026-11-06,magic,9,SEER3,SER EDUCACIONAL S.A.,Educação,70.93,11.36,876ebe1a
 2026-11-06,magic,10,LEVE3,MAHLE METAL LEVE,"Máquinas, Equipamentos, Veículos e Peças",68.22,31.45,876ebe1a
+2026-11-13,composite,1,RIAA3,GUARARAPES CONFECÇÕES,Têxtil e Vestuário,84.72,6.12,876ebe1a
+2026-11-13,composite,2,JHSF3,JHSF,"Emp. Adm. Part. - Const. Civil, Mat. Const. e Decoração",84.5,9.78,876ebe1a
+2026-11-13,composite,3,PETR4,PETROBRAS,Petróleo e Gás,76.14,45.3,876ebe1a
+2026-11-13,composite,4,MOVI3,MOVIDA PARTICIPAÇÕES S.A.,Serviços Transporte e Logística,75.09,6.11,876ebe1a
+2026-11-13,composite,5,TEND3,CONSTRUTORA TENDA S/A,"Construção Civil, Mat. Constr. e Decoração",75.03,17.23,876ebe1a
+2026-11-13,composite,6,VBBR3,VIBRA ENERGIA S/A,Comércio (Atacado e Varejo),74.75,30.57,876ebe1a
+2026-11-13,composite,7,ALOS3,ALLOS S.A.,Emp. Adm. Part. - Comércio (Atacado e Varejo),73.77,27.05,876ebe1a
+2026-11-13,composite,8,ALLD3,ALLIED TECNOLOGIA S.A.,Comércio (Atacado e Varejo),73.71,7.13,876ebe1a
+2026-11-13,composite,9,LOGG3,LOG COMMERCIAL PROPERTIES E PARTICIPAÇÕES S.A.,"Construção Civil, Mat. Constr. e Decoração",73.23,22.7,876ebe1a
+2026-11-13,composite,10,PGMN3,EMPREENDIMENTOS PAGUE MENOS SA,Comércio (Atacado e Varejo),72.73,2.39,876ebe1a
+2026-11-13,magic,1,TEND3,CONSTRUTORA TENDA S/A,"Construção Civil, Mat. Constr. e Decoração",75.03,17.23,876ebe1a
+2026-11-13,magic,2,CVCB3,CVC BRASIL OPERADORA E AGÊNCIA DE VIAGENS SA,Hospedagem e Turismo,37.53,0.83,876ebe1a
+2026-11-13,magic,3,RIAA3,GUARARAPES CONFECÇÕES,Têxtil e Vestuário,84.72,6.12,876ebe1a
+2026-11-13,magic,4,ALLD3,ALLIED TECNOLOGIA S.A.,Comércio (Atacado e Varejo),73.71,7.13,876ebe1a
+2026-11-13,magic,5,PLPL3,PLANO & PLANO DESENVOLVIMENTO IMOBILIÁRIO S.A.,"Construção Civil, Mat. Constr. e Decoração",64.71,4.74,876ebe1a
+2026-11-13,magic,6,CEAB3,C&A MODAS LTDA,Têxtil e Vestuário,61.02,8.14,876ebe1a
+2026-11-13,magic,7,JHSF3,JHSF,"Emp. Adm. Part. - Const. Civil, Mat. Const. e Decoração",84.5,9.78,876ebe1a
+2026-11-13,magic,8,DIRR3,DIRECIONAL ENGENHARIA SA,"Construção Civil, Mat. Constr. e Decoração",61.36,9.53,876ebe1a
+2026-11-13,magic,9,CMIN3,CSN MINERAÇÃO S.A,Extração Mineral,52.34,4.64,876ebe1a
+2026-11-13,magic,10,SEER3,SER EDUCACIONAL S.A.,Educação,70.99,11.26,876ebe1a

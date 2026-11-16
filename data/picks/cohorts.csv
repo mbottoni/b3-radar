@@ -1,3 +1,5 @@
 date,strategy,rules,names,return,benchmark,hit_rate
-2026-11-06,composite,876ebe1a,10,0.0,0.0,0.0
-2026-11-06,magic,876ebe1a,10,0.0,0.0,0.0
+2026-11-06,composite,876ebe1a,10,0.0188,0.0226,0.6
+2026-11-13,composite,876ebe1a,10,0.0,0.0,0.0
+2026-11-06,magic,876ebe1a,10,0.0426,0.0226,0.7
+2026-11-13,magic,876ebe1a,10,0.0,0.0,0.0
